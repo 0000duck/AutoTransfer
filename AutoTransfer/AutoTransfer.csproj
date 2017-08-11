@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7438AE68-A23B-49C2-B1C5-2F6021C0C65C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AutoTransfer</RootNamespace>
+    <AssemblyName>AutoTransfer</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="renci.sshnet, Version=2014.4.6.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\renci.sshnet.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Transfer\A55.cs" />
+    <Compile Include="Transfer\A53.cs" />
+    <Compile Include="Transfer\A54.cs" />
+    <Compile Include="Transfer\A56.cs" />
+    <Compile Include="StartTransfer.cs" />
+    <Compile Include="Bond_Account_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Commpany\A56Commpany.cs" />
+    <Compile Include="Commpany\A55Commpany.cs" />
+    <Compile Include="Commpany\A54Commpany.cs" />
+    <Compile Include="Commpany\A53Commpany.cs" />
+    <Compile Include="Commpany\CommpanyCommon.cs" />
+    <Compile Include="Transfer\CompleteEvent.cs" />
+    <Compile Include="CreateFile\CreateCommpanyFile.cs" />
+    <Compile Include="CreateFile\CreatePutFile.cs" />
+    <Compile Include="CreateFile\CreateSampleFile.cs" />
+    <Compile Include="Enum\MessageType.cs" />
+    <Compile Include="Enum\RatingObject.cs" />
+    <Compile Include="Enum\TableType.cs" />
+    <Compile Include="Utility\Extension.cs" />
+    <Compile Include="IFRS9_SFTP_Log.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Rating_CW_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Rating_Fitch_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Rating_Moody_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Sample\A56Sample.cs" />
+    <Compile Include="Sample\A55Sample.cs" />
+    <Compile Include="Sample\A54Sample.cs" />
+    <Compile Include="CreateFile\SetFile.cs" />
+    <Compile Include="Utility\FileRelated.cs" />
+    <Compile Include="Transfer\FormatRating.cs" />
+    <Compile Include="IFRS9EF.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IFRS9EF.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="IFRS9EF.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="IFRS9EF.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IFRS9EF.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Abstract\SFTPTransfer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rating_SP_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Sample\A53Sample.cs" />
+    <Compile Include="Sample\SampleCommon.cs" />
+    <Compile Include="SFTP\SFTP.cs" />
+    <Compile Include="SFTP\SFTPInfo.cs" />
+    <Compile Include="Utility\ThreadTask.cs" />
+    <Compile Include="Utility\Log.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EntityDeploy Include="IFRS9EF.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>IFRS9EF.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.Config" />
+    <None Include="IFRS9EF.edmx.diagram">
+      <DependentUpon>IFRS9EF.edmx</DependentUpon>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="IFRS9EF.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>IFRS9EF.edmx</DependentUpon>
+      <LastGenOutput>IFRS9EF.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="IFRS9EF.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>IFRS9EF.edmx</DependentUpon>
+      <LastGenOutput>IFRS9EF.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interface\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
