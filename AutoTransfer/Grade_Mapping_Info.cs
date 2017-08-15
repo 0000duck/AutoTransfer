@@ -12,13 +12,10 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class IFRS9_SFTP_Log
+    public partial class Grade_Mapping_Info
     {
-        public int Id { get; set; }
-        public string Transfer_Type { get; set; }
-        public Nullable<System.DateTime> Report_Date { get; set; }
-        public Nullable<System.DateTime> Start_Time { get; set; }
-        public Nullable<System.DateTime> End_Time { get; set; }
-        public Nullable<bool> Flag { get; set; }
+        public string Rating_Org { get; set; }
+        public int PD_Grade { get; set; }
+        public string Rating { get; set; }
     }
 }

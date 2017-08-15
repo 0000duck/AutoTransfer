@@ -49,25 +49,10 @@ namespace AutoTransfer.CreateFile
                     obj = new A53Sample();
                     findFlag = true;
                 }
-                if (TableType.A54.ToString().Equals(type.ToString()))
-                {
-                    obj = new A54Sample();
-                    findFlag = true;
-                }
-                if (TableType.A55.ToString().Equals(type.ToString()))
-                {
-                    obj = new A55Sample();
-                    findFlag = true;
-                }
-                if (TableType.A56.ToString().Equals(type.ToString()))
-                {
-                    obj = new A56Sample();
-                    findFlag = true;
-                }
                 if (findFlag)
                     obj.GetType()
                        .GetProperties()
-                       .OrderBy(x => x.Name)
+                       //.OrderBy(x => x.Name)
                        .ToList()
                        .ForEach(x => data.Add(x.Name));
                 data.Add("END-OF-FIELDS");

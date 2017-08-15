@@ -7,28 +7,10 @@ namespace AutoTransfer.Enum
         public enum TableType
         {
             /// <summary>
-            /// 外部信評資料檔_SP
+            /// 外部信評資料檔
             /// </summary>
-            [Description("Rating_SP_Info")]
+            [Description("Rating_Info")]
             A53,
-
-            /// <summary>
-            /// 外部信評資料檔_Moody
-            /// </summary>
-            [Description("Rating_Moody_Info")]
-            A54,
-
-            /// <summary>
-            /// 外部信評資料檔_Fitch
-            /// </summary>
-            [Description("Rating_Fitch_Info")]
-            A55,
-
-            /// <summary>
-            /// 外部信評資料檔_中華
-            /// </summary>
-            [Description("Rating_CW_Info")]
-            A56,
 
             /// <summary>
             /// 債券信評檔_歷史檔

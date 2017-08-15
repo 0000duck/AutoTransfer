@@ -12,13 +12,16 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Rating_Moody_Info
+    public partial class Bond_Rating_Parm
     {
         public int Id { get; set; }
-        public string Bond_Number { get; set; }
-        public Nullable<System.DateTime> Rating_Date { get; set; }
+        public string Parm_ID { get; set; }
+        public string Bond_Type { get; set; }
+        public string Lien_position { get; set; }
+        public Nullable<int> Rating_Priority { get; set; }
         public string Rating_Object { get; set; }
-        public string Rating { get; set; }
-        public string RTG_Bloomberg_Field { get; set; }
+        public string Rating_Org_Area { get; set; }
+        public string Rating_Selection { get; set; }
+        public Nullable<System.DateTime> Processing_Date { get; set; }
     }
 }

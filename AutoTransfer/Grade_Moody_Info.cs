@@ -12,13 +12,13 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Rating_SP_Info
+    public partial class Grade_Moody_Info
     {
-        public int Id { get; set; }
-        public string Bond_Number { get; set; }
-        public Nullable<System.DateTime> Rating_Date { get; set; }
-        public string Rating_Object { get; set; }
+        public string Data_Year { get; set; }
         public string Rating { get; set; }
-        public string RTG_Bloomberg_Field { get; set; }
+        public Nullable<int> PD_Grade { get; set; }
+        public string Rating_Adjust { get; set; }
+        public Nullable<int> Grade_Adjust { get; set; }
+        public Nullable<double> Moodys_PD { get; set; }
     }
 }

@@ -49,6 +49,12 @@ namespace AutoTransfer.Enum
             DateTime_Format_Fail,
 
             /// <summary>
+            /// 資料已經儲存過了
+            /// </summary>
+            [Description("資料已經儲存過了!")]
+            already_Save,
+
+            /// <summary>
             /// 轉檔成功
             /// </summary>
             [Description("轉檔成功")]

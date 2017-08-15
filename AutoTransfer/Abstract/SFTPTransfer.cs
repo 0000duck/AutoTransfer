@@ -8,7 +8,7 @@ namespace AutoTransfer.Abstract
 
         protected class commpayInfo
         {
-            public string Bond_Number { get; set; }
+            public List<string> Bond_Number { get; set; }
             public string Rating_Object { get; set; }
         }
 

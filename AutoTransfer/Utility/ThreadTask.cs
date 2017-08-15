@@ -7,6 +7,7 @@ namespace AutoTransfer.Utility
     public class ThreadTask
     {
         private int _interval = 20 * 60 * 1000; //20min
+        private Task t = null;
 
         public int Interval
         {
@@ -26,14 +27,29 @@ namespace AutoTransfer.Utility
 
             this.IsRunning = true;
 
-            Task.Factory.StartNew(() =>
+            t = new Task(() =>
             {
                 while (this.IsRunning)
-                {
+                {                  
                     SpinWait.SpinUntil(() => !this.IsRunning, this.Interval);
                     fun();
+                    t.Wait();
+                    t.Dispose();
                 }
             });
+            t.Start();
+            //Task.Factory.StartNew(() =>
+            //{
+            //    while (this.IsRunning)
+            //    {
+            //        SpinWait.SpinUntil(() => !this.IsRunning, this.Interval);
+            //        fun();
+            //    }
+            //})
+            //.ContinueWith(task =>
+            //{
+            //    fun();
+            //})           
         }
 
         public void Stop()

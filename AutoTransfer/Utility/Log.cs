@@ -63,40 +63,5 @@ namespace AutoTransfer.Utility
                 fileName = string.Format("{0}.txt", fileName);
             return Path.Combine(txtPath, fileName);
         }
-
-        /// <summary>
-        /// 寫入資料庫 Log
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="reportDate"></param>
-        /// <param name="startTime"></param>
-        /// <param name="endTime"></param>
-        /// <param name="flag"></param>
-        /// <returns></returns>
-        public void sqlLog(
-            string tableName,
-            DateTime reportDate,
-            DateTime startTime,
-            DateTime endTime,
-            bool flag)
-        {
-            IFRS9Entities db = new IFRS9Entities();
-            db.IFRS9_SFTP_Log.Add(new IFRS9_SFTP_Log()
-            {
-                Transfer_Type = tableName,
-                Report_Date = reportDate,
-                Start_Time = startTime,
-                End_Time = endTime,
-                Flag = flag
-            });
-            try
-            {
-                db.SaveChanges();
-            }
-            finally
-            {
-                db.Dispose();
-            }
-        }
     }
 }

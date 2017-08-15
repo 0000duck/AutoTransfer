@@ -56,19 +56,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Transfer\A55.cs" />
+    <Compile Include="Bond_Rating_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Bond_Rating_Parm.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Bond_Rating_Summary.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Enum\A53CommpanyBloombergField.cs" />
+    <Compile Include="Enum\RatingOrg.cs" />
+    <Compile Include="Enum\A53SampleBloombergField.cs" />
+    <Compile Include="Grade_Mapping_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Grade_Moody_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Rating_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Transfer\A53.cs" />
-    <Compile Include="Transfer\A54.cs" />
-    <Compile Include="Transfer\A56.cs" />
     <Compile Include="StartTransfer.cs" />
     <Compile Include="Bond_Account_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
-    <Compile Include="Commpany\A56Commpany.cs" />
-    <Compile Include="Commpany\A55Commpany.cs" />
-    <Compile Include="Commpany\A54Commpany.cs" />
     <Compile Include="Commpany\A53Commpany.cs" />
-    <Compile Include="Commpany\CommpanyCommon.cs" />
     <Compile Include="Transfer\CompleteEvent.cs" />
     <Compile Include="CreateFile\CreateCommpanyFile.cs" />
     <Compile Include="CreateFile\CreatePutFile.cs" />
@@ -77,21 +91,6 @@
     <Compile Include="Enum\RatingObject.cs" />
     <Compile Include="Enum\TableType.cs" />
     <Compile Include="Utility\Extension.cs" />
-    <Compile Include="IFRS9_SFTP_Log.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Rating_CW_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Rating_Fitch_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Rating_Moody_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Sample\A56Sample.cs" />
-    <Compile Include="Sample\A55Sample.cs" />
-    <Compile Include="Sample\A54Sample.cs" />
     <Compile Include="CreateFile\SetFile.cs" />
     <Compile Include="Utility\FileRelated.cs" />
     <Compile Include="Transfer\FormatRating.cs" />
@@ -112,11 +111,7 @@
     </Compile>
     <Compile Include="Abstract\SFTPTransfer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rating_SP_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
     <Compile Include="Sample\A53Sample.cs" />
-    <Compile Include="Sample\SampleCommon.cs" />
     <Compile Include="SFTP\SFTP.cs" />
     <Compile Include="SFTP\SFTPInfo.cs" />
     <Compile Include="Utility\ThreadTask.cs" />
