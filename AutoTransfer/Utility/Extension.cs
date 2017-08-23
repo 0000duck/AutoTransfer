@@ -5,29 +5,6 @@ namespace AutoTransfer.Utility
 {
     public static class Extension
     {
-        public static bool IsNullOrWhiteSpace(this string str)
-        {
-            return string.IsNullOrWhiteSpace(str);
-        }
-
-        public static bool IsNullOrEmpty(this string str)
-        {
-            return string.IsNullOrEmpty(str);
-        }
-
-        public static DateTime? StringToDateTimeN(this string str)
-        {
-            //ex: "08/21/2012"
-            if (str.IsNullOrWhiteSpace())
-                return null;
-            DateTime ratingDateDt = DateTime.MinValue;
-            if (!DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy",null,
-                System.Globalization.DateTimeStyles.AllowWhiteSpaces, 
-                out ratingDateDt))
-                return ratingDateDt;
-            return null;
-        }
-
         public static string FormatEquity(this string str)
         {
             if (str.IsNullOrWhiteSpace())
@@ -72,5 +49,27 @@ namespace AutoTransfer.Utility
             return enumerationValue.ToString();
         }
 
+        public static bool IsNullOrEmpty(this string str)
+        {
+            return string.IsNullOrEmpty(str);
+        }
+
+        public static bool IsNullOrWhiteSpace(this string str)
+        {
+            return string.IsNullOrWhiteSpace(str);
+        }
+
+        public static DateTime? StringToDateTimeN(this string str)
+        {
+            //ex: "08/21/2012"
+            if (str.IsNullOrWhiteSpace())
+                return null;
+            DateTime ratingDateDt = DateTime.MinValue;
+            if (!DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy", null,
+                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+                out ratingDateDt))
+                return ratingDateDt;
+            return null;
+        }
     }
 }

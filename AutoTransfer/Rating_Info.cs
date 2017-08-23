@@ -14,7 +14,7 @@ namespace AutoTransfer
     
     public partial class Rating_Info
     {
-        public int Id { get; set; }
+        public int Record_ID { get; set; }
         public string Bond_Number { get; set; }
         public Nullable<System.DateTime> Rating_Date { get; set; }
         public string Rating_Object { get; set; }

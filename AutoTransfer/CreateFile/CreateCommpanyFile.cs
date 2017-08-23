@@ -7,7 +7,7 @@ namespace AutoTransfer.CreateFile
 {
     public class CreateCommpanyFile
     {
-        public bool create(TableType type,string dateTime,List<string> datas)
+        public bool create(TableType type, string dateTime, List<string> datas)
         {
             bool flag = false;
             try
@@ -20,18 +20,25 @@ namespace AutoTransfer.CreateFile
                 string getFileName = f.getCommpanyFileName();
 
                 #region File
+
                 data.Add("START-OF-FILE");
+
                 #region Title
+
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getcompany");
                 data.Add("PROGRAMFLAG=oneshot");
                 data.Add("FIRMNAME=dl221"); //確認是否提出來?
                 data.Add("CREDITRISK=yes");
                 data.Add("SECID=TICKER");
-                #endregion
+
+                #endregion Title
+
                 //空一行
                 data.Add(string.Empty);
+
                 #region START-OF-FIELDS
+
                 data.Add("START-OF-FIELDS");
                 object obj = null;
                 bool findFlag = false;
@@ -41,22 +48,29 @@ namespace AutoTransfer.CreateFile
                     findFlag = true;
                 }
                 if (findFlag)
-                obj.GetType()
-                   .GetProperties()
-                   //.OrderBy(x => x.Name)
-                   .ToList()
-                   .ForEach(x => data.Add(x.Name));
+                    obj.GetType()
+                       .GetProperties()
+                       //.OrderBy(x => x.Name)
+                       .ToList()
+                       .ForEach(x => data.Add(x.Name));
                 data.Add("END-OF-FIELDS");
-                #endregion
+
+                #endregion START-OF-FIELDS
+
                 //空一行
                 data.Add(string.Empty);
+
                 #region START-OF-DATA
+
                 data.Add("START-OF-DATA");
-                datas.ForEach(x => data.Add(string.Format("{0} Equity|TICKER",x)));
+                datas.ForEach(x => data.Add(string.Format("{0} Equity|TICKER", x)));
                 data.Add("END-OF-DATA");
-                #endregion
+
+                #endregion START-OF-DATA
+
                 data.Add("END-OF-FILE");
-                #endregion
+
+                #endregion File
 
                 //ex: ../commpanyPut 資料夾
                 //f.putCommpanyFilePath();

@@ -37,5 +37,12 @@ namespace AutoTransfer
         public string ISSUER_TICKER { get; set; }
         public string GUARANTOR_NAME { get; set; }
         public string GUARANTOR_EQY_TICKER { get; set; }
+        public string Parm_ID { get; set; }
+        public string Portfolio_Name { get; set; }
+        public string RTG_Bloomberg_Field { get; set; }
+        public string SMF { get; set; }
+        public string ISSUER { get; set; }
+        public string Version { get; set; }
+        public string Security_Ticker { get; set; }
     }
 }

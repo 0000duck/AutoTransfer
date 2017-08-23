@@ -16,8 +16,6 @@ namespace AutoTransfer
     {
         public int Id { get; set; }
         public string Parm_ID { get; set; }
-        public string Bond_Type { get; set; }
-        public string Lien_position { get; set; }
         public Nullable<int> Rating_Priority { get; set; }
         public string Rating_Object { get; set; }
         public string Rating_Org_Area { get; set; }

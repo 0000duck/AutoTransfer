@@ -2,6 +2,7 @@
 using AutoTransfer.Commpany;
 using AutoTransfer.CreateFile;
 using AutoTransfer.Sample;
+using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
@@ -15,19 +16,23 @@ namespace AutoTransfer.Transfer
     public class A53 : SFTPTransfer
     {
         #region 共用參數
-        private TableType tableType = TableType.A53;
-        private string type = TableType.A53.ToString();
-        private string reportDateStr = string.Empty;
-        private DateTime reportDateDt = DateTime.MinValue;
-        private DateTime startTime = DateTime.MinValue;
+
+        private FormatRating fr = new FormatRating();
+
         private Dictionary<string, commpayInfo> info =
             new Dictionary<string, commpayInfo>();
-        private SetFile setFile = null;
+
         private Log log = new Log();
         private string logPath = string.Empty;
-        private FormatRating fr = new FormatRating();
+        private DateTime reportDateDt = DateTime.MinValue;
+        private string reportDateStr = string.Empty;
+        private SetFile setFile = null;
+        private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
-        #endregion
+        private TableType tableType = TableType.A53;
+        private string type = TableType.A53.ToString();
+
+        #endregion 共用參數
 
         /// <summary>
         /// start Transfer
@@ -86,11 +91,11 @@ namespace AutoTransfer.Transfer
         protected override void putSampleSFTP()
         {
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putSampleFilePath(),
-            //     setFile.putSampleFileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putSampleFilePath(),
+                 setFile.putSampleFileName(),
+                 out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
                 log.txtLog(
@@ -103,7 +108,7 @@ namespace AutoTransfer.Transfer
             else //success (wait 20 min and get data)
             {
                 Action f = () => getSampleSFTP();
-                t.Start(f); //委派 設定時間後要做的動作              
+                t.Start(f); //委派 設定時間後要做的動作
             }
         }
 
@@ -112,14 +117,13 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected override void getSampleSFTP()
         {
-            //t.Stop();
             new FileRelated().createFile(setFile.getSampleFilePath());
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //    setFile.getSampleFilePath(),
-            //    setFile.getSampleFileName(),
-            //    out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                setFile.getSampleFilePath(),
+                setFile.getSampleFileName(),
+                out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.txtLog(
@@ -136,7 +140,7 @@ namespace AutoTransfer.Transfer
         }
 
         /// <summary>
-        /// 建立 Commpany 要Put檔案 
+        /// 建立 Commpany 要Put檔案
         /// </summary>
         protected override void createCommpanyFile()
         {
@@ -159,13 +163,13 @@ namespace AutoTransfer.Transfer
                             if (!arr[3].IsNullOrWhiteSpace() &&
                                 !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
                             {
-                                commpayInfo x = new commpayInfo(); 
+                                commpayInfo x = new commpayInfo();
                                 if (!info.TryGetValue(arr[3].Trim(), out x))
                                 {
                                     data.Add(arr[3].Trim());
                                     info.Add(arr[3].Trim(), new commpayInfo()
                                     {
-                                        Bond_Number = new List<string>() {arr[0].Trim() },
+                                        Bond_Number = new List<string>() { arr[0].Trim() },
                                         Rating_Object = RatingObject.ISSUER.GetDescription()
                                     });
                                 }
@@ -174,14 +178,14 @@ namespace AutoTransfer.Transfer
                                     x.Bond_Number.Add(arr[0].Trim());
                                 }
                             }
-                            if (!arr[6].Trim().IsNullOrWhiteSpace() &&
-                                !nullarr.Contains(arr[6].Trim()))  //GUARANTOR_EQY_TICKER (擔保人)
+                            if (!arr[7].Trim().IsNullOrWhiteSpace() &&
+                                !nullarr.Contains(arr[7].Trim()))  //GUARANTOR_EQY_TICKER (擔保人)
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(arr[6].Trim(), out x))
+                                if (!info.TryGetValue(arr[7].Trim(), out x))
                                 {
-                                    data.Add(arr[6].Trim());
-                                    info.Add(arr[6].Trim(), new commpayInfo()
+                                    data.Add(arr[7].Trim());
+                                    info.Add(arr[7].Trim(), new commpayInfo()
                                     {
                                         Bond_Number = new List<string>() { arr[0].Trim() },
                                         Rating_Object = RatingObject.GUARANTOR.GetDescription()
@@ -235,8 +239,9 @@ namespace AutoTransfer.Transfer
             else //success (wait 20 min and get data)
             {
                 t.Stop();
+                t.Interval = 15 * 1000;
                 Action f = () => getCommpanySFTP();
-                t.Start(f); //委派 設定時間後要做的動作               
+                t.Start(f); //委派 設定時間後要做的動作
             }
         }
 
@@ -275,9 +280,12 @@ namespace AutoTransfer.Transfer
             IFRS9Entities db = new IFRS9Entities();
             List<Rating_Info> sampleData = new List<Rating_Info>();
             List<Rating_Info> commpanyData = new List<Rating_Info>();
+            List<sampleInfo> sampleInfos = new List<sampleInfo>();
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
+
             #region sample Data
+
             using (StreamReader sr = new StreamReader(Path.Combine(
                 setFile.getSampleFilePath(), setFile.getSampleFileName())))
             {
@@ -290,79 +298,90 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        //arr[0] ex: US00206RDH21 (債券編號)
-                        //arr[1] ex: 0
-                        //arr[2] ex: 20
-                        //arr[3] ISSUER_EQUITY_TICKER (發行人)
-                        //arr[4] ISSUE_DT (債券評等日期)
-                        //arr[5] ISSUER (債券名稱)
-                        //arr[6] GUARANTOR_EQY_TICKER (擔保人)
-                        //arr[7] GUARANTOR_NAME (擔保人名稱)
+                        //arr[0]  ex: US00206RDH21 (債券編號)
+                        //arr[1]  ex: 0
+                        //arr[2]  ex: 20
+                        //arr[3]  ISSUER_EQUITY_TICKER (發行人)
+                        //arr[4]  ISSUE_DT (債券評等日期)
+                        //arr[5]  ISSUER (債券名稱)
+                        //arr[6]  ISSUER_TICKER
+                        //arr[7]  GUARANTOR_EQY_TICKER (擔保人)
+                        //arr[8]  GUARANTOR_NAME (擔保人名稱)
                         //--標普(S&P)
-                        //arr[8] RTG_SP (SP國外評等) 
-                        //arr[9] SP_EFF_DT  (SP國外評等日期)
+                        //arr[9]  (國外)RTG_SP (SP國外評等)
+                        //arr[10] (國外)SP_EFF_DT (SP國外評等日期)
                         //--穆迪(Moody's)
-                        //arr[10] RTG_MOODY (Moody's國外評等)
-                        //arr[11] MOODY_EFF_DT (Moody's國外評等日期)
+                        //arr[11] (國外)RTG_MOODY (Moody's國外評等)
+                        //arr[12] (國外)MOODY_EFF_DT (Moody's國外評等日期)
                         //--惠譽台灣(Fitch(twn))
-                        //arr[12] RTG_FITCH_NATIONAL (惠譽國內評等)
-                        //arr[13] RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
+                        //arr[13] (國內)RTG_FITCH_NATIONAL (惠譽國內評等)
+                        //arr[14] (國內)RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
                         //--惠譽(Fitch)
-                        //arr[14] RTG_FITCH (惠譽評等)
-                        //arr[15] FITCH_EFF_DT (惠譽評等日期)
+                        //arr[15] (國外)RTG_FITCH (惠譽評等)
+                        //arr[16] (國外)FITCH_EFF_DT (惠譽評等日期)
                         //--TRC(中華信評)
-                        //arr[16] RTG_TRC (TRC 評等)
-                        //arr[17] TRC_EFF_DT (TRC 評等日期)
+                        //arr[17] (國內)RTG_TRC (TRC 評等)
+                        //arr[18] (國內)TRC_EFF_DT (TRC 評等日期)
                         if (arr.Length >= 18)
                         {
                             //S&P國外評等
                             validateSample(
-                                arr[8],
-                                arr[9], 
+                                arr[9],
+                                arr[10],
                                 arr[0],
                                 A53SampleBloombergField.RTG_SP.ToString(),
                                 RatingOrg.SP,
                                 sampleData);
                             //Moody's國外評等
                             validateSample(
-                                arr[10],
                                 arr[11],
+                                arr[12],
                                 arr[0],
                                 A53SampleBloombergField.RTG_MOODY.ToString(),
                                 RatingOrg.Moody,
                                 sampleData);
                             //惠譽台灣
                             validateSample(
-                                arr[12],
                                 arr[13],
+                                arr[14],
                                 arr[0],
                                 A53SampleBloombergField.RTG_FITCH_NATIONAL.ToString(),
                                 RatingOrg.FitchTwn,
                                 sampleData);
                             //惠譽
                             validateSample(
-                                arr[14],
                                 arr[15],
+                                arr[16],
                                 arr[0],
                                 A53SampleBloombergField.RTG_FITCH.ToString(),
                                 RatingOrg.Fitch,
                                 sampleData);
                             //TRC(中華信評)
                             validateSample(
-                                arr[16],
                                 arr[17],
+                                arr[18],
                                 arr[0],
                                 A53SampleBloombergField.RTG_TRC.ToString(),
                                 RatingOrg.CW,
                                 sampleData);
+                            sampleInfos.Add(new sampleInfo()
+                            {
+                                Bond_Number = arr[0],
+                                ISSUER_TICKER = arr[6],
+                                GUARANTOR_EQY_TICKER = arr[7],
+                                GUARANTOR_NAME = arr[8]
+                            });
                         }
                     }
                     if ("START-OF-DATA".Equals(line))
                         flag = true;
                 }
             }
-            #endregion
+
+            #endregion sample Data
+
             #region commpany Data
+
             using (StreamReader sr = new StreamReader(Path.Combine(
                 setFile.getCommpanyFilePath(), setFile.getCommpanyFileName())))
             {
@@ -375,50 +394,50 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        //arr[0] ex: T US Equity (發行人or擔保人)
-                        //arr[1] ex: 0
-                        //arr[2] ex: 38
+                        //arr[0]  ex: T US Equity (發行人or擔保人)
+                        //arr[1]  ex: 0
+                        //arr[2]  ex: 38
                         //arr[3]  ID_BB_COMPANY  公司ID
                         //arr[4]  LONG_COMP_NAME  公司名稱
                         //arr[5]  COUNTRY_ISO  城市(國家)
-                        //arr[6]  INDUSTRY_GROUP  
+                        //arr[6]  INDUSTRY_GROUP
                         //arr[7]  INDUSTRY_SECTOR
                         //--標普(S&P)
-                        //arr[8]  RTG_SP_LT_LC_ISSUER_CREDIT (國內)標普本國貨幣長期發行人信用評等
-                        //arr[9]  RTG_SP_LT_LC_ISS_CRED_RTG_DT (國內)標普本國貨幣長期發行人信用評等日期
-                        //arr[10] RTG_SP_LT_FC_ISSUER_CREDIT 標普長期外幣發行人信用評等
-                        //arr[11] RTG_SP_LT_FC_ISS_CRED_RTG_DT 標普長期外幣發行人信用評等日期
+                        //arr[8]  (國外)RTG_SP_LT_LC_ISSUER_CREDIT (標普本國貨幣長期發行人信用評等)
+                        //arr[9]  (國外)RTG_SP_LT_LC_ISS_CRED_RTG_DT (標普本國貨幣長期發行人信用評等日期)
+                        //arr[10] (國外)RTG_SP_LT_FC_ISSUER_CREDIT (標普長期外幣發行人信用評等)
+                        //arr[11] (國外)RTG_SP_LT_FC_ISS_CRED_RTG_DT (標普長期外幣發行人信用評等日期)
                         //--穆迪(Moody's)
-                        //arr[12] RTG_MDY_LOCAL_LT_BANK_DEPOSITS  (國內)穆迪長期本國銀行存款評等
-                        //arr[13] RTG_MDY_LT_LC_BANK_DEP_RTG_DT  (國內)穆迪長期本國銀行存款評等日期
-                        //arr[14] RTG_MDY_FC_CURR_ISSUER_RATING  穆迪外幣發行人評等
-                        //arr[15] RTG_MDY_FC_CURR_ISSUER_RTG_DT  穆迪外幣發行人評等日期
-                        //arr[16] RTG_MDY_ISSUER  穆迪發行人評等
-                        //arr[17] RTG_MDY_ISSUER_RTG_DT  穆迪發行人評等日期
-                        //arr[18] RTG_MOODY_LONG_TERM  穆迪長期評等
-                        //arr[19] RTG_MOODY_LONG_TERM_DATE  穆迪長期評等日期
-                        //arr[20] RTG_MDY_SEN_UNSECURED_DEBT  穆迪優先無擔保債務評等
-                        //arr[21] RTG_MDY_SEN_UNSEC_RTG_DT  穆迪優先無擔保債務評等日期
-                        //--惠譽台灣(Fitch(twn))
-                        //arr[22] RTG_FITCH_LT_ISSUER_DEFAULT  (國內)惠譽長期發行人違約評等  
-                        //arr[23] RTG_FITCH_LT_ISSUER_DFLT_RTG_DT  (國內)惠譽長期發行人違約評等日期
-                        //arr[24] RTG_FITCH_NATIONAL_LT (國內)惠譽國內長期評等
-                        //arr[25] RTG_FITCH_NATIONAL_LT_DT (國內)惠譽國內長期評等日期
+                        //arr[12] (國內)RTG_MDY_LOCAL_LT_BANK_DEPOSITS (穆迪長期本國銀行存款評等)
+                        //arr[13] (國內)RTG_MDY_LT_LC_BANK_DEP_RTG_DT (穆迪長期本國銀行存款評等日期)
+                        //arr[14] (國外)RTG_MDY_FC_CURR_ISSUER_RATING (穆迪外幣發行人評等)
+                        //arr[15] (國外)RTG_MDY_FC_CURR_ISSUER_RTG_DT (穆迪外幣發行人評等日期)
+                        //arr[16] (國外)RTG_MDY_ISSUER (穆迪發行人評等)
+                        //arr[17] (國外)RTG_MDY_ISSUER_RTG_DT (穆迪發行人評等日期)
+                        //arr[18] (國外)RTG_MOODY_LONG_TERM (穆迪長期評等)
+                        //arr[19] (國外)RTG_MOODY_LONG_TERM_DATE (穆迪長期評等日期)
+                        //arr[20] (國外)RTG_MDY_SEN_UNSECURED_DEBT (穆迪優先無擔保債務評等)
+                        //arr[21] (國外)RTG_MDY_SEN_UNSEC_RTG_DT (穆迪優先無擔保債務評等日期)
                         //--惠譽(Fitch)
-                        //arr[26] RTG_FITCH_LT_FC_ISSUER_DEFAULT  惠譽長期外幣發行人違約評等
-                        //arr[27] RTG_FITCH_LT_FC_ISS_DFLT_RTG_DT  惠譽長期外幣發行人違約評等日期
-                        //arr[28] RTG_FITCH_LT_LC_ISSUER_DEFAULT  惠譽長期本國貨幣發行人違約評等
-                        //arr[29] RTG_FITCH_LT_LC_ISS_DFLT_RTG_DT  惠譽長期本國貨幣發行人違約評等日期
-                        //arr[30] RTG_FITCH_SEN_UNSECURED  惠譽優先無擔保債務評等
-                        //arr[31] RTG_FITCH_SEN_UNSEC_RTG_DT  惠譽優先無擔保債務評等日期
+                        //arr[22] (國外)RTG_FITCH_LT_ISSUER_DEFAULT (惠譽長期發行人違約評等)
+                        //arr[23] (國外)RTG_FITCH_LT_ISSUER_DFLT_RTG_DT (惠譽長期發行人違約評等日期)
+                        //arr[24] (國外)RTG_FITCH_LT_FC_ISSUER_DEFAULT (惠譽長期外幣發行人違約評等)
+                        //arr[25] (國外)RTG_FITCH_LT_FC_ISS_DFLT_RTG_DT (惠譽長期外幣發行人違約評等日期)
+                        //arr[26] (國外)RTG_FITCH_LT_LC_ISSUER_DEFAULT (惠譽長期本國貨幣發行人違約評等)
+                        //arr[27] (國外)RTG_FITCH_LT_LC_ISS_DFLT_RTG_DT (惠譽長期本國貨幣發行人違約評等日期)
+                        //arr[28] (國外)RTG_FITCH_SEN_UNSECURED (惠譽優先無擔保債務評等)
+                        //arr[29] (國外)RTG_FITCH_SEN_UNSEC_RTG_DT (惠譽優先無擔保債務評等日期)
+                        //--惠譽台灣(Fitch(twn))
+                        //arr[30] (國內)RTG_FITCH_NATIONAL_LT (惠譽國內長期評等)
+                        //arr[31] (國內)RTG_FITCH_NATIONAL_LT_DT (惠譽國內長期評等日期)
                         //--TRC(中華信評)
-                        //arr[32] RTG_TRC_LONG_TERM  (國內)TRC 長期評等
-                        //arr[33] RTG_TRC_LONG_TERM_RTG_DT  (國內)TRC 長期評等日期
+                        //arr[32] (國內)RTG_TRC_LONG_TERM (TRC 長期評等)
+                        //arr[33] (國內)RTG_TRC_LONG_TERM_RTG_DT (TRC 長期評等日期)
                         if (arr.Length >= 34)
                         {
-                            //RTG_SP_LT_LC_ISSUER_CREDIT (國內)標普本國貨幣長期發行人信用評等
+                            //RTG_SP_LT_LC_ISSUER_CREDIT 標普本國貨幣長期發行人信用評等
                             validateCommpany(
-                                arr[8], 
+                                arr[8],
                                 arr[9],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_SP_LT_LC_ISSUER_CREDIT.ToString(),
@@ -426,15 +445,15 @@ namespace AutoTransfer.Transfer
                                 commpanyData);
                             //RTG_SP_LT_FC_ISSUER_CREDIT 標普長期外幣發行人信用評等
                             validateCommpany(
-                                arr[10], 
+                                arr[10],
                                 arr[11],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_SP_LT_FC_ISSUER_CREDIT.ToString(),
                                 RatingOrg.SP,
                                 commpanyData);
-                            //RTG_MDY_LOCAL_LT_BANK_DEPOSITS  (國內)穆迪長期本國銀行存款評等
+                            //RTG_MDY_LOCAL_LT_BANK_DEPOSITS 穆迪長期本國銀行存款評等
                             validateCommpany(
-                                arr[12], 
+                                arr[12],
                                 arr[13],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_MDY_LOCAL_LT_BANK_DEPOSITS.ToString(),
@@ -442,7 +461,7 @@ namespace AutoTransfer.Transfer
                                 commpanyData);
                             //RTG_MDY_FC_CURR_ISSUER_RATING  穆迪外幣發行人評等
                             validateCommpany(
-                                arr[14], 
+                                arr[14],
                                 arr[15],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_MDY_FC_CURR_ISSUER_RATING.ToString(),
@@ -467,55 +486,56 @@ namespace AutoTransfer.Transfer
                                 commpanyData);
                             //RTG_MDY_SEN_UNSECURED_DEBT  穆迪優先無擔保債務評等
                             validateCommpany(
-                                arr[20], 
+                                arr[20],
                                 arr[21],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_MDY_SEN_UNSECURED_DEBT.ToString(),
                                 RatingOrg.Moody,
                                 commpanyData);
-                            //RTG_FITCH_LT_ISSUER_DEFAULT  (國內)惠譽長期發行人違約評等  
+                            //RTG_FITCH_LT_ISSUER_DEFAULT 惠譽長期發行人違約評等
                             validateCommpany(
                                 arr[22],
                                 arr[23],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_FITCH_LT_ISSUER_DEFAULT.ToString(),
-                                RatingOrg.FitchTwn,
+                                RatingOrg.Fitch,
                                 commpanyData);
-                            //RTG_FITCH_NATIONAL_LT  (國內)惠譽國內長期評等
+
+                            //RTG_FITCH_LT_FC_ISSUER_DEFAULT  惠譽長期外幣發行人違約評等
                             validateCommpany(
                                 arr[24],
                                 arr[25],
-                                arr[0],
-                                A53CommpanyBloombergField.RTG_FITCH_NATIONAL_LT.ToString(),
-                                RatingOrg.FitchTwn,
-                                commpanyData);
-                            //RTG_FITCH_LT_FC_ISSUER_DEFAULT  惠譽長期外幣發行人違約評等
-                            validateCommpany(
-                                arr[26],
-                                arr[27],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_FITCH_LT_FC_ISSUER_DEFAULT.ToString(),
                                 RatingOrg.Fitch,
                                 commpanyData);
                             //RTG_FITCH_LT_LC_ISSUER_DEFAULT  惠譽長期本國貨幣發行人違約評等
                             validateCommpany(
-                                arr[28], 
-                                arr[29],
+                                arr[26],
+                                arr[27],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_FITCH_LT_LC_ISSUER_DEFAULT.ToString(),
                                 RatingOrg.Fitch,
                                 commpanyData);
                             //RTG_FITCH_SEN_UNSECURED  惠譽優先無擔保債務評等
                             validateCommpany(
-                                arr[30],
-                                arr[31],
+                                arr[28],
+                                arr[29],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_FITCH_SEN_UNSECURED.ToString(),
                                 RatingOrg.Fitch,
                                 commpanyData);
+                            //RTG_FITCH_NATIONAL_LT 惠譽國內長期評等
+                            validateCommpany(
+                                arr[30],
+                                arr[31],
+                                arr[0],
+                                A53CommpanyBloombergField.RTG_FITCH_NATIONAL_LT.ToString(),
+                                RatingOrg.FitchTwn,
+                                commpanyData);
                             //RTG_TRC_LONG_TERM  (國內)TRC 長期評等
                             validateCommpany(
-                                arr[32], 
+                                arr[32],
                                 arr[33],
                                 arr[0],
                                 A53CommpanyBloombergField.RTG_TRC_LONG_TERM.ToString(),
@@ -527,8 +547,11 @@ namespace AutoTransfer.Transfer
                         flag = true;
                 }
             }
-            #endregion
+
+            #endregion commpany Data
+
             #region saveDb
+
             if (db.Rating_Info.Any(x => x.Report_Date == reportDateDt)) //相同report Date
             {
                 log.txtLog(
@@ -554,7 +577,7 @@ namespace AutoTransfer.Transfer
                         logPath,
                         MessageType.Success.GetDescription());
                     sampleData.AddRange(commpanyData);
-                    new CompleteEvent().saveDb(reportDateDt, sampleData);
+                    new CompleteEvent().saveDb(reportDateDt, sampleData, sampleInfos);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -568,7 +591,15 @@ namespace AutoTransfer.Transfer
                 }
             }
 
-            #endregion          
+            #endregion saveDb
+        }
+
+        public class sampleInfo
+        {
+            public string Bond_Number { get; set; }
+            public string GUARANTOR_EQY_TICKER { get; set; }
+            public string GUARANTOR_NAME { get; set; }
+            public string ISSUER_TICKER { get; set; }
         }
 
         #region private function
@@ -583,7 +614,7 @@ namespace AutoTransfer.Transfer
         /// <param name="org">評等機構</param>
         /// <param name="sampleData">Sample要新增的資料</param>
         private void validateSample(
-            string rating, 
+            string rating,
             string ratingDate,
             string bondNumber,
             string bloombergField,
@@ -600,7 +631,7 @@ namespace AutoTransfer.Transfer
                     ratingDate,
                     bondNumber,
                     bloombergField,
-                    fitchOrg(org, rating)
+                    org
                     ));
             }
         }
@@ -638,7 +669,7 @@ namespace AutoTransfer.Transfer
                               x,
                               bloombergField,
                               cInfo.Rating_Object,
-                              fitchOrg(org, rating)
+                              org
                             ))
                         );
                 }
@@ -705,17 +736,6 @@ namespace AutoTransfer.Transfer
             };
         }
 
-        private RatingOrg fitchOrg(RatingOrg org, string rating)
-        {
-            if (rating.IsNullOrWhiteSpace())
-                return org;
-            if (org.Equals(RatingOrg.Fitch) || org.Equals(RatingOrg.FitchTwn))
-                return rating.IndexOf("tw") > -1 ? RatingOrg.FitchTwn : RatingOrg.Fitch;
-            return org;
-        }
-
-        #endregion
-
-
+        #endregion private function
     }
 }

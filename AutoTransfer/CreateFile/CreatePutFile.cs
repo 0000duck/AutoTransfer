@@ -7,7 +7,7 @@ namespace AutoTransfer.CreateFile
 {
     public class CreatePutFile
     {
-        public bool create(string filePath, string fileName,List<string> data)
+        public bool create(string filePath, string fileName, List<string> data)
         {
             if (data.Any() && !filePath.IsNullOrWhiteSpace() && !fileName.IsNullOrWhiteSpace())
             {

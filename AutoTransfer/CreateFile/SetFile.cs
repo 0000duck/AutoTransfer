@@ -7,50 +7,31 @@ namespace AutoTransfer.CreateFile
 {
     public class SetFile
     {
-        private TableType _type;
+        private static string commpanyGet = ConfigurationManager.AppSettings["commpanyGet"];
+        private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
+        private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
+        private static string samplePut = ConfigurationManager.AppSettings["samplePut"];
+        private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
+        private TableType _type;
 
-        public SetFile(TableType type,string dateTime)
+        public SetFile(TableType type, string dateTime)
         {
             _type = type;
             _dateTime = dateTime;
         }
 
-        private static string startupPath = Directory.GetCurrentDirectory();
-        private static string samplePut = ConfigurationManager.AppSettings["samplePut"];
-        private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
-        private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
-        private static string commpanyGet = ConfigurationManager.AppSettings["commpanyGet"];
-
-        public string putSampleFilePath()
+        public string getCommpanyFileName()
         {
-            return  samplePut.IsNullOrWhiteSpace() ? 
-                Path.Combine(startupPath, "samplePut") : samplePut;
-        }
-
-        public string getSampleFilePath()
-        {
-            return sampleGet.IsNullOrWhiteSpace() ? 
-                Path.Combine(startupPath, "sampleGet") : sampleGet;
-        }
-
-        public string putCommpanyFilePath()
-        {
-            return commpanyPut.IsNullOrWhiteSpace() ? 
-                Path.Combine(startupPath, "commpanyPut") : commpanyPut;
+            return string.Format("commpany{0}_{1}.csv",
+                _type.ToString(),
+                _dateTime);
         }
 
         public string getCommpanyFilePath()
         {
-            return commpanyGet.IsNullOrWhiteSpace() ? 
+            return commpanyGet.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "commpanyGet") : commpanyGet;
-        }
-
-        public string putSampleFileName()
-        {
-            return string.Format("sample{0}_{1}.req",
-                _type.ToString(),
-                _dateTime);
         }
 
         public string getSampleFileName()
@@ -60,6 +41,12 @@ namespace AutoTransfer.CreateFile
                 _dateTime);
         }
 
+        public string getSampleFilePath()
+        {
+            return sampleGet.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "sampleGet") : sampleGet;
+        }
+
         public string putCommpanyFileName()
         {
             return string.Format("commpany{0}_{1}.req",
@@ -67,11 +54,23 @@ namespace AutoTransfer.CreateFile
                 _dateTime);
         }
 
-        public string getCommpanyFileName()
+        public string putCommpanyFilePath()
         {
-            return string.Format("commpany{0}_{1}.csv",
+            return commpanyPut.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "commpanyPut") : commpanyPut;
+        }
+
+        public string putSampleFileName()
+        {
+            return string.Format("sample{0}_{1}.req",
                 _type.ToString(),
                 _dateTime);
+        }
+
+        public string putSampleFilePath()
+        {
+            return samplePut.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "samplePut") : samplePut;
         }
     }
 }

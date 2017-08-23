@@ -7,6 +7,7 @@ namespace AutoTransfer.Utility
     public class Log
     {
         #region save txtlog
+
         /// <summary>
         /// 寫入 Txt Log
         /// </summary>
@@ -15,36 +16,37 @@ namespace AutoTransfer.Utility
         /// <param name="start">開始時間</param>
         /// <param name="folderPath">檔案路徑</param>
         /// <param name="detail">內容</param>
-        public void txtLog(string tableName, bool falg, DateTime start, string folderPath,string detail = null)
+        public void txtLog(string tableName, bool falg, DateTime start, string folderPath, string detail = null)
         {
-                string txtData = string.Empty;
-                try //試著抓取舊資料
-                {
-                    txtData = File.ReadAllText(folderPath);
-                }
-                catch { }
-                string txt = string.Format("{0}_{1}_{2}{3}",
-                             tableName,
-                             start.ToString("yyyyMMddHHmmss"),
-                             falg ? "Y" : "N",
-                             !detail.IsNullOrWhiteSpace() ?
-                             string.Format(" => {0}", detail) :
-                             string.Empty
-                             );
-                if (!string.IsNullOrWhiteSpace(txtData)) //有舊資料就換行寫入下一筆
-                {
-                    txtData += string.Format("\r\n{0}", txt);
-                }
-                else //沒有就直接寫入
-                {
-                    txtData = txt;
-                }
-                FileStream fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write);
-                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
-                sw.Write(txtData); //存檔
-                sw.Close();
+            string txtData = string.Empty;
+            try //試著抓取舊資料
+            {
+                txtData = File.ReadAllText(folderPath);
+            }
+            catch { }
+            string txt = string.Format("{0}_{1}_{2}{3}",
+                         tableName,
+                         start.ToString("yyyyMMddHHmmss"),
+                         falg ? "Y" : "N",
+                         !detail.IsNullOrWhiteSpace() ?
+                         string.Format(" => {0}", detail) :
+                         string.Empty
+                         );
+            if (!string.IsNullOrWhiteSpace(txtData)) //有舊資料就換行寫入下一筆
+            {
+                txtData += string.Format("\r\n{0}", txt);
+            }
+            else //沒有就直接寫入
+            {
+                txtData = txt;
+            }
+            FileStream fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
+            sw.Write(txtData); //存檔
+            sw.Close();
         }
-        #endregion
+
+        #endregion save txtlog
 
         public string txtLocation(string fileName)
         {

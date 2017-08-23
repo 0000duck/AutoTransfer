@@ -19,7 +19,7 @@ namespace AutoTransfer
         public Nullable<System.DateTime> Report_Date { get; set; }
         public string Parm_ID { get; set; }
         public string Bond_Type { get; set; }
-        public Nullable<int> Rating_Type { get; set; }
+        public string Rating_Type { get; set; }
         public string Rating_Object { get; set; }
         public string Rating_Org_Area { get; set; }
         public string Rating_Selection { get; set; }
@@ -31,5 +31,8 @@ namespace AutoTransfer
         public string Lots { get; set; }
         public string Portfolio { get; set; }
         public Nullable<System.DateTime> Origination_Date { get; set; }
+        public string Portfolio_Name { get; set; }
+        public string SMF { get; set; }
+        public string ISSUER { get; set; }
     }
 }

@@ -83,7 +83,6 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("(國內)TRC 長期評等")]
             RTG_TRC_LONG_TERM,
-
         }
     }
 }

@@ -27,8 +27,11 @@ namespace AutoTransfer.CreateFile
                 string getFileName = f.getSampleFileName();
 
                 #region File
+
                 data.Add("START-OF-FILE");
+
                 #region Title
+
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getdata");
                 data.Add("PROGRAMFLAG=oneshot");
@@ -37,10 +40,14 @@ namespace AutoTransfer.CreateFile
                 data.Add("OUTPUTFORMAT=bulklist");
                 data.Add("DELIMITER=,");
                 data.Add("FUNDAMENTALS=yes");
-                #endregion
+
+                #endregion Title
+
                 //空一行
                 data.Add(string.Empty);
+
                 #region START-OF-FIELDS
+
                 data.Add("START-OF-FIELDS");
                 object obj = null;
                 bool findFlag = false;
@@ -56,10 +63,14 @@ namespace AutoTransfer.CreateFile
                        .ToList()
                        .ForEach(x => data.Add(x.Name));
                 data.Add("END-OF-FIELDS");
-                #endregion
+
+                #endregion START-OF-FIELDS
+
                 //空一行
                 data.Add(string.Empty);
+
                 #region START-OF-DATA
+
                 data.Add("START-OF-DATA");
                 int year = Int32.Parse(dateTime.Substring(0, 4));
                 int month = Int32.Parse(dateTime.Substring(4, 2));
@@ -78,9 +89,12 @@ namespace AutoTransfer.CreateFile
                     });
                 db.Dispose();
                 data.Add("END-OF-DATA");
-                #endregion
+
+                #endregion START-OF-DATA
+
                 data.Add("END-OF-FILE");
-                #endregion
+
+                #endregion File
 
                 //ex: ../samplePut 資料夾
                 //f.putCommpanyFilePath();

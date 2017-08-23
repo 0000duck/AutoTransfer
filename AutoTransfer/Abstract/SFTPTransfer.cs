@@ -6,12 +6,6 @@ namespace AutoTransfer.Abstract
     {
         protected static List<string> nullarr = new List<string>() { "N.S.", "N.A." };
 
-        protected class commpayInfo
-        {
-            public List<string> Bond_Number { get; set; }
-            public string Rating_Object { get; set; }
-        }
-
         /// <summary>
         /// start Transfer
         /// </summary>
@@ -19,14 +13,24 @@ namespace AutoTransfer.Abstract
         public abstract void startTransfer(string dateTime);
 
         /// <summary>
+        /// create Commpany req file
+        /// </summary>
+        protected abstract void createCommpanyFile();
+
+        /// <summary>
         /// create Sample req file
         /// </summary>
         protected abstract void createSampleFile();
 
         /// <summary>
-        /// SFTP put sample 
+        /// sample data & commpany data to db
         /// </summary>
-        protected abstract void putSampleSFTP();
+        protected abstract void DataToDb();
+
+        /// <summary>
+        /// SFTP get Commpany
+        /// </summary>
+        protected abstract void getCommpanySFTP();
 
         /// <summary>
         /// SFTP get sample
@@ -34,23 +38,19 @@ namespace AutoTransfer.Abstract
         protected abstract void getSampleSFTP();
 
         /// <summary>
-        /// create Commpany req file 
-        /// </summary>
-        protected abstract void createCommpanyFile();
-
-        /// <summary>
-        /// SFTP put Commpany 
+        /// SFTP put Commpany
         /// </summary>
         protected abstract void putCommpanySFTP();
 
         /// <summary>
-        /// SFTP get Commpany 
+        /// SFTP put sample
         /// </summary>
-        protected abstract void getCommpanySFTP();
+        protected abstract void putSampleSFTP();
 
-        /// <summary>
-        /// sample data & commpany data to db
-        /// </summary>
-        protected abstract void DataToDb();
+        protected class commpayInfo
+        {
+            public List<string> Bond_Number { get; set; }
+            public string Rating_Object { get; set; }
+        }
     }
 }

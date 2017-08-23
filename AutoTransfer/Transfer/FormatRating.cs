@@ -7,34 +7,13 @@ namespace AutoTransfer.Transfer
     public class FormatRating
     {
         /// <summary>
-        /// 修正 MOODY'S ISSUE 錯誤資料
-        /// </summary>
-        /// <param name="rating"></param>
-        /// <returns></returns>
-        public string forRating(string rating) 
-        {
-            if (rating.IsNullOrWhiteSpace())
-                return string.Empty;
-            string value = rating.Trim();
-            if ("BBBu".Equals(value))
-                return "BBB";
-            if ("A-u".Equals(value) || "A+u".Equals(value))
-                return "A";
-            if (value.IndexOf("/*-") > -1)
-                return value.Split(new string[] { "/*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            if (value.IndexOf("*-") > -1)
-                return value.Split(new string[] { "*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            return value;
-        }
-
-        /// <summary>
         /// 修正FITCH ISSUER 錯誤資料
         /// </summary>
         /// <param name="rating"></param>
         /// <param name="org"></param>
         /// <param name="Bonds"></param>
         /// <returns></returns>
-        public string Flight(string rating, RatingOrg org,bool Bonds)
+        public string Flight(string rating, RatingOrg org, bool Bonds)
         {
             if (rating.IsNullOrWhiteSpace())
                 return string.Empty;
@@ -121,7 +100,7 @@ namespace AutoTransfer.Transfer
                     return value;
                 }
                 //*修正FITCH ISSUER-->  惠譽台灣*
-                //CASE WHEN CURR_FITCH_ISSUER like '%twn%' THEN CURR_FITCH_ISSUER 
+                //CASE WHEN CURR_FITCH_ISSUER like '%twn%' THEN CURR_FITCH_ISSUER
                 //ELSE ' ' END AS CURR_FITCH_TW_ISSUER1
                 if (org.Equals(RatingOrg.FitchTwn))
                 {
@@ -131,6 +110,41 @@ namespace AutoTransfer.Transfer
                 }
             }
 
+            return value;
+        }
+
+        /// <summary>
+        /// 修正 MOODY'S ISSUE 錯誤資料
+        /// </summary>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        public string forRating(string rating)
+        {
+            if (rating.IsNullOrWhiteSpace())
+                return string.Empty;
+            string value = rating.Trim();
+            if (value.IndexOf("u") > -1)
+                return value.Split('u')[0].Trim();
+            //====================================== 待確認
+            if (value.IndexOf("NR") > -1)
+                return string.Empty;
+            if (value.IndexOf("twNR") > -1)
+                return string.Empty;
+            if (value.IndexOf("WD") > -1)
+                return string.Empty;
+            if (value.IndexOf("WR") > -1)
+                return string.Empty;
+            if (value.IndexOf("twWR") > -1)
+                return string.Empty;
+            //======================================
+            if (value.IndexOf("/*-") > -1)
+                return value.Split(new string[] { "/*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+            if (value.IndexOf("/*+") > -1)
+                return value.Split(new string[] { "/*+" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+            if (value.IndexOf("*-") > -1)
+                return value.Split(new string[] { "*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+            if (value.IndexOf("*+") > -1)
+                return value.Split(new string[] { "*+" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
             return value;
         }
     }

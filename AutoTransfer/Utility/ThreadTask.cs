@@ -19,7 +19,6 @@ namespace AutoTransfer.Utility
 
         public void Start(Action fun)
         {
-
             if (this.IsRunning)
             {
                 return;
@@ -30,7 +29,7 @@ namespace AutoTransfer.Utility
             t = new Task(() =>
             {
                 while (this.IsRunning)
-                {                  
+                {
                     SpinWait.SpinUntil(() => !this.IsRunning, this.Interval);
                     fun();
                     t.Wait();
@@ -49,7 +48,7 @@ namespace AutoTransfer.Utility
             //.ContinueWith(task =>
             //{
             //    fun();
-            //})           
+            //})
         }
 
         public void Stop()
