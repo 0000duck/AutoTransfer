@@ -26,6 +26,8 @@ namespace AutoTransfer.Transfer
         private string logPath = string.Empty;
         private DateTime reportDateDt = DateTime.MinValue;
         private string reportDateStr = string.Empty;
+        private string ver = string.Empty;
+        private int verInt = 0;
         private SetFile setFile = null;
         private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
@@ -38,24 +40,64 @@ namespace AutoTransfer.Transfer
         /// start Transfer
         /// </summary>
         /// <param name="dateTime"></param>
-        public override void startTransfer(string dateTime)
+        public override void startTransfer(string dateTime, string version)
         {
+            IFRS9Entities db = new IFRS9Entities();
             startTime = DateTime.Now;
-            logPath = log.txtLocation(type);
+            Int32.TryParse(version, out verInt);
             if (dateTime.Length != 8 ||
                !DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
                out reportDateDt))
             {
+                db.Dispose();
                 log.txtLog(
                     type,
                     false,
                     startTime,
                     logPath,
-                    MessageType.DateTime_Format_Fail.GetDescription());
+                    MessageType.DateTime_Format_Fail.GetDescription()
+                    );
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    version,
+                    startTime,
+                    DateTime.Now);
+            }
+            var A41 = db.Bond_Account_Info
+               .Any(x => x.Report_Date == reportDateDt && x.Version == verInt);
+            var check = log.checkTransferCheck(TableType.A53.ToString(), "A41", reportDateDt, version);
+            logPath = log.txtLocation(type);
+            if (!A41 ||
+               !check)
+            {
+                db.Dispose();
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    version,
+                    startTime,
+                    DateTime.Now);
+                List<string> errs = new List<string>();
+                if (!A41)
+                    errs.Add(MessageType.not_Find_Any.GetDescription());
+                if (!check)
+                    errs.Add(MessageType.transferError.GetDescription());
+                log.txtLog(
+                    type,
+                    false,
+                    startTime,
+                    logPath,
+                    string.Join(",", errs)
+                    );
             }
             else
             {
+                db.Dispose();
+                ver = version;
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
                 createSampleFile();
@@ -76,6 +118,13 @@ namespace AutoTransfer.Transfer
             }
             else
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -91,13 +140,20 @@ namespace AutoTransfer.Transfer
         protected override void putSampleSFTP()
         {
             string error = string.Empty;
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Put(string.Empty,
-                 setFile.putSampleFilePath(),
-                 setFile.putSampleFileName(),
-                 out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //    .Put(string.Empty,
+            //     setFile.putSampleFilePath(),
+            //     setFile.putSampleFileName(),
+            //     out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -107,6 +163,7 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
+                t.Interval = 3 * 1000;
                 Action f = () => getSampleSFTP();
                 t.Start(f); //委派 設定時間後要做的動作
             }
@@ -119,13 +176,20 @@ namespace AutoTransfer.Transfer
         {
             new FileRelated().createFile(setFile.getSampleFilePath());
             string error = string.Empty;
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Get(string.Empty,
-                setFile.getSampleFilePath(),
-                setFile.getSampleFileName(),
-                out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //    .Get(string.Empty,
+            //    setFile.getSampleFilePath(),
+            //    setFile.getSampleFileName(),
+            //    out error);
             if (!error.IsNullOrWhiteSpace())
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -158,7 +222,7 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        if (arr.Length >= 18)
+                        if (arr.Length >= 19)
                         {
                             if (!arr[3].IsNullOrWhiteSpace() &&
                                 !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
@@ -208,6 +272,13 @@ namespace AutoTransfer.Transfer
             }
             else
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -229,6 +300,13 @@ namespace AutoTransfer.Transfer
             //    setFile.putCommpanyFileName(), out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -239,7 +317,7 @@ namespace AutoTransfer.Transfer
             else //success (wait 20 min and get data)
             {
                 t.Stop();
-                t.Interval = 15 * 1000;
+                t.Interval = 5 * 1000;
                 Action f = () => getCommpanySFTP();
                 t.Start(f); //委派 設定時間後要做的動作
             }
@@ -259,6 +337,13 @@ namespace AutoTransfer.Transfer
             //     out error);
             if (!error.IsNullOrWhiteSpace())
             {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
@@ -322,7 +407,7 @@ namespace AutoTransfer.Transfer
                         //--TRC(中華信評)
                         //arr[17] (國內)RTG_TRC (TRC 評等)
                         //arr[18] (國內)TRC_EFF_DT (TRC 評等日期)
-                        if (arr.Length >= 18)
+                        if (arr.Length >= 19)
                         {
                             //S&P國外評等
                             validateSample(
@@ -552,43 +637,44 @@ namespace AutoTransfer.Transfer
 
             #region saveDb
 
-            if (db.Rating_Info.Any(x => x.Report_Date == reportDateDt)) //相同report Date
+            db.Rating_Info.AddRange(sampleData);
+            db.Rating_Info.AddRange(commpanyData);
+            try
             {
+                db.SaveChanges();
+                db.Dispose();
+                log.saveTransferCheck(
+                    type,
+                    true,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
+                log.txtLog(
+                    type,
+                    true,
+                    startTime,
+                    logPath,
+                    MessageType.Success.GetDescription());
+                sampleData.AddRange(commpanyData);
+                new CompleteEvent().saveDb(reportDateDt, ver, sampleData, sampleInfos);
+            }
+            catch (DbUpdateException ex)
+            {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    ver,
+                    startTime,
+                    DateTime.Now);
                 log.txtLog(
                     type,
                     false,
                     startTime,
                     logPath,
-                    MessageType.already_Save.GetDescription()
-                    );
-            }
-            else
-            {
-                db.Rating_Info.AddRange(sampleData);
-                db.Rating_Info.AddRange(commpanyData);
-                try
-                {
-                    db.SaveChanges();
-                    db.Dispose();
-                    log.txtLog(
-                        type,
-                        true,
-                        startTime,
-                        logPath,
-                        MessageType.Success.GetDescription());
-                    sampleData.AddRange(commpanyData);
-                    new CompleteEvent().saveDb(reportDateDt, sampleData, sampleInfos);
-                }
-                catch (DbUpdateException ex)
-                {
-                    log.txtLog(
-                        type,
-                        false,
-                        startTime,
-                        logPath,
-                        $"message: {ex.Message}" +
-                        $", inner message {ex.InnerException?.InnerException?.Message}");
-                }
+                    $"message: {ex.Message}" +
+                    $", inner message {ex.InnerException?.InnerException?.Message}");
             }
 
             #endregion saveDb

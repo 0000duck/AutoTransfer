@@ -26,7 +26,7 @@ namespace AutoTransfer
         public Nullable<int> Grade_Adjust { get; set; }
         public Nullable<int> Rating_Priority { get; set; }
         public Nullable<System.DateTime> Processing_Date { get; set; }
-        public string Version { get; set; }
+        public Nullable<int> Version { get; set; }
         public string Bond_Number { get; set; }
         public string Lots { get; set; }
         public string Portfolio { get; set; }

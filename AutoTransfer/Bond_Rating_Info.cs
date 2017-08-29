@@ -42,7 +42,7 @@ namespace AutoTransfer
         public string RTG_Bloomberg_Field { get; set; }
         public string SMF { get; set; }
         public string ISSUER { get; set; }
-        public string Version { get; set; }
+        public Nullable<int> Version { get; set; }
         public string Security_Ticker { get; set; }
     }
 }

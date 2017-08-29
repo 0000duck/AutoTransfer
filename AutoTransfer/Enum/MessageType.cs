@@ -59,6 +59,18 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("轉檔成功")]
             Success,
+
+            /// <summary>
+            /// 沒有找到資料
+            /// </summary>
+            [Description("沒有找到資料!")]
+            not_Find_Any,
+
+            /// <summary>
+            /// 轉檔驗證失敗
+            /// </summary>
+            [Description("轉檔驗證失敗!")]
+            transferError,
         }
     }
 }

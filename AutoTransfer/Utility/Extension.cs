@@ -1,8 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace AutoTransfer.Utility
 {
+    public static class EnumUtil
+    {
+        public static IEnumerable<T> GetValues<T>()
+        {
+            return System.Enum.GetValues(typeof(T)).Cast<T>();
+        }
+    }
+
     public static class Extension
     {
         public static string FormatEquity(this string str)

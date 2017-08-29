@@ -56,6 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bond_Account_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Bond_Rating_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -79,9 +82,6 @@
     </Compile>
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />
-    <Compile Include="Bond_Account_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
     <Compile Include="Commpany\A53Commpany.cs" />
     <Compile Include="Transfer\CompleteEvent.cs" />
     <Compile Include="CreateFile\CreateCommpanyFile.cs" />
@@ -90,6 +90,9 @@
     <Compile Include="Enum\MessageType.cs" />
     <Compile Include="Enum\RatingObject.cs" />
     <Compile Include="Enum\TableType.cs" />
+    <Compile Include="Transfer_CheckTable.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Utility\Extension.cs" />
     <Compile Include="CreateFile\SetFile.cs" />
     <Compile Include="Utility\FileRelated.cs" />

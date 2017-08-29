@@ -18,47 +18,46 @@ namespace AutoTransfer
         public string Bond_Number { get; set; }
         public string Lots { get; set; }
         public string Segment_Name { get; set; }
-        public string Curr_Sp_Issuer { get; set; }
-        public string Curr_Moodys_Issuer { get; set; }
-        public string Curr_Fitch_Issuer { get; set; }
-        public string Curr_Tw_Issuer { get; set; }
-        public string Curr_Sp_Issue { get; set; }
-        public string Curr_Moodys_Issue { get; set; }
-        public string Curr_Fitch_Issue { get; set; }
-        public string Curr_Tw_Issue { get; set; }
+        public string CURR_SP_Issuer { get; set; }
+        public string CURR_Moodys_Issuer { get; set; }
+        public string CURR_Fitch_Issuer { get; set; }
+        public string CURR_TW_Issuer { get; set; }
+        public string CURR_SP_Issue { get; set; }
+        public string CURR_Moodys_Issue { get; set; }
+        public string CURR_Fitch_Issue { get; set; }
+        public string CURR_TW_Issue { get; set; }
         public Nullable<double> Ori_Amount { get; set; }
         public Nullable<double> Current_Int_Rate { get; set; }
         public Nullable<System.DateTime> Origination_Date { get; set; }
         public Nullable<System.DateTime> Maturity_Date { get; set; }
         public string Principal_Payment_Method_Code { get; set; }
         public string Payment_Frequency { get; set; }
-        public string Balloon_Date { get; set; }
-        public string Issuer_Area { get; set; }
+        public string Baloon_Freq { get; set; }
+        public string ISSUER_AREA { get; set; }
         public string Industry_Sector { get; set; }
-        public string Product { get; set; }
-        public string Finance_Instruments { get; set; }
-        public string Ias39_Category { get; set; }
+        public string PRODUCT { get; set; }
+        public string FINANCE_INSTRUMENTS { get; set; }
+        public string IAS39_CATEGORY { get; set; }
         public Nullable<double> Principal { get; set; }
         public Nullable<double> Amort_Amt_Tw { get; set; }
         public Nullable<double> Interest_Receivable { get; set; }
         public Nullable<double> Interest_Receivable_tw { get; set; }
         public string Interest_Rate_Type { get; set; }
-        public string Impair_Yn { get; set; }
-        public Nullable<double> Eir { get; set; }
+        public string IMPAIR_YN { get; set; }
+        public Nullable<double> EIR { get; set; }
         public string Currency_Code { get; set; }
         public Nullable<System.DateTime> Report_Date { get; set; }
-        public string Issuer { get; set; }
+        public string ISSUER { get; set; }
         public string Country_Risk { get; set; }
         public Nullable<double> Ex_rate { get; set; }
         public string Lien_position { get; set; }
         public string Portfolio { get; set; }
-        public string Dept { get; set; }
-        public string Asset_Seg { get; set; }
+        public string ASSET_SEG { get; set; }
         public Nullable<double> Ori_Ex_rate { get; set; }
         public string Bond_Type { get; set; }
         public string Assessment_Sub_Kind { get; set; }
         public Nullable<System.DateTime> Processing_Date { get; set; }
-        public string Version { get; set; }
+        public Nullable<int> Version { get; set; }
         public string Bond_Aera { get; set; }
         public string Asset_Type { get; set; }
         public string IH_OS { get; set; }
@@ -67,5 +66,6 @@ namespace AutoTransfer
         public Nullable<double> Market_Value_Ori { get; set; }
         public Nullable<double> Market_Value_TW { get; set; }
         public Nullable<System.DateTime> Value_date { get; set; }
+        public string Portfolio_Name { get; set; }
     }
 }
