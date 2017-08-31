@@ -81,5 +81,22 @@ namespace AutoTransfer.Utility
                 return ratingDateDt;
             return null;
         }
+
+        #region Double? To Double
+        /// <summary>
+        /// Double? 轉 Double (null 回傳 0d)
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double doubleNToDouble(double? value)
+        {
+            if (value.HasValue)
+            {
+                return value.Value;
+            }
+
+            return 0d;
+        }
+        #endregion Double? To Double
     }
 }

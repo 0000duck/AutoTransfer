@@ -29,6 +29,12 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("Rating_Fitch_Twn_Info")]
             A60,
+
+            /// <summary>
+            /// 前瞻性模型資料_Econ_D_YYYYMMDD
+            /// </summary>
+            [Description("Econ_D_YYYYMMDD")]
+            C03Mortgage,
         }
     }
 }

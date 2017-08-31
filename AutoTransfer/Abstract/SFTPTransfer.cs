@@ -10,7 +10,7 @@ namespace AutoTransfer.Abstract
         /// start Transfer
         /// </summary>
         /// <param name="dateTime">排程日期(yyyyMMdd)</param>
-        public abstract void startTransfer(string dateTime, string version);
+        public abstract void startTransfer(string dateTime);
 
         /// <summary>
         /// create Commpany req file

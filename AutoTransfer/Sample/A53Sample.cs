@@ -20,11 +20,6 @@
         public string ISSUER { get; set; }
 
         /// <summary>
-        ///
-        /// </summary>
-        public string ISSUER_TICKER { get; set; }
-
-        /// <summary>
         /// 擔保人
         /// </summary>
         public string GUARANTOR_EQY_TICKER { get; set; }

@@ -14,11 +14,11 @@ namespace AutoTransfer.Utility
         /// 寫入 Txt Log
         /// </summary>
         /// <param name="tableName">table名</param>
-        /// <param name="falg">成功或失敗</param>
+        /// <param name="flag">成功或失敗</param>
         /// <param name="start">開始時間</param>
         /// <param name="folderPath">檔案路徑</param>
         /// <param name="detail">內容</param>
-        public void txtLog(string tableName, bool falg, DateTime start, string folderPath, string detail = null)
+        public void txtLog(string tableName, bool flag, DateTime start, string folderPath, string detail = null)
         {
             string txtData = string.Empty;
             try //試著抓取舊資料
@@ -29,7 +29,7 @@ namespace AutoTransfer.Utility
             string txt = string.Format("{0}_{1}_{2}{3}",
                          tableName,
                          start.ToString("yyyyMMddHHmmss"),
-                         falg ? "Y" : "N",
+                         flag ? "Y" : "N",
                          !detail.IsNullOrWhiteSpace() ?
                          string.Format(" => {0}", detail) :
                          string.Empty
@@ -80,20 +80,23 @@ namespace AutoTransfer.Utility
             string fileName,
             string checkName,
             DateTime reportDate,
-            string version)
+            int version)
         {
             IFRS9Entities db = new IFRS9Entities();
             if (fileName.IsNullOrWhiteSpace() || checkName.IsNullOrWhiteSpace())
                 return false;
             //須符合有一筆"Y"(上一部完成) 自己沒有"Y"(重複做) 才算符合
-            if (db.Transfer_CheckTable.Any(x => x.File_Name == checkName &&
-                                               x.ReportDate == reportDate &&
-                                               x.Version == version &&
+            if (db.Transfer_CheckTable.Any(x => x.ReportDate == reportDate &&
+                                                (( checkName == "A53" &&
+                                                 x.Version == 1) ||
+                                                (x.File_Name == checkName &&                                             
+                                               x.Version == version)) &&
                                                x.TransferType == "Y") &&
+                                               (fileName == "A53" ||
                 !db.Transfer_CheckTable.Any(x => x.File_Name == fileName &&
                                               x.ReportDate == reportDate &&
                                               x.Version == version &&
-                                              x.TransferType == "Y"))
+                                              x.TransferType == "Y")))
             {
                 db.Dispose();
                 return true;
@@ -105,7 +108,7 @@ namespace AutoTransfer.Utility
         /// 轉檔紀錄存到Sql(Transfer_CheckTable)
         /// </summary>
         /// <param name="fileName">檔案名稱 A41,A42...</param>
-        /// <param name="falg">成功失敗</param>
+        /// <param name="flag">成功失敗</param>
         /// <param name="reportDate">基準日</param>
         /// <param name="version">版本</param>
         /// <param name="start">轉檔開始時間</param>
@@ -113,14 +116,15 @@ namespace AutoTransfer.Utility
         /// <returns></returns>
         public bool saveTransferCheck(
             string fileName,
-            bool falg,
+            bool flag,
             DateTime reportDate,
-            string version,
+            int version,
             DateTime start,
             DateTime end)
         {
             IFRS9Entities db = new IFRS9Entities();
-            if (db.Transfer_CheckTable.Any(x =>
+            if (flag && db.Transfer_CheckTable.Any(x =>
+             fileName != TableType.A53.ToString() &&
              x.ReportDate == reportDate &&
              x.Version == version &&
              x.File_Name == fileName &&
@@ -129,12 +133,20 @@ namespace AutoTransfer.Utility
             if (EnumUtil.GetValues<TableType>()
                 .Select(x => x.ToString()).ToList().Contains(fileName))
             {
+                if (fileName.Equals("A53"))
+                {
+                    var A53 = db.Transfer_CheckTable
+                        .Where(x => x.File_Name == "A53" &&
+                                    x.ReportDate == reportDate).FirstOrDefault();
+                    if(A53 != null)
+                        db.Transfer_CheckTable.Remove(A53);
+                }                  
                 db.Transfer_CheckTable.Add(new Transfer_CheckTable()
                 {
                     File_Name = fileName,
                     ReportDate = reportDate,
                     Version = version,
-                    TransferType = falg ? "Y" : "N",
+                    TransferType = flag ? "Y" : "N",
                     Create_date = start.ToString("yyyyMMdd"),
                     Create_time = start.ToString("HH:mm:ss"),
                     End_date = end.ToString("yyyyMMdd"),

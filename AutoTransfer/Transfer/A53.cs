@@ -26,7 +26,6 @@ namespace AutoTransfer.Transfer
         private string logPath = string.Empty;
         private DateTime reportDateDt = DateTime.MinValue;
         private string reportDateStr = string.Empty;
-        private string ver = string.Empty;
         private int verInt = 0;
         private SetFile setFile = null;
         private DateTime startTime = DateTime.MinValue;
@@ -40,11 +39,11 @@ namespace AutoTransfer.Transfer
         /// start Transfer
         /// </summary>
         /// <param name="dateTime"></param>
-        public override void startTransfer(string dateTime, string version)
+        public override void startTransfer(string dateTime)
         {
             IFRS9Entities db = new IFRS9Entities();
             startTime = DateTime.Now;
-            Int32.TryParse(version, out verInt);
+
             if (dateTime.Length != 8 ||
                !DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
@@ -62,29 +61,33 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    version,
+                    1, //A53無版本 (default為1)
                     startTime,
                     DateTime.Now);
             }
+            
             var A41 = db.Bond_Account_Info
-               .Any(x => x.Report_Date == reportDateDt && x.Version == verInt);
-            var check = log.checkTransferCheck(TableType.A53.ToString(), "A41", reportDateDt, version);
+               .Any(x => x.Report_Date == reportDateDt);
+            verInt = db.Bond_Account_Info
+                .Where(x => x.Report_Date == reportDateDt && x.Version != null)
+                .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
+            var check = log.checkTransferCheck(TableType.A53.ToString(), "A41", reportDateDt, verInt);
             logPath = log.txtLocation(type);
             if (!A41 ||
-               !check)
+               !check || verInt == 0)
             {
                 db.Dispose();
                 log.saveTransferCheck(
                     type,
                     false,
                     reportDateDt,
-                    version,
+                    1, //A53只有一版 (default為1)
                     startTime,
                     DateTime.Now);
                 List<string> errs = new List<string>();
                 if (!A41)
                     errs.Add(MessageType.not_Find_Any.GetDescription());
-                if (!check)
+                if (!check || verInt == 0)
                     errs.Add(MessageType.transferError.GetDescription());
                 log.txtLog(
                     type,
@@ -96,8 +99,8 @@ namespace AutoTransfer.Transfer
             }
             else
             {
+
                 db.Dispose();
-                ver = version;
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
                 createSampleFile();
@@ -122,7 +125,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -151,7 +154,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -187,7 +190,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -222,7 +225,7 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        if (arr.Length >= 19)
+                        if (arr.Length >= 18)
                         {
                             if (!arr[3].IsNullOrWhiteSpace() &&
                                 !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
@@ -242,14 +245,14 @@ namespace AutoTransfer.Transfer
                                     x.Bond_Number.Add(arr[0].Trim());
                                 }
                             }
-                            if (!arr[7].Trim().IsNullOrWhiteSpace() &&
-                                !nullarr.Contains(arr[7].Trim()))  //GUARANTOR_EQY_TICKER (擔保人)
+                            if (!arr[6].Trim().IsNullOrWhiteSpace() &&
+                                !nullarr.Contains(arr[6].Trim()))  //GUARANTOR_EQY_TICKER (擔保人)
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(arr[7].Trim(), out x))
+                                if (!info.TryGetValue(arr[6].Trim(), out x))
                                 {
-                                    data.Add(arr[7].Trim());
-                                    info.Add(arr[7].Trim(), new commpayInfo()
+                                    data.Add(arr[6].Trim());
+                                    info.Add(arr[6].Trim(), new commpayInfo()
                                     {
                                         Bond_Number = new List<string>() { arr[0].Trim() },
                                         Rating_Object = RatingObject.GUARANTOR.GetDescription()
@@ -276,7 +279,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -304,7 +307,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -341,7 +344,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -389,62 +392,61 @@ namespace AutoTransfer.Transfer
                         //arr[3]  ISSUER_EQUITY_TICKER (發行人)
                         //arr[4]  ISSUE_DT (債券評等日期)
                         //arr[5]  ISSUER (債券名稱)
-                        //arr[6]  ISSUER_TICKER
-                        //arr[7]  GUARANTOR_EQY_TICKER (擔保人)
-                        //arr[8]  GUARANTOR_NAME (擔保人名稱)
+                        //arr[6]  GUARANTOR_EQY_TICKER (擔保人)
+                        //arr[7]  GUARANTOR_NAME (擔保人名稱)
                         //--標普(S&P)
-                        //arr[9]  (國外)RTG_SP (SP國外評等)
-                        //arr[10] (國外)SP_EFF_DT (SP國外評等日期)
+                        //arr[8]  (國外)RTG_SP (SP國外評等)
+                        //arr[9] (國外)SP_EFF_DT (SP國外評等日期)
                         //--穆迪(Moody's)
-                        //arr[11] (國外)RTG_MOODY (Moody's國外評等)
-                        //arr[12] (國外)MOODY_EFF_DT (Moody's國外評等日期)
+                        //arr[10] (國外)RTG_MOODY (Moody's國外評等)
+                        //arr[11] (國外)MOODY_EFF_DT (Moody's國外評等日期)
                         //--惠譽台灣(Fitch(twn))
-                        //arr[13] (國內)RTG_FITCH_NATIONAL (惠譽國內評等)
-                        //arr[14] (國內)RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
+                        //arr[12] (國內)RTG_FITCH_NATIONAL (惠譽國內評等)
+                        //arr[13] (國內)RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
                         //--惠譽(Fitch)
-                        //arr[15] (國外)RTG_FITCH (惠譽評等)
-                        //arr[16] (國外)FITCH_EFF_DT (惠譽評等日期)
+                        //arr[14] (國外)RTG_FITCH (惠譽評等)
+                        //arr[15] (國外)FITCH_EFF_DT (惠譽評等日期)
                         //--TRC(中華信評)
-                        //arr[17] (國內)RTG_TRC (TRC 評等)
-                        //arr[18] (國內)TRC_EFF_DT (TRC 評等日期)
-                        if (arr.Length >= 19)
+                        //arr[16] (國內)RTG_TRC (TRC 評等)
+                        //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
+                        if (arr.Length >= 18)
                         {
                             //S&P國外評等
                             validateSample(
+                                arr[8],
                                 arr[9],
-                                arr[10],
                                 arr[0],
                                 A53SampleBloombergField.RTG_SP.ToString(),
                                 RatingOrg.SP,
                                 sampleData);
                             //Moody's國外評等
                             validateSample(
+                                arr[10],
                                 arr[11],
-                                arr[12],
                                 arr[0],
                                 A53SampleBloombergField.RTG_MOODY.ToString(),
                                 RatingOrg.Moody,
                                 sampleData);
                             //惠譽台灣
                             validateSample(
+                                arr[12],
                                 arr[13],
-                                arr[14],
                                 arr[0],
                                 A53SampleBloombergField.RTG_FITCH_NATIONAL.ToString(),
                                 RatingOrg.FitchTwn,
                                 sampleData);
                             //惠譽
                             validateSample(
+                                arr[14],
                                 arr[15],
-                                arr[16],
                                 arr[0],
                                 A53SampleBloombergField.RTG_FITCH.ToString(),
                                 RatingOrg.Fitch,
                                 sampleData);
                             //TRC(中華信評)
                             validateSample(
+                                arr[16],
                                 arr[17],
-                                arr[18],
                                 arr[0],
                                 A53SampleBloombergField.RTG_TRC.ToString(),
                                 RatingOrg.CW,
@@ -452,9 +454,9 @@ namespace AutoTransfer.Transfer
                             sampleInfos.Add(new sampleInfo()
                             {
                                 Bond_Number = arr[0],
-                                ISSUER_TICKER = arr[6],
-                                GUARANTOR_EQY_TICKER = arr[7],
-                                GUARANTOR_NAME = arr[8]
+                                ISSUER_TICKER = arr[3],
+                                GUARANTOR_EQY_TICKER = arr[6],
+                                GUARANTOR_NAME = arr[7]
                             });
                         }
                     }
@@ -636,9 +638,21 @@ namespace AutoTransfer.Transfer
             #endregion commpany Data
 
             #region saveDb
-
+            db.Rating_Info.RemoveRange(
+                db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
             db.Rating_Info.AddRange(sampleData);
             db.Rating_Info.AddRange(commpanyData);
+            db.Rating_Info_SampleInfo.RemoveRange(
+                db.Rating_Info_SampleInfo.Where(x=>x.Report_Date == reportDateDt));
+            db.Rating_Info_SampleInfo.AddRange(
+                sampleInfos.Select(x => new Rating_Info_SampleInfo()
+                {
+                    Bond_Number = x.Bond_Number,
+                    GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
+                    GUARANTOR_NAME = x.GUARANTOR_NAME,
+                    ISSUER_TICKER = x.ISSUER_TICKER,
+                    Report_Date = reportDateDt
+                }));
             try
             {
                 db.SaveChanges();
@@ -647,7 +661,7 @@ namespace AutoTransfer.Transfer
                     type,
                     true,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(
@@ -657,7 +671,7 @@ namespace AutoTransfer.Transfer
                     logPath,
                     MessageType.Success.GetDescription());
                 sampleData.AddRange(commpanyData);
-                new CompleteEvent().saveDb(reportDateDt, ver, sampleData, sampleInfos);
+                new CompleteEvent().saveDb(reportDateDt, verInt, sampleData, sampleInfos);
             }
             catch (DbUpdateException ex)
             {
@@ -665,7 +679,7 @@ namespace AutoTransfer.Transfer
                     type,
                     false,
                     reportDateDt,
-                    ver,
+                    1,
                     startTime,
                     DateTime.Now);
                 log.txtLog(

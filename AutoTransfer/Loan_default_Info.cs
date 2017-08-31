@@ -12,16 +12,13 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Transfer_CheckTable
+    public partial class Loan_default_Info
     {
-        public int Id { get; set; }
-        public string File_Name { get; set; }
-        public System.DateTime ReportDate { get; set; }
-        public int Version { get; set; }
-        public string TransferType { get; set; }
-        public string Create_date { get; set; }
-        public string Create_time { get; set; }
-        public string End_date { get; set; }
-        public string End_time { get; set; }
+        public string Year_Month { get; set; }
+        public double PD_Quartly { get; set; }
+        public string Year_Quartly { get; set; }
+        public Nullable<System.DateTime> Processing_Date { get; set; }
+    
+        public virtual Econ_Domestic Econ_Domestic { get; set; }
     }
 }

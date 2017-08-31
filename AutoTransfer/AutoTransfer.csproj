@@ -68,7 +68,14 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Econ_Domestic.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Econ_D_YYYYMMDD.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Enum\A53CommpanyBloombergField.cs" />
+    <Compile Include="Enum\GroupProductCode.cs" />
     <Compile Include="Enum\RatingOrg.cs" />
     <Compile Include="Enum\A53SampleBloombergField.cs" />
     <Compile Include="Grade_Mapping_Info.cs">
@@ -77,12 +84,23 @@
     <Compile Include="Grade_Moody_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Group_Product_Code_Mapping.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Loan_default_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Rating_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Rating_Info_SampleInfo.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="StartTransferC03Mortgage.cs" />
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />
     <Compile Include="Commpany\A53Commpany.cs" />
+    <Compile Include="Transfer\C03Mortgage.cs" />
     <Compile Include="Transfer\CompleteEvent.cs" />
     <Compile Include="CreateFile\CreateCommpanyFile.cs" />
     <Compile Include="CreateFile\CreatePutFile.cs" />

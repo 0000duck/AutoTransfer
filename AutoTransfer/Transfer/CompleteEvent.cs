@@ -19,9 +19,10 @@ namespace AutoTransfer.Transfer
         /// A53 save 後續動作(save A57,A58)
         /// </summary>
         /// <param name="reportDate"></param>
+        /// <param name="version"></param>
         /// <param name="A53Data"></param>
         /// <param name="sampleInfos"></param>
-        public void saveDb(DateTime reportDate, string version, List<Rating_Info> A53Data, List<A53.sampleInfo> sampleInfos)
+        public void saveDb(DateTime reportDate, int version, List<Rating_Info> A53Data, List<A53.sampleInfo> sampleInfos)
         {
             A57logPath = log.txtLocation(TableType.A57.ToString());
             A58logPath = log.txtLocation(TableType.A58.ToString());
@@ -30,19 +31,22 @@ namespace AutoTransfer.Transfer
             List<Bond_Rating_Info> A57Data = new List<Bond_Rating_Info>();
             List<Bond_Rating_Summary> A58Data = new List<Bond_Rating_Summary>();
             DateTime startTime = DateTime.Now;
-            int ver = 0;
-            Int32.TryParse(version, out ver);
+
             string parmID = getParmID(); //選取離今日最近的D60
             if (log.checkTransferCheck(TableType.A57.ToString(), TableType.A53.ToString(), reportDate, version) &&
                 log.checkTransferCheck(TableType.A58.ToString(), TableType.A53.ToString(), reportDate, version))
             {
                 List<Bond_Account_Info> A41Data = db.Bond_Account_Info
                     .Where(x => x.Report_Date == reportDate &&
-                                 x.Version == ver).ToList();
+                                 x.Version != null &&
+                                 x.Version == version).ToList();
                 if (A41Data.Any())
                 {
                     try
                     {
+                        var A52Data = db.Grade_Mapping_Info.ToList();
+                        var A51Data = db.Grade_Moody_Info.ToList();
+                        var D60Data = db.Bond_Rating_Parm.ToList();
                         A41Data.ForEach(x =>
                         {
                             A53Data.Where(y => y.Bond_Number.Equals(x.Bond_Number))
@@ -53,9 +57,8 @@ namespace AutoTransfer.Transfer
 
                                 #region Search A52(Grade_Mapping_Info)
 
-                                var A52 = db.Grade_Mapping_Info
-                                                .Where(i => i.Rating_Org.Equals(z.Rating_Org) &&
-                                                            i.Rating.Equals(i.Rating))
+                                var A52 = A52Data.Where(i => i.Rating_Org.Equals(z.Rating_Org) &&
+                                                             i.Rating.Equals(z.Rating))
                                                              .FirstOrDefault();
                                 int? PD_Grade = null;
                                 if (A52 != null)
@@ -66,7 +69,7 @@ namespace AutoTransfer.Transfer
                                 #region Search A51(Grade_Moody_Info)
 
                                 int? Grade_Adjust = null;
-                                var Grade_Moody_Info = db.Grade_Moody_Info
+                                var Grade_Moody_Info = A51Data
                                                        .Where(j => PD_Grade == j.PD_Grade)
                                                        .FirstOrDefault();
                                 if (Grade_Moody_Info != null)
@@ -117,9 +120,33 @@ namespace AutoTransfer.Transfer
                                                                m.Lots == x.Lots &&
                                                                m.Portfolio_Name == x.Portfolio_Name &&
                                                                x.Origination_Date != null &&
-                                                               m.Origination_Date == x.Origination_Date
+                                                               m.Origination_Date == x.Origination_Date &&
+                                                               m.Rating_Type == "2"
                                                    )
                                                    .FirstOrDefault();
+
+                                #region Search A52(Grade_Mapping_Info)
+                                if (oldA57 != null)
+                                    A52 = A52Data.Where(i => i.Rating_Org.Equals(z.Rating_Org) &&
+                                                             i.Rating.Equals(oldA57.Rating))
+                                                              .FirstOrDefault();
+                                else
+                                    A52 = null;
+                                PD_Grade = null;
+                                if (A52 != null)
+                                    PD_Grade = A52.PD_Grade;
+
+                                #endregion Search A52(Grade_Mapping_Info)
+
+                                #region Search A51(Grade_Moody_Info)
+
+                                Grade_Adjust = null;
+                                Grade_Moody_Info =  A51Data.Where(j => PD_Grade == j.PD_Grade)
+                                                           .FirstOrDefault();
+                                if (Grade_Moody_Info != null)
+                                    Grade_Adjust = Grade_Moody_Info.Grade_Adjust;
+
+                                #endregion Search A51(Grade_Moody_Info)
 
                                 A57Data.Add(
                                     new Bond_Rating_Info()
@@ -158,110 +185,87 @@ namespace AutoTransfer.Transfer
                             });
                         });
 
-                        A41Data.ForEach(x =>
+                        foreach (var item in A57Data
+                            .GroupBy(x => new
+                            {
+                                x.Reference_Nbr,
+                                x.Report_Date,
+                                x.Parm_ID,
+                                x.Bond_Type,
+                                x.Rating_Type,
+                                x.Rating_Object,
+                                x.Rating_Org_Area,
+                                x.Version,
+                                x.Bond_Number,
+                                x.Lots,
+                                x.Portfolio,
+                                x.Origination_Date,
+                                x.Portfolio_Name,
+                                x.SMF,
+                                x.ISSUER
+                            }))
                         {
-                            A53Data.Where(y => y.Bond_Number.Equals(x.Bond_Number))
-                                   .ToList()
-                                   .ForEach(z =>
-                                   {
-                                       #region A58 Bond_Rating_Summary
+                            #region Rating_Selection && Rating_Priority
 
-                                       string rating_Org_Area = formatOrgArea(z.Rating_Org);
+                            string ratingSelection = string.Empty; //1:孰高 2:孰低
+                            int ratingPriority = 0; //優先順序
+                                                    //D60(信評優先選擇參數檔)
+                            Bond_Rating_Parm parm = D60Data
+                            .Where(i => i.Parm_ID == parmID &&
+                                        i.Rating_Object == item.Key.Rating_Object &&
+                                        i.Rating_Org_Area == item.Key.Rating_Org_Area).FirstOrDefault();
+                            if (parm != null)
+                            {
+                                ratingSelection = parm.Rating_Selection;
+                                ratingPriority = parm.Rating_Priority ?? 0;
+                            }
 
-                                       #region Search D60-信評優先選擇參數檔
+                            #endregion Rating_Selection && Rating_Priority
 
-                                       #region Rating_Selection && Rating_Priority
+                            int? gradeAdjust = null;
 
-                                       string ratingSelection = string.Empty; //1:孰高 2:孰低
-                                       int ratingPriority = 0; //優先順序
-                                       Bond_Rating_Parm parm = db.Bond_Rating_Parm.Where(i =>
-                                                                     i.Parm_ID == parmID &&
-                                                                     i.Rating_Object == z.Rating_Object &&
-                                                                     i.Rating_Org_Area == rating_Org_Area).FirstOrDefault();
-                                       if (parm != null)
-                                       {
-                                           ratingSelection = parm.Rating_Selection;
-                                           ratingPriority = parm.Rating_Priority ?? 0;
-                                       }
+                            //如果 Rating_Selection = '1' 代表取孰高評等
+                            //SELECT MIN(Grade_Adjust) GROUP BY  Rating_Object
+                            //Where Grade_Adjust 分別為 發行人,債項,保證人;
+                            if (ratingSelection.Equals("1"))
+                            {
+                                gradeAdjust = item.Min(i => i.Grade_Adjust == null ? 0 : i.Grade_Adjust);
+                            }
+                            //如果 Rating_Selection = '2' 代表取孰低評等
+                            //SELECT Max(Grade_Adjust) GROUP BY  Rating_Object
+                            //Where Grade_Adjust 分別為 發行人,債項,保證人;
+                            if (ratingSelection.Equals("2"))
+                            {
+                                gradeAdjust = item.Max(i => i.Grade_Adjust == null ? 0 : i.Grade_Adjust);
+                            }
+                            if (gradeAdjust == 0)
+                                gradeAdjust = null;
 
-                                       #endregion Rating_Selection && Rating_Priority
+                            A58Data.Add(
+                            new Bond_Rating_Summary()
+                            {
+                                Reference_Nbr = item.Key.Reference_Nbr,
+                                Report_Date = reportDate,
+                                Parm_ID = parmID,
+                                Bond_Type = item.Key.Bond_Type,
+                                Rating_Type = item.Key.Rating_Type,
+                                Rating_Object = item.Key.Rating_Object,
+                                Rating_Org_Area = item.Key.Rating_Org_Area,
+                                Rating_Selection = ratingSelection,
+                                Grade_Adjust = gradeAdjust,
+                                Rating_Priority = ratingPriority,
+                                //Processing_Date = 轉檔時寫入
+                                Version = item.Key.Version,
+                                Bond_Number = item.Key.Bond_Number,
+                                Lots = item.Key.Lots,
+                                Portfolio = item.Key.Portfolio,
+                                Origination_Date = item.Key.Origination_Date,
+                                Portfolio_Name = item.Key.Portfolio_Name,
+                                SMF = item.Key.SMF,
+                                ISSUER = item.Key.ISSUER
+                            });
+                        }
 
-                                       #endregion Search D60-信評優先選擇參數檔
-
-                                       #region Search A57
-
-                                       List<Bond_Rating_Info> A57Datas = new List<Bond_Rating_Info>();
-                                       A57Datas = A57Data.Where(y => y.Bond_Number == x.Bond_Number &&
-                                                                     y.Rating_Object == z.Rating_Object).ToList();
-                                       int? gradeAdjust = null;
-                                       //如果 Rating_Selection = '1' 代表取孰高評等
-                                       //SELECT MIN(Grade_Adjust) GROUP BY  Rating_Object
-                                       //Where Grade_Adjust 分別為 發行人,債項,保證人;
-                                       if (ratingSelection.Equals("1"))
-                                       {
-                                           gradeAdjust = A57Datas.Min(i => i.Grade_Adjust);
-                                       }
-                                       //如果 Rating_Selection = '2' 代表取孰低評等
-                                       //SELECT Max(Grade_Adjust) GROUP BY  Rating_Object
-                                       //Where Grade_Adjust 分別為 發行人,債項,保證人;
-                                       if (ratingSelection.Equals("2"))
-                                       {
-                                           gradeAdjust = A57Datas.Max(i => i.Grade_Adjust);
-                                       }
-
-                                       #endregion Search A57
-
-                                       A58Data.Add(
-                                               new Bond_Rating_Summary()
-                                               {
-                                                   Reference_Nbr = x.Reference_Nbr,
-                                                   Report_Date = reportDate,
-                                                   Parm_ID = parmID,
-                                                   Bond_Type = x.Bond_Type,
-                                                   Rating_Type = "1",
-                                                   Rating_Object = z.Rating_Object,
-                                                   Rating_Org_Area = rating_Org_Area,
-                                                   Rating_Selection = ratingSelection,
-                                                   Grade_Adjust = gradeAdjust,
-                                                   Rating_Priority = ratingPriority,
-                                                   //Processing_Date = 轉檔時寫入
-                                                   Version = x.Version,
-                                                   Bond_Number = x.Bond_Number,
-                                                   Lots = x.Lots,
-                                                   Portfolio = x.Portfolio,
-                                                   Origination_Date = x.Origination_Date,
-                                                   Portfolio_Name = x.Portfolio_Name,
-                                                   SMF = x.PRODUCT,
-                                                   ISSUER = x.ISSUER
-                                               });
-
-                                       A58Data.Add(
-                                             new Bond_Rating_Summary()
-                                             {
-                                                 Reference_Nbr = x.Reference_Nbr,
-                                                 Report_Date = reportDate,
-                                                 Parm_ID = parmID,
-                                                 Bond_Type = x.Bond_Type,
-                                                 Rating_Type = "2",
-                                                 Rating_Object = z.Rating_Object,
-                                                 Rating_Org_Area = rating_Org_Area,
-                                                 Rating_Selection = ratingSelection,
-                                                 Grade_Adjust = gradeAdjust,
-                                                 Rating_Priority = ratingPriority,
-                                                 //Processing_Date = 轉檔時寫入
-                                                 Version = x.Version,
-                                                 Bond_Number = x.Bond_Number,
-                                                 Lots = x.Lots,
-                                                 Portfolio = x.Portfolio,
-                                                 Origination_Date = x.Origination_Date,
-                                                 Portfolio_Name = x.Portfolio_Name,
-                                                 SMF = x.PRODUCT,
-                                                 ISSUER = x.ISSUER
-                                             });
-
-                                       #endregion A58 Bond_Rating_Summary
-                                   });
-                        });
                         db.Bond_Rating_Info.AddRange(A57Data);
                         db.Bond_Rating_Summary.AddRange(A58Data);
                         db.SaveChanges();
@@ -387,6 +391,109 @@ namespace AutoTransfer.Transfer
         }
 
         /// <summary>
+        /// C03 Mortgage save
+        /// </summary>
+        /// <param name="yearQuartly"></param>
+        public void saveC03Mortgage(string yearQuartly)
+        {
+            string logPath = log.txtLocation(TableType.C03Mortgage.ToString());
+            DateTime startTime = DateTime.Now;
+
+            try
+            {
+                List<Loan_default_Info> A06Data = db.Loan_default_Info
+                                                  .Where(x => x.Year_Quartly == yearQuartly).ToList();
+
+                List<Econ_Domestic> A07Data = db.Econ_Domestic
+                                                  .Where(x => x.Year_Quartly == yearQuartly).ToList();
+                if (!A06Data.Any())
+                {
+                    log.txtLog(
+                       TableType.C03Mortgage.ToString(),
+                       false,
+                       startTime,
+                       logPath,
+                       "Loan_default_Info 無 " + yearQuartly + " 的資料");
+                }
+                else if (!A07Data.Any())
+                {
+                    log.txtLog(
+                       TableType.C03Mortgage.ToString(),
+                       false,
+                       startTime,
+                       logPath,
+                       "Econ_Domestic 無 " + yearQuartly + " 的資料");
+                }
+                else
+                {
+                    string productCode = GroupProductCode.M.GetDescription();
+                    productCode = db.Group_Product_Code_Mapping.Where(x => x.Group_Product_Code.StartsWith(productCode)).FirstOrDefault().Product_Code;
+
+                    var query = db.Econ_D_YYYYMMDD
+                                .Where(x => x.Year_Quartly == yearQuartly);
+                    db.Econ_D_YYYYMMDD.RemoveRange(query);
+
+                    db.Econ_D_YYYYMMDD.AddRange(
+                        A07Data.Select(x => new Econ_D_YYYYMMDD()
+                        {
+                            Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
+                            Product_Code = productCode,
+                            Data_ID = "",
+                            Year_Quartly = x.Year_Quartly,
+                            PD_Quartly = x.Loan_default_Info.PD_Quartly,
+                            var1 = Extension.doubleNToDouble(x.TWSE_Index),
+                            var2 = Extension.doubleNToDouble(x.TWRGSARP_Index),
+                            var3 = Extension.doubleNToDouble(x.TWGDPCON_Index),
+                            var4 = Extension.doubleNToDouble(x.TWLFADJ_Index),
+                            var5 = Extension.doubleNToDouble(x.TWCPI_Index),
+                            var6 = Extension.doubleNToDouble(x.TWMSA1A_Index),
+                            var7 = Extension.doubleNToDouble(x.TWMSA1B_Index),
+                            var8 = Extension.doubleNToDouble(x.TWMSAM2_Index),
+                            var9 = Extension.doubleNToDouble(x.GVTW10YR_Index),
+                            var10 = Extension.doubleNToDouble(x.TWTRBAL_Index),
+                            var11 = Extension.doubleNToDouble(x.TWTREXP_Index),
+                            var12 = Extension.doubleNToDouble(x.TWTRIMP_Index),
+                            var13 = Extension.doubleNToDouble(x.TAREDSCD_Index),
+                            var14 = Extension.doubleNToDouble(x.TWCILI_Index),
+                            var15 = Extension.doubleNToDouble(x.TWBOPCUR_Index),
+                            var16 = Extension.doubleNToDouble(x.EHCATW_Index),
+                            var17 = Extension.doubleNToDouble(x.TWINDPI_Index),
+                            var18 = Extension.doubleNToDouble(x.TWWPI_Index),
+                            var19 = Extension.doubleNToDouble(x.TARSYOY_Index),
+                            var20 = Extension.doubleNToDouble(x.TWEOTTL_Index),
+                            var21 = Extension.doubleNToDouble(x.SLDETIGT_Index),
+                            var22 = Extension.doubleNToDouble(x.TWIRFE_Index),
+                            var23 = Extension.doubleNToDouble(x.SINYI_HOUSE_PRICE_index),
+                            var24 = Extension.doubleNToDouble(x.CATHAY_ESTATE_index),
+                            var25 = Extension.doubleNToDouble(x.Real_GDP2011),
+                            var26 = Extension.doubleNToDouble(x.MCCCTW_Index),
+                            var27 = Extension.doubleNToDouble(x.TRDR1T_Index)
+                        })
+                    );
+
+                    db.SaveChanges();
+
+                    log.txtLog(
+                       TableType.C03Mortgage.ToString(),
+                       true,
+                       startTime,
+                       logPath,
+                       MessageType.Success.GetDescription());
+                }
+            }
+            catch (Exception ex)
+            {
+                log.txtLog(
+                   TableType.C03Mortgage.ToString(),
+                   false,
+                   startTime,
+                   logPath,
+                   ex.Message);
+            }
+        }
+
+        #region private function
+        /// <summary>
         /// 判斷國內外
         /// </summary>
         /// <param name="ratingOrg"></param>
@@ -479,5 +586,8 @@ namespace AutoTransfer.Transfer
                 return null;
             return value.Trim();
         }
+        #endregion
+
+
     }
 }

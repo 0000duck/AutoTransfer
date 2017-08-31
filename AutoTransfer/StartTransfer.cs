@@ -1,15 +1,15 @@
-﻿using AutoTransfer.Utility;
+﻿using AutoTransfer.Transfer;
+using AutoTransfer.Utility;
 using System;
 
 namespace AutoTransfer
 {
     public class StartTransfer
     {
-        public void start(string dateTime = null)
+        public void start()
         {
-            if (dateTime.IsNullOrWhiteSpace())
-                dateTime = DateTime.Now.ToString("yyyyMMdd");
-            new FileRelated().createFile(@"D:\fubon\testSuccess");
+            DateTime LastDay = DateTime.Now.AddMonths(1).AddDays(-DateTime.Now.AddMonths(1).Day);
+            new A53().startTransfer(LastDay.ToString("yyyyMMdd"));
         }
     }
 }

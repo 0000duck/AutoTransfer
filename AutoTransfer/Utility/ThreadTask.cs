@@ -32,11 +32,20 @@ namespace AutoTransfer.Utility
                 {
                     SpinWait.SpinUntil(() => !this.IsRunning, this.Interval);
                     fun();
-                    t.Wait();
+                    try
+                    {
+                        t.Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw;
+                    }
                     t.Dispose();
                 }
             });
             t.Start();
+
+
             //Task.Factory.StartNew(() =>
             //{
             //    while (this.IsRunning)

@@ -12,16 +12,12 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Transfer_CheckTable
+    public partial class Rating_Info_SampleInfo
     {
-        public int Id { get; set; }
-        public string File_Name { get; set; }
-        public System.DateTime ReportDate { get; set; }
-        public int Version { get; set; }
-        public string TransferType { get; set; }
-        public string Create_date { get; set; }
-        public string Create_time { get; set; }
-        public string End_date { get; set; }
-        public string End_time { get; set; }
+        public string Bond_Number { get; set; }
+        public System.DateTime Report_Date { get; set; }
+        public string ISSUER_TICKER { get; set; }
+        public string GUARANTOR_EQY_TICKER { get; set; }
+        public string GUARANTOR_NAME { get; set; }
     }
 }
