@@ -390,6 +390,7 @@ namespace AutoTransfer.Transfer
             }
         }
 
+        #region
         /// <summary>
         /// C03 Mortgage save
         /// </summary>
@@ -405,7 +406,7 @@ namespace AutoTransfer.Transfer
                                                   .Where(x => x.Year_Quartly == yearQuartly).ToList();
 
                 List<Econ_Domestic> A07Data = db.Econ_Domestic
-                                                  .Where(x => x.Year_Quartly == yearQuartly).ToList();
+                                              .Where(x => x.Year_Quartly == yearQuartly).ToList();
                 if (!A06Data.Any())
                 {
                     log.txtLog(
@@ -427,58 +428,71 @@ namespace AutoTransfer.Transfer
                 else
                 {
                     string productCode = GroupProductCode.M.GetDescription();
-                    productCode = db.Group_Product_Code_Mapping.Where(x => x.Group_Product_Code.StartsWith(productCode)).FirstOrDefault().Product_Code;
+                    Group_Product_Code_Mapping gpcm = db.Group_Product_Code_Mapping.Where(x => x.Group_Product_Code.StartsWith(productCode)).FirstOrDefault();
+                    if (gpcm == null)
+                    {
+                        log.txtLog(
+                           TableType.C03Mortgage.ToString(),
+                           false,
+                           startTime,
+                           logPath,
+                           "Group_Product_Code_Mapping 無房貸的 Product_Code");
+                    }
+                    else
+                    {
+                        productCode = gpcm.Product_Code;
 
-                    var query = db.Econ_D_YYYYMMDD
-                                .Where(x => x.Year_Quartly == yearQuartly);
-                    db.Econ_D_YYYYMMDD.RemoveRange(query);
+                        var query = db.Econ_D_YYYYMMDD
+                                    .Where(x => x.Year_Quartly == yearQuartly);
+                        db.Econ_D_YYYYMMDD.RemoveRange(query);
 
-                    db.Econ_D_YYYYMMDD.AddRange(
-                        A07Data.Select(x => new Econ_D_YYYYMMDD()
-                        {
-                            Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
-                            Product_Code = productCode,
-                            Data_ID = "",
-                            Year_Quartly = x.Year_Quartly,
-                            PD_Quartly = x.Loan_default_Info.PD_Quartly,
-                            var1 = Extension.doubleNToDouble(x.TWSE_Index),
-                            var2 = Extension.doubleNToDouble(x.TWRGSARP_Index),
-                            var3 = Extension.doubleNToDouble(x.TWGDPCON_Index),
-                            var4 = Extension.doubleNToDouble(x.TWLFADJ_Index),
-                            var5 = Extension.doubleNToDouble(x.TWCPI_Index),
-                            var6 = Extension.doubleNToDouble(x.TWMSA1A_Index),
-                            var7 = Extension.doubleNToDouble(x.TWMSA1B_Index),
-                            var8 = Extension.doubleNToDouble(x.TWMSAM2_Index),
-                            var9 = Extension.doubleNToDouble(x.GVTW10YR_Index),
-                            var10 = Extension.doubleNToDouble(x.TWTRBAL_Index),
-                            var11 = Extension.doubleNToDouble(x.TWTREXP_Index),
-                            var12 = Extension.doubleNToDouble(x.TWTRIMP_Index),
-                            var13 = Extension.doubleNToDouble(x.TAREDSCD_Index),
-                            var14 = Extension.doubleNToDouble(x.TWCILI_Index),
-                            var15 = Extension.doubleNToDouble(x.TWBOPCUR_Index),
-                            var16 = Extension.doubleNToDouble(x.EHCATW_Index),
-                            var17 = Extension.doubleNToDouble(x.TWINDPI_Index),
-                            var18 = Extension.doubleNToDouble(x.TWWPI_Index),
-                            var19 = Extension.doubleNToDouble(x.TARSYOY_Index),
-                            var20 = Extension.doubleNToDouble(x.TWEOTTL_Index),
-                            var21 = Extension.doubleNToDouble(x.SLDETIGT_Index),
-                            var22 = Extension.doubleNToDouble(x.TWIRFE_Index),
-                            var23 = Extension.doubleNToDouble(x.SINYI_HOUSE_PRICE_index),
-                            var24 = Extension.doubleNToDouble(x.CATHAY_ESTATE_index),
-                            var25 = Extension.doubleNToDouble(x.Real_GDP2011),
-                            var26 = Extension.doubleNToDouble(x.MCCCTW_Index),
-                            var27 = Extension.doubleNToDouble(x.TRDR1T_Index)
-                        })
-                    );
+                        db.Econ_D_YYYYMMDD.AddRange(
+                            A07Data.Select(x => new Econ_D_YYYYMMDD()
+                            {
+                                Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
+                                Product_Code = productCode,
+                                Data_ID = "",
+                                Year_Quartly = x.Year_Quartly,
+                                PD_Quartly = A06Data[0].PD_Quartly,
+                                var1 = Extension.doubleNToDouble(x.TWSE_Index),
+                                var2 = Extension.doubleNToDouble(x.TWRGSARP_Index),
+                                var3 = Extension.doubleNToDouble(x.TWGDPCON_Index),
+                                var4 = Extension.doubleNToDouble(x.TWLFADJ_Index),
+                                var5 = Extension.doubleNToDouble(x.TWCPI_Index),
+                                var6 = Extension.doubleNToDouble(x.TWMSA1A_Index),
+                                var7 = Extension.doubleNToDouble(x.TWMSA1B_Index),
+                                var8 = Extension.doubleNToDouble(x.TWMSAM2_Index),
+                                var9 = Extension.doubleNToDouble(x.GVTW10YR_Index),
+                                var10 = Extension.doubleNToDouble(x.TWTRBAL_Index),
+                                var11 = Extension.doubleNToDouble(x.TWTREXP_Index),
+                                var12 = Extension.doubleNToDouble(x.TWTRIMP_Index),
+                                var13 = Extension.doubleNToDouble(x.TAREDSCD_Index),
+                                var14 = Extension.doubleNToDouble(x.TWCILI_Index),
+                                var15 = Extension.doubleNToDouble(x.TWBOPCUR_Index),
+                                var16 = Extension.doubleNToDouble(x.EHCATW_Index),
+                                var17 = Extension.doubleNToDouble(x.TWINDPI_Index),
+                                var18 = Extension.doubleNToDouble(x.TWWPI_Index),
+                                var19 = Extension.doubleNToDouble(x.TARSYOY_Index),
+                                var20 = Extension.doubleNToDouble(x.TWEOTTL_Index),
+                                var21 = Extension.doubleNToDouble(x.SLDETIGT_Index),
+                                var22 = Extension.doubleNToDouble(x.TWIRFE_Index),
+                                var23 = Extension.doubleNToDouble(x.SINYI_HOUSE_PRICE_index),
+                                var24 = Extension.doubleNToDouble(x.CATHAY_ESTATE_index),
+                                var25 = Extension.doubleNToDouble(x.Real_GDP2011),
+                                var26 = Extension.doubleNToDouble(x.MCCCTW_Index),
+                                var27 = Extension.doubleNToDouble(x.TRDR1T_Index)
+                            })
+                        );
 
-                    db.SaveChanges();
+                        db.SaveChanges();
 
-                    log.txtLog(
-                       TableType.C03Mortgage.ToString(),
-                       true,
-                       startTime,
-                       logPath,
-                       MessageType.Success.GetDescription());
+                        log.txtLog(
+                           TableType.C03Mortgage.ToString(),
+                           true,
+                           startTime,
+                           logPath,
+                           MessageType.Success.GetDescription());
+                    }
                 }
             }
             catch (Exception ex)
@@ -491,6 +505,7 @@ namespace AutoTransfer.Transfer
                    ex.Message);
             }
         }
+        #endregion
 
         #region private function
         /// <summary>

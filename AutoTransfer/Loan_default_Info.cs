@@ -18,7 +18,5 @@ namespace AutoTransfer
         public double PD_Quartly { get; set; }
         public string Year_Quartly { get; set; }
         public Nullable<System.DateTime> Processing_Date { get; set; }
-    
-        public virtual Econ_Domestic Econ_Domestic { get; set; }
     }
 }

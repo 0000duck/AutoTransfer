@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.Transfer
@@ -143,11 +144,11 @@ namespace AutoTransfer.Transfer
         protected override void putSampleSFTP()
         {
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putSampleFilePath(),
-            //     setFile.putSampleFileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putSampleFilePath(),
+                 setFile.putSampleFileName(),
+                 out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
                 log.saveTransferCheck(
@@ -166,9 +167,11 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
-                t.Interval = 3 * 1000;
-                Action f = () => getSampleSFTP();
-                t.Start(f); //委派 設定時間後要做的動作
+                //t.Interval = 3 * 1000;
+                //Action f = () => getSampleSFTP();
+                //t.Start(f); //委派 設定時間後要做的動作
+                Thread.Sleep(20*60*1000);
+                getSampleSFTP();
             }
         }
 
@@ -179,11 +182,11 @@ namespace AutoTransfer.Transfer
         {
             new FileRelated().createFile(setFile.getSampleFilePath());
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //    setFile.getSampleFilePath(),
-            //    setFile.getSampleFileName(),
-            //    out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                setFile.getSampleFilePath(),
+                setFile.getSampleFileName(),
+                out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.saveTransferCheck(
@@ -297,10 +300,10 @@ namespace AutoTransfer.Transfer
         protected override void putCommpanySFTP()
         {
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //    setFile.putCommpanyFilePath(),
-            //    setFile.putCommpanyFileName(), out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                setFile.putCommpanyFilePath(),
+                setFile.putCommpanyFileName(), out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
                 log.saveTransferCheck(
@@ -319,10 +322,12 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
-                t.Stop();
-                t.Interval = 5 * 1000;
-                Action f = () => getCommpanySFTP();
-                t.Start(f); //委派 設定時間後要做的動作
+                //t.Stop();
+                //t.Interval = 5 * 1000;
+                //Action f = () => getCommpanySFTP();
+                //t.Start(f); //委派 設定時間後要做的動作
+                Thread.Sleep(20 * 60 * 1000);
+                getCommpanySFTP();
             }
         }
 
@@ -333,11 +338,11 @@ namespace AutoTransfer.Transfer
         {
             new FileRelated().createFile(setFile.getCommpanyFilePath());
             string error = string.Empty;
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getCommpanyFilePath(),
-            //     setFile.getCommpanyFileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getCommpanyFilePath(),
+                 setFile.getCommpanyFileName(),
+                 out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.saveTransferCheck(

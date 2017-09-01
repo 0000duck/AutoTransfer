@@ -45,6 +45,5 @@ namespace AutoTransfer
         public Nullable<double> TRDR1T_Index { get; set; }
     
         public virtual Econ_D_YYYYMMDD Econ_D_YYYYMMDD { get; set; }
-        public virtual Loan_default_Info Loan_default_Info { get; set; }
     }
 }

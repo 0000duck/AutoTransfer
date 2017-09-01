@@ -8,8 +8,9 @@ namespace AutoTransfer
     {
         public void start()
         {
-            DateTime LastDay = DateTime.Now.AddMonths(1).AddDays(-DateTime.Now.AddMonths(1).Day);
-            new A53().startTransfer(LastDay.ToString("yyyyMMdd"));
+            //DateTime LastDay = DateTime.Now.AddMonths(1).AddDays(-DateTime.Now.AddMonths(1).Day);
+            //new A53().startTransfer(LastDay.ToString("yyyyMMdd"));
+            new A53().startTransfer("20170331");
         }
     }
 }
