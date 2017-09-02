@@ -170,7 +170,7 @@ namespace AutoTransfer.Transfer
                 //t.Interval = 3 * 1000;
                 //Action f = () => getSampleSFTP();
                 //t.Start(f); //委派 設定時間後要做的動作
-                Thread.Sleep(20*60*1000);
+                Thread.Sleep(20 * 60 * 1000);
                 getSampleSFTP();
             }
         }
@@ -676,7 +676,7 @@ namespace AutoTransfer.Transfer
                     logPath,
                     MessageType.Success.GetDescription());
                 sampleData.AddRange(commpanyData);
-                new CompleteEvent().saveDb(reportDateDt, verInt, sampleData, sampleInfos);
+                new CompleteEvent().saveDb(reportDateDt, verInt);
             }
             catch (DbUpdateException ex)
             {
