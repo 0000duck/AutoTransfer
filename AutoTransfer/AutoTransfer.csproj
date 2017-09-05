@@ -68,6 +68,7 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="Econ_Domestic.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -97,6 +98,7 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="StartTransferC03Mortgage.cs" />
+    <Compile Include="Transfer\C04.cs" />
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />
     <Compile Include="Commpany\A53Commpany.cs" />

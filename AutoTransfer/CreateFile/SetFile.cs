@@ -11,6 +11,8 @@ namespace AutoTransfer.CreateFile
         private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
         private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
         private static string samplePut = ConfigurationManager.AppSettings["samplePut"];
+        private static string getC04Get = ConfigurationManager.AppSettings["getC04Get"];
+        private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];
         private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
         private TableType _type;
@@ -19,6 +21,19 @@ namespace AutoTransfer.CreateFile
         {
             _type = type;
             _dateTime = dateTime;
+        }
+
+        public string getC04FileName()
+        {
+            return string.Format("Get{0}_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string getC04FilePath()
+        {
+            return getC04Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "C04Get") : getC04Get;
         }
 
         public string getCommpanyFileName()
@@ -45,6 +60,19 @@ namespace AutoTransfer.CreateFile
         {
             return sampleGet.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "sampleGet") : sampleGet;
+        }
+
+        public string putC04FileName()
+        {
+            return string.Format("Get{0}_{1}.req",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putC04FilePath()
+        {
+            return getC04Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "C04Put") : getC04Put;
         }
 
         public string putCommpanyFileName()
