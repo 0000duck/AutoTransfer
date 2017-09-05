@@ -40,7 +40,7 @@ namespace AutoTransfer
         public Nullable<double> Principal { get; set; }
         public Nullable<double> Amort_Amt_Tw { get; set; }
         public Nullable<double> Interest_Receivable { get; set; }
-        public Nullable<double> Interest_Receivable_tw { get; set; }
+        public Nullable<double> Int_Receivable_Tw { get; set; }
         public string Interest_Rate_Type { get; set; }
         public string IMPAIR_YN { get; set; }
         public Nullable<double> EIR { get; set; }
@@ -60,7 +60,7 @@ namespace AutoTransfer
         public string Bond_Aera { get; set; }
         public string Asset_Type { get; set; }
         public string IH_OS { get; set; }
-        public Nullable<double> Amount_TW_Ori_Ex_rate { get; set; }
+        public Nullable<double> Amt_TW_Ori_Ex_rate { get; set; }
         public Nullable<double> Amort_Amt_Ori_Tw { get; set; }
         public Nullable<double> Market_Value_Ori { get; set; }
         public Nullable<double> Market_Value_TW { get; set; }

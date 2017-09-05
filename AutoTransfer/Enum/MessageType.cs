@@ -19,6 +19,12 @@ namespace AutoTransfer.Enum
             Create_Commpany_File_Fail,
 
             /// <summary>
+            /// 新增上傳檔案失敗
+            /// </summary>
+            [Description("新增上傳檔案失敗")]
+            Create_File_Fail,
+
+            /// <summary>
             /// 上傳Sample檔案失敗
             /// </summary>
             [Description("上傳Sample檔案失敗")]
@@ -71,6 +77,18 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("轉檔驗證失敗!")]
             transferError,
+
+            /// <summary>
+            /// 上傳檔案失敗
+            /// </summary>
+            [Description("上傳檔案失敗")]
+            Put_File_Fail,
+
+            /// <summary>
+            /// 下載檔案失敗
+            /// </summary>
+            [Description("下載檔案失敗")]
+            Get_File_Fail,
         }
     }
 }
