@@ -14,6 +14,7 @@ namespace AutoTransfer.Transfer
     public class A07
     {
         #region 共用參數
+
         private Log log = new Log();
         private string logPath = string.Empty;
         private DateTime reportDateDt = DateTime.MinValue;
@@ -23,6 +24,7 @@ namespace AutoTransfer.Transfer
         private ThreadTask t = new ThreadTask();
         private TableType tableType = TableType.A07;
         private string type = TableType.A07.ToString();
+
         #endregion 共用參數
 
         /// <summary>
@@ -84,11 +86,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA07FilePath(),
-            //     setFile.putA07FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putA07FilePath(),
+                 setFile.putA07FileName(),
+                 out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -101,7 +103,7 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
                 getA07SFTP();
             }
         }
@@ -115,11 +117,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA07FilePath(),
-            //     setFile.getA07FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getA07FilePath(),
+                 setFile.getA07FileName(),
+                 out error);
 
             if (!error.IsNullOrWhiteSpace())
             {
@@ -145,6 +147,7 @@ namespace AutoTransfer.Transfer
             List<Econ_Domestic> A07Data = new List<Econ_Domestic>();
 
             #region A07 Data
+
             using (StreamReader sr = new StreamReader(Path.Combine(
                 setFile.getA07FilePath(), setFile.getA07FileName())))
             {
@@ -180,21 +183,25 @@ namespace AutoTransfer.Transfer
                                     case "03":
                                         ed.Year_Quartly = arr[1].Substring(6, 4) + "Q1";
                                         break;
+
                                     case "04":
                                     case "05":
                                     case "06":
                                         ed.Year_Quartly = arr[1].Substring(6, 4) + "Q2";
                                         break;
+
                                     case "07":
                                     case "08":
                                     case "09":
                                         ed.Year_Quartly = arr[1].Substring(6, 4) + "Q3";
                                         break;
+
                                     case "10":
                                     case "11":
                                     case "12":
                                         ed.Year_Quartly = arr[1].Substring(6, 4) + "Q4";
                                         break;
+
                                     default:
                                         break;
                                 }
@@ -214,9 +221,11 @@ namespace AutoTransfer.Transfer
                     }
                 }
             }
+
             #endregion A07 Data
 
             #region saveDb
+
             try
             {
                 for (int i = 0; i < A07Data.Count; i++)
@@ -315,6 +324,7 @@ namespace AutoTransfer.Transfer
                     $"message: {ex.Message}" +
                     $", inner message {ex.InnerException?.InnerException?.Message}");
             }
+
             #endregion saveDb
         }
     }
