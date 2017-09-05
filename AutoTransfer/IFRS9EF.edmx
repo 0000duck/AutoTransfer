@@ -35,7 +35,7 @@
           <Property Name="Principal" Type="float" />
           <Property Name="Amort_Amt_Tw" Type="float" />
           <Property Name="Interest_Receivable" Type="float" />
-          <Property Name="Interest_Receivable_tw" Type="float" />
+          <Property Name="Int_Receivable_Tw" Type="float" />
           <Property Name="Interest_Rate_Type" Type="varchar" MaxLength="10" />
           <Property Name="IMPAIR_YN" Type="varchar" MaxLength="1" />
           <Property Name="EIR" Type="float" />
@@ -55,7 +55,7 @@
           <Property Name="Bond_Aera" Type="varchar" MaxLength="10" />
           <Property Name="Asset_Type" Type="varchar" MaxLength="100" />
           <Property Name="IH_OS" Type="varchar" MaxLength="4" />
-          <Property Name="Amount_TW_Ori_Ex_rate" Type="float" />
+          <Property Name="Amt_TW_Ori_Ex_rate" Type="float" />
           <Property Name="Amort_Amt_Ori_Tw" Type="float" />
           <Property Name="Market_Value_Ori" Type="float" />
           <Property Name="Market_Value_TW" Type="float" />
@@ -632,7 +632,7 @@
           <Property Name="Principal" Type="Double" />
           <Property Name="Amort_Amt_Tw" Type="Double" />
           <Property Name="Interest_Receivable" Type="Double" />
-          <Property Name="Interest_Receivable_tw" Type="Double" />
+          <Property Name="Int_Receivable_Tw" Type="Double" />
           <Property Name="Interest_Rate_Type" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="IMPAIR_YN" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
           <Property Name="EIR" Type="Double" />
@@ -652,7 +652,7 @@
           <Property Name="Bond_Aera" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Asset_Type" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="IH_OS" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="Amount_TW_Ori_Ex_rate" Type="Double" />
+          <Property Name="Amt_TW_Ori_Ex_rate" Type="Double" />
           <Property Name="Amort_Amt_Ori_Tw" Type="Double" />
           <Property Name="Market_Value_Ori" Type="Double" />
           <Property Name="Market_Value_TW" Type="Double" />
@@ -901,7 +901,7 @@
                 <ScalarProperty Name="Market_Value_TW" ColumnName="Market_Value_TW" />
                 <ScalarProperty Name="Market_Value_Ori" ColumnName="Market_Value_Ori" />
                 <ScalarProperty Name="Amort_Amt_Ori_Tw" ColumnName="Amort_Amt_Ori_Tw" />
-                <ScalarProperty Name="Amount_TW_Ori_Ex_rate" ColumnName="Amount_TW_Ori_Ex_rate" />
+                <ScalarProperty Name="Amt_TW_Ori_Ex_rate" ColumnName="Amt_TW_Ori_Ex_rate" />
                 <ScalarProperty Name="IH_OS" ColumnName="IH_OS" />
                 <ScalarProperty Name="Asset_Type" ColumnName="Asset_Type" />
                 <ScalarProperty Name="Bond_Aera" ColumnName="Bond_Aera" />
@@ -921,7 +921,7 @@
                 <ScalarProperty Name="EIR" ColumnName="EIR" />
                 <ScalarProperty Name="IMPAIR_YN" ColumnName="IMPAIR_YN" />
                 <ScalarProperty Name="Interest_Rate_Type" ColumnName="Interest_Rate_Type" />
-                <ScalarProperty Name="Interest_Receivable_tw" ColumnName="Interest_Receivable_tw" />
+                <ScalarProperty Name="Int_Receivable_Tw" ColumnName="Int_Receivable_Tw" />
                 <ScalarProperty Name="Interest_Receivable" ColumnName="Interest_Receivable" />
                 <ScalarProperty Name="Amort_Amt_Tw" ColumnName="Amort_Amt_Tw" />
                 <ScalarProperty Name="Principal" ColumnName="Principal" />
