@@ -11,9 +11,8 @@ namespace AutoTransfer.CreateFile
         private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
         private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
         private static string samplePut = ConfigurationManager.AppSettings["samplePut"];
-        private static string getC04Get = ConfigurationManager.AppSettings["getC04Get"];
-        private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];
-        private static string startupPath = Directory.GetCurrentDirectory();
+ private static string getC04Get = ConfigurationManager.AppSettings["getC04Get"];
+        private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];private static string A07Put = ConfigurationManager.AppSettings["A07Put"];private static string A07Get = ConfigurationManager.AppSettings["A07Get"];        private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
         private TableType _type;
 
@@ -99,6 +98,32 @@ namespace AutoTransfer.CreateFile
         {
             return samplePut.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "samplePut") : samplePut;
+        }
+
+        public string getA07FileName()
+        {
+            return string.Format("GetC03.csv",
+                _type.ToString(),
+                _dateTime);
+    }
+
+        public string getA07FilePath()
+        {
+            return A07Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A07Get") : A07Get;
+        }
+
+        public string putA07FileName()
+        {
+            return string.Format("GetC03.req",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA07FilePath()
+        {
+            return A07Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A07Put") : A07Put;
         }
     }
 }

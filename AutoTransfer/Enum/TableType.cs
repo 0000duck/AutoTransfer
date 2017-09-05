@@ -41,6 +41,12 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("Econ_D_YYYYMMDD")]
             C03Mortgage,
+
+            /// <summary>
+            /// 國內總經變數
+            /// </summary>
+            [Description("Econ_Domestic")]
+            A07,
         }
     }
 }
