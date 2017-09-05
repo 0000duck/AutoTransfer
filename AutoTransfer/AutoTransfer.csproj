@@ -48,6 +48,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -68,8 +69,7 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
-    <Compile Include="CreateFile\CreateGetC04File.cs" />
-    <Compile Include="Econ_Domestic.cs">
+    <Compile Include="CreateFile\CreateGetC04File.cs" />   <Compile Include="CreateFile\CreateA07File.cs" />    <Compile Include="Econ_Domestic.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Econ_D_YYYYMMDD.cs">
@@ -97,9 +97,9 @@
     <Compile Include="Rating_Info_SampleInfo.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="StartTransferA07.cs" />
     <Compile Include="StartTransferC03Mortgage.cs" />
-    <Compile Include="Transfer\C04.cs" />
-    <Compile Include="Transfer\A53.cs" />
+  <Compile Include="Transfer\C04.cs" />    <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />
     <Compile Include="Commpany\A53Commpany.cs" />
     <Compile Include="Transfer\C03Mortgage.cs" />
@@ -139,6 +139,7 @@
     <Compile Include="SFTP\SFTPInfo.cs" />
     <Compile Include="Utility\ThreadTask.cs" />
     <Compile Include="Utility\Log.cs" />
+    <Compile Include="ViewModel\A07ViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EntityDeploy Include="IFRS9EF.edmx">
