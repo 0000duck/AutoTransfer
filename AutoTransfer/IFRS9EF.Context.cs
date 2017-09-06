@@ -33,10 +33,10 @@ namespace AutoTransfer
         public virtual DbSet<Bond_Rating_Summary> Bond_Rating_Summary { get; set; }
         public virtual DbSet<Transfer_CheckTable> Transfer_CheckTable { get; set; }
         public virtual DbSet<Rating_Info_SampleInfo> Rating_Info_SampleInfo { get; set; }
+        public virtual DbSet<Bond_Account_Info> Bond_Account_Info { get; set; }
         public virtual DbSet<Econ_D_YYYYMMDD> Econ_D_YYYYMMDD { get; set; }
         public virtual DbSet<Econ_Domestic> Econ_Domestic { get; set; }
         public virtual DbSet<Group_Product_Code_Mapping> Group_Product_Code_Mapping { get; set; }
         public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
-        public virtual DbSet<Bond_Account_Info> Bond_Account_Info { get; set; }
     }
 }

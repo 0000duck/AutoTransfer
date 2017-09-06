@@ -50,10 +50,12 @@ namespace AutoTransfer.Transfer
                     MessageType.DateTime_Format_Fail.GetDescription()
                     );
             }
-
-            reportDateStr = dateTime;
-            setFile = new SetFile(tableType, dateTime);
-            createA07File();
+            else
+            {
+                reportDateStr = dateTime;
+                setFile = new SetFile(tableType, dateTime);
+                createA07File();
+            }
         }
 
         /// <summary>
