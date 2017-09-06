@@ -20,6 +20,9 @@
         <AssociationConnector Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" />
         <AssociationConnector Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Account_Info" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Econ_F_YYYYMMDD" Width="1.5" PointX="0.75" PointY="12.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Econ_Foreign" Width="1.5" PointX="2.75" PointY="12.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Moody_Quartly_PD_Info" Width="1.5" PointX="5.375" PointY="12.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
