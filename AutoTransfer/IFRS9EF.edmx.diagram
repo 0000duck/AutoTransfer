@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="96352dad362c474d87b7c14085066f27" Name="Diagram1" ZoomLevel="39" ShowGrid="false">
+      <Diagram DiagramId="96352dad362c474d87b7c14085066f27" Name="Diagram1" ZoomLevel="31" ShowGrid="false">
         <EntityTypeShape EntityType="IFRS9Model.Grade_Mapping_Info" Width="1.5" PointX="3.375" PointY="3.625" />
         <EntityTypeShape EntityType="IFRS9Model.Grade_Moody_Info" Width="1.5" PointX="3.375" PointY="5.5" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Rating_Parm" Width="1.5" PointX="8.375" PointY="0.75" />
@@ -14,13 +14,13 @@
         <EntityTypeShape EntityType="IFRS9Model.Transfer_CheckTable" Width="1.5" PointX="5.375" PointY="0.75" />
         <EntityTypeShape EntityType="IFRS9Model.Rating_Info_SampleInfo" Width="1.5" PointX="10.375" PointY="0.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Account_Info" Width="1.5" PointX="0.75" PointY="0.75" />
-        <EntityTypeShape EntityType="IFRS9Model.Econ_D_YYYYMMDD" Width="1.5" PointX="13" PointY="4.25" />
         <EntityTypeShape EntityType="IFRS9Model.Econ_Domestic" Width="1.5" PointX="10.75" PointY="9.5" />
         <EntityTypeShape EntityType="IFRS9Model.Group_Product_Code_Mapping" Width="1.5" PointX="10.75" PointY="7" />
-        <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="2.75" PointY="8.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="10.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Econ_D_YYYYMMDD" Width="1.5" PointX="13" PointY="7.875" />
         <AssociationConnector Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" />
         <AssociationConnector Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" />
-      </Diagram>
+        </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
 </edmx:Edmx>
