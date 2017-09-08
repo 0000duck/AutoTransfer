@@ -14,7 +14,7 @@ namespace AutoTransfer
     
     public partial class Econ_F_YYYYMMDD
     {
-        public Nullable<System.DateTime> Processing_Date { get; set; }
+        public string Processing_Date { get; set; }
         public string Product_Code { get; set; }
         public string Data_ID { get; set; }
         public string Year_Quartly { get; set; }

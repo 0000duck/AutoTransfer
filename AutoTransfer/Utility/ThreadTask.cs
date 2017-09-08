@@ -53,11 +53,7 @@ namespace AutoTransfer.Utility
             //        SpinWait.SpinUntil(() => !this.IsRunning, this.Interval);
             //        fun();
             //    }
-            //})
-            //.ContinueWith(task =>
-            //{
-            //    fun();
-            //})
+            //});
         }
 
         public void Stop()
