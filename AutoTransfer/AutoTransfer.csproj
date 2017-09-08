@@ -155,7 +155,6 @@
     <Compile Include="SFTP\SFTPInfo.cs" />
     <Compile Include="Utility\ThreadTask.cs" />
     <Compile Include="Utility\Log.cs" />
-    <Compile Include="ViewModel\A07ViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EntityDeploy Include="IFRS9EF.edmx">
