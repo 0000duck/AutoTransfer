@@ -108,6 +108,7 @@
     <Compile Include="Rating_Info_SampleInfo.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="StartTransferC04.cs" />
     <Compile Include="StartTransferA84.cs" />
     <Compile Include="StartTransferA07.cs" />
     <Compile Include="StartTransferC03Mortgage.cs" />
