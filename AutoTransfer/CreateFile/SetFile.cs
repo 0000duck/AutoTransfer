@@ -26,6 +26,13 @@ namespace AutoTransfer.CreateFile
             _dateTime = dateTime;
         }
 
+        public string getGZFileName()
+        {
+            return string.Format("Get{0}_{1}.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
+
         public string getFileName()
         {
             return string.Format("Get{0}_{1}.csv",

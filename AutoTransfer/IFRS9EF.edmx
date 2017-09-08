@@ -143,33 +143,33 @@
           <Property Name="Data_ID" Type="varchar" MaxLength="100" />
           <Property Name="Year_Quartly" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="PD_Quartly" Type="float" Nullable="false" />
-          <Property Name="var1" Type="float" />
-          <Property Name="var2" Type="float" />
-          <Property Name="var3" Type="float" />
-          <Property Name="var4" Type="float" />
-          <Property Name="var5" Type="float" />
-          <Property Name="var6" Type="float" />
-          <Property Name="var7" Type="float" />
-          <Property Name="var8" Type="float" />
-          <Property Name="var9" Type="float" />
-          <Property Name="var10" Type="float" />
-          <Property Name="var11" Type="float" />
-          <Property Name="var12" Type="float" />
-          <Property Name="var13" Type="float" />
-          <Property Name="var14" Type="float" />
-          <Property Name="var15" Type="float" />
-          <Property Name="var16" Type="float" />
-          <Property Name="var17" Type="float" />
-          <Property Name="var18" Type="float" />
-          <Property Name="var19" Type="float" />
-          <Property Name="var20" Type="float" />
-          <Property Name="var21" Type="float" />
-          <Property Name="var22" Type="float" />
-          <Property Name="var23" Type="float" />
-          <Property Name="var24" Type="float" />
-          <Property Name="var25" Type="float" />
-          <Property Name="var26" Type="float" />
-          <Property Name="var27" Type="float" />
+          <Property Name="TWSE_Index" Type="float" />
+          <Property Name="TWRGSARP_Index" Type="float" />
+          <Property Name="TWGDPCON_Index" Type="float" />
+          <Property Name="TWLFADJ_Index" Type="float" />
+          <Property Name="TWCPI_Index" Type="float" />
+          <Property Name="TWMSA1A_Index" Type="float" />
+          <Property Name="TWMSA1B_Index" Type="float" />
+          <Property Name="TWMSAM2_Index" Type="float" />
+          <Property Name="GVTW10YR_Index" Type="float" />
+          <Property Name="TWTRBAL_Index" Type="float" />
+          <Property Name="TWTREXP_Index" Type="float" />
+          <Property Name="TWTRIMP_Index" Type="float" />
+          <Property Name="TAREDSCD_Index" Type="float" />
+          <Property Name="TWCILI_Index" Type="float" />
+          <Property Name="TWBOPCUR_Index" Type="float" />
+          <Property Name="EHCATW_Index" Type="float" />
+          <Property Name="TWINDPI_Index" Type="float" />
+          <Property Name="TWWPI_Index" Type="float" />
+          <Property Name="TARSYOY_Index" Type="float" />
+          <Property Name="TWEOTTL_Index" Type="float" />
+          <Property Name="SLDETIGT_Index" Type="float" />
+          <Property Name="TWIRFE_Index" Type="float" />
+          <Property Name="SINYI_HOUSE_PRICE_index" Type="float" />
+          <Property Name="CATHAY_ESTATE_index" Type="float" />
+          <Property Name="Real_GDP2011" Type="float" />
+          <Property Name="MCCCTW_Index" Type="float" />
+          <Property Name="TRDR1T_Index" Type="float" />
         </EntityType>
         <EntityType Name="Econ_Domestic">
           <Key>
@@ -324,7 +324,7 @@
           <Property Name="EUCCEMU_Index" Type="float" />
           <Property Name="CPMINDX_Index" Type="float" />
           <Property Name="MPMICNMA_Index" Type="float" />
-          <Property Name="CNFRBAL$_Index" Type="float" />
+          <Property Name="CNFRBAL_Index" Type="float" />
           <Property Name="CNCPIYOY_Index" Type="float" />
           <Property Name="CHEFTYOY_Index" Type="float" />
           <Property Name="CNMS2YOY_Index" Type="float" />
@@ -448,7 +448,7 @@
           <Property Name="EUCCEMU_Index" Type="float" />
           <Property Name="CPMINDX_Index" Type="float" />
           <Property Name="MPMICNMA_Index" Type="float" />
-          <Property Name="CNFRBAL$_Index" Type="float" />
+          <Property Name="CNFRBAL_Index" Type="float" />
           <Property Name="CNCPIYOY_Index" Type="float" />
           <Property Name="CHEFTYOY_Index" Type="float" />
           <Property Name="CNMS2YOY_Index" Type="float" />
@@ -604,10 +604,14 @@
           <EntitySet Name="Bond_Rating_Summary" EntityType="IFRS9Model.Bond_Rating_Summary" />
           <EntitySet Name="Transfer_CheckTable" EntityType="IFRS9Model.Transfer_CheckTable" />
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="IFRS9Model.Rating_Info_SampleInfo" />
-          <EntitySet Name="Econ_D_YYYYMMDD" EntityType="IFRS9Model.Econ_D_YYYYMMDD" />
           <EntitySet Name="Econ_Domestic" EntityType="IFRS9Model.Econ_Domestic" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
+          <EntitySet Name="Bond_Account_Info" EntityType="IFRS9Model.Bond_Account_Info" />
+          <EntitySet Name="Moody_Quartly_PD_Info" EntityType="IFRS9Model.Moody_Quartly_PD_Info" />
+          <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
+          <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
+          <EntitySet Name="Econ_D_YYYYMMDD" EntityType="IFRS9Model.Econ_D_YYYYMMDD" />
           <AssociationSet Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
             <End Role="Econ_Domestic" EntitySet="Econ_Domestic" />
             <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
@@ -616,10 +620,6 @@
             <End Role="Group_Product_Code_Mapping" EntitySet="Group_Product_Code_Mapping" />
             <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
           </AssociationSet>
-          <EntitySet Name="Bond_Account_Info" EntityType="IFRS9Model.Bond_Account_Info" />
-          <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
-          <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
-          <EntitySet Name="Moody_Quartly_PD_Info" EntityType="IFRS9Model.Moody_Quartly_PD_Info" />
         </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -752,45 +752,6 @@
           <Property Name="GUARANTOR_EQY_TICKER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="GUARANTOR_NAME" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
-        <EntityType Name="Econ_D_YYYYMMDD">
-          <Key>
-            <PropertyRef Name="Year_Quartly" />
-          </Key>
-          <Property Name="Processing_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Product_Code" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
-          <Property Name="Data_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="PD_Quartly" Type="Double" Nullable="false" />
-          <Property Name="var1" Type="Double" />
-          <Property Name="var2" Type="Double" />
-          <Property Name="var3" Type="Double" />
-          <Property Name="var4" Type="Double" />
-          <Property Name="var5" Type="Double" />
-          <Property Name="var6" Type="Double" />
-          <Property Name="var7" Type="Double" />
-          <Property Name="var8" Type="Double" />
-          <Property Name="var9" Type="Double" />
-          <Property Name="var10" Type="Double" />
-          <Property Name="var11" Type="Double" />
-          <Property Name="var12" Type="Double" />
-          <Property Name="var13" Type="Double" />
-          <Property Name="var14" Type="Double" />
-          <Property Name="var15" Type="Double" />
-          <Property Name="var16" Type="Double" />
-          <Property Name="var17" Type="Double" />
-          <Property Name="var18" Type="Double" />
-          <Property Name="var19" Type="Double" />
-          <Property Name="var20" Type="Double" />
-          <Property Name="var21" Type="Double" />
-          <Property Name="var22" Type="Double" />
-          <Property Name="var23" Type="Double" />
-          <Property Name="var24" Type="Double" />
-          <Property Name="var25" Type="Double" />
-          <Property Name="var26" Type="Double" />
-          <Property Name="var27" Type="Double" />
-          <NavigationProperty Name="Econ_Domestic" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" FromRole="Econ_D_YYYYMMDD" ToRole="Econ_Domestic" />
-          <NavigationProperty Name="Group_Product_Code_Mapping" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" FromRole="Econ_D_YYYYMMDD" ToRole="Group_Product_Code_Mapping" />
-        </EntityType>
         <EntityType Name="Econ_Domestic">
           <Key>
             <PropertyRef Name="Year_Quartly" />
@@ -844,30 +805,6 @@
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
         </EntityType>
-        <Association Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
-          <End Type="IFRS9Model.Econ_Domestic" Role="Econ_Domestic" Multiplicity="1" />
-          <End Type="IFRS9Model.Econ_D_YYYYMMDD" Role="Econ_D_YYYYMMDD" Multiplicity="0..1" />
-          <ReferentialConstraint>
-            <Principal Role="Econ_Domestic">
-              <PropertyRef Name="Year_Quartly" />
-            </Principal>
-            <Dependent Role="Econ_D_YYYYMMDD">
-              <PropertyRef Name="Year_Quartly" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
-          <End Type="IFRS9Model.Group_Product_Code_Mapping" Role="Group_Product_Code_Mapping" Multiplicity="1" />
-          <End Type="IFRS9Model.Econ_D_YYYYMMDD" Role="Econ_D_YYYYMMDD" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Group_Product_Code_Mapping">
-              <PropertyRef Name="Product_Code" />
-            </Principal>
-            <Dependent Role="Econ_D_YYYYMMDD">
-              <PropertyRef Name="Product_Code" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityType Name="Bond_Account_Info">
           <Key>
             <PropertyRef Name="Reference_Nbr" />
@@ -924,6 +861,15 @@
           <Property Name="Market_Value_TW" Type="Double" />
           <Property Name="Value_date" Type="DateTime" Precision="0" />
           <Property Name="Portfolio_Name" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Moody_Quartly_PD_Info">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="Data_Year" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Year_Quartly" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
+          <Property Name="PD" Type="Double" />
         </EntityType>
         <EntityType Name="Econ_F_YYYYMMDD">
           <Key>
@@ -1044,7 +990,7 @@
           <Property Name="EUCCEMU_Index" Type="Double" />
           <Property Name="CPMINDX_Index" Type="Double" />
           <Property Name="MPMICNMA_Index" Type="Double" />
-          <Property Name="CNFRBAL__Index" Type="Double" />
+          <Property Name="CNFRBAL_Index" Type="Double" />
           <Property Name="CNCPIYOY_Index" Type="Double" />
           <Property Name="CHEFTYOY_Index" Type="Double" />
           <Property Name="CNMS2YOY_Index" Type="Double" />
@@ -1168,7 +1114,7 @@
           <Property Name="EUCCEMU_Index" Type="Double" />
           <Property Name="CPMINDX_Index" Type="Double" />
           <Property Name="MPMICNMA_Index" Type="Double" />
-          <Property Name="CNFRBAL__Index" Type="Double" />
+          <Property Name="CNFRBAL_Index" Type="Double" />
           <Property Name="CNCPIYOY_Index" Type="Double" />
           <Property Name="CHEFTYOY_Index" Type="Double" />
           <Property Name="CNMS2YOY_Index" Type="Double" />
@@ -1176,15 +1122,69 @@
           <Property Name="CNFREXPY_Index" Type="Double" />
           <Property Name="GRFIDEBT_Index" Type="Double" />
         </EntityType>
-        <EntityType Name="Moody_Quartly_PD_Info">
+        <EntityType Name="Econ_D_YYYYMMDD">
           <Key>
-            <PropertyRef Name="Id" />
+            <PropertyRef Name="Year_Quartly" />
           </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" />
-          <Property Name="Data_Year" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="Year_Quartly" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
-          <Property Name="PD" Type="Double" />
+          <Property Name="Processing_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Product_Code" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="Data_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="PD_Quartly" Type="Double" Nullable="false" />
+          <Property Name="TWSE_Index" Type="Double" />
+          <Property Name="TWRGSARP_Index" Type="Double" />
+          <Property Name="TWGDPCON_Index" Type="Double" />
+          <Property Name="TWLFADJ_Index" Type="Double" />
+          <Property Name="TWCPI_Index" Type="Double" />
+          <Property Name="TWMSA1A_Index" Type="Double" />
+          <Property Name="TWMSA1B_Index" Type="Double" />
+          <Property Name="TWMSAM2_Index" Type="Double" />
+          <Property Name="GVTW10YR_Index" Type="Double" />
+          <Property Name="TWTRBAL_Index" Type="Double" />
+          <Property Name="TWTREXP_Index" Type="Double" />
+          <Property Name="TWTRIMP_Index" Type="Double" />
+          <Property Name="TAREDSCD_Index" Type="Double" />
+          <Property Name="TWCILI_Index" Type="Double" />
+          <Property Name="TWBOPCUR_Index" Type="Double" />
+          <Property Name="EHCATW_Index" Type="Double" />
+          <Property Name="TWINDPI_Index" Type="Double" />
+          <Property Name="TWWPI_Index" Type="Double" />
+          <Property Name="TARSYOY_Index" Type="Double" />
+          <Property Name="TWEOTTL_Index" Type="Double" />
+          <Property Name="SLDETIGT_Index" Type="Double" />
+          <Property Name="TWIRFE_Index" Type="Double" />
+          <Property Name="SINYI_HOUSE_PRICE_index" Type="Double" />
+          <Property Name="CATHAY_ESTATE_index" Type="Double" />
+          <Property Name="Real_GDP2011" Type="Double" />
+          <Property Name="MCCCTW_Index" Type="Double" />
+          <Property Name="TRDR1T_Index" Type="Double" />
+          <NavigationProperty Name="Econ_Domestic" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" FromRole="Econ_D_YYYYMMDD" ToRole="Econ_Domestic" />
+          <NavigationProperty Name="Group_Product_Code_Mapping" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" FromRole="Econ_D_YYYYMMDD" ToRole="Group_Product_Code_Mapping" />
         </EntityType>
+        <Association Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
+          <End Type="IFRS9Model.Econ_Domestic" Role="Econ_Domestic" Multiplicity="1" />
+          <End Type="IFRS9Model.Econ_D_YYYYMMDD" Role="Econ_D_YYYYMMDD" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Econ_Domestic">
+              <PropertyRef Name="Year_Quartly" />
+            </Principal>
+            <Dependent Role="Econ_D_YYYYMMDD">
+              <PropertyRef Name="Year_Quartly" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
+          <End Type="IFRS9Model.Group_Product_Code_Mapping" Role="Group_Product_Code_Mapping" Multiplicity="1" />
+          <End Type="IFRS9Model.Econ_D_YYYYMMDD" Role="Econ_D_YYYYMMDD" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Group_Product_Code_Mapping">
+              <PropertyRef Name="Product_Code" />
+            </Principal>
+            <Dependent Role="Econ_D_YYYYMMDD">
+              <PropertyRef Name="Product_Code" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1327,44 +1327,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Econ_D_YYYYMMDD">
-            <EntityTypeMapping TypeName="IFRS9Model.Econ_D_YYYYMMDD">
-              <MappingFragment StoreEntitySet="Econ_D_YYYYMMDD">
-                <ScalarProperty Name="var27" ColumnName="var27" />
-                <ScalarProperty Name="var26" ColumnName="var26" />
-                <ScalarProperty Name="var25" ColumnName="var25" />
-                <ScalarProperty Name="var24" ColumnName="var24" />
-                <ScalarProperty Name="var23" ColumnName="var23" />
-                <ScalarProperty Name="var22" ColumnName="var22" />
-                <ScalarProperty Name="var21" ColumnName="var21" />
-                <ScalarProperty Name="var20" ColumnName="var20" />
-                <ScalarProperty Name="var19" ColumnName="var19" />
-                <ScalarProperty Name="var18" ColumnName="var18" />
-                <ScalarProperty Name="var17" ColumnName="var17" />
-                <ScalarProperty Name="var16" ColumnName="var16" />
-                <ScalarProperty Name="var15" ColumnName="var15" />
-                <ScalarProperty Name="var14" ColumnName="var14" />
-                <ScalarProperty Name="var13" ColumnName="var13" />
-                <ScalarProperty Name="var12" ColumnName="var12" />
-                <ScalarProperty Name="var11" ColumnName="var11" />
-                <ScalarProperty Name="var10" ColumnName="var10" />
-                <ScalarProperty Name="var9" ColumnName="var9" />
-                <ScalarProperty Name="var8" ColumnName="var8" />
-                <ScalarProperty Name="var7" ColumnName="var7" />
-                <ScalarProperty Name="var6" ColumnName="var6" />
-                <ScalarProperty Name="var5" ColumnName="var5" />
-                <ScalarProperty Name="var4" ColumnName="var4" />
-                <ScalarProperty Name="var3" ColumnName="var3" />
-                <ScalarProperty Name="var2" ColumnName="var2" />
-                <ScalarProperty Name="var1" ColumnName="var1" />
-                <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
-                <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
-                <ScalarProperty Name="Data_ID" ColumnName="Data_ID" />
-                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Econ_Domestic">
             <EntityTypeMapping TypeName="IFRS9Model.Econ_Domestic">
               <MappingFragment StoreEntitySet="Econ_Domestic">
@@ -1477,6 +1439,16 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Moody_Quartly_PD_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Moody_Quartly_PD_Info">
+              <MappingFragment StoreEntitySet="Moody_Quartly_PD_Info">
+                <ScalarProperty Name="PD" ColumnName="PD" />
+                <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
+                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Econ_F_YYYYMMDD">
             <EntityTypeMapping TypeName="IFRS9Model.Econ_F_YYYYMMDD">
               <MappingFragment StoreEntitySet="Econ_F_YYYYMMDD">
@@ -1486,7 +1458,7 @@
                 <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
                 <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
                 <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
-                <ScalarProperty Name="CNFRBAL__Index" ColumnName="CNFRBAL$_Index" />
+                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
                 <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
                 <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
                 <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />
@@ -1614,7 +1586,7 @@
                 <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
                 <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
                 <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
-                <ScalarProperty Name="CNFRBAL__Index" ColumnName="CNFRBAL$_Index" />
+                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
                 <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
                 <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
                 <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />
@@ -1730,13 +1702,41 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Moody_Quartly_PD_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Moody_Quartly_PD_Info">
-              <MappingFragment StoreEntitySet="Moody_Quartly_PD_Info">
-                <ScalarProperty Name="PD" ColumnName="PD" />
+          <EntitySetMapping Name="Econ_D_YYYYMMDD">
+            <EntityTypeMapping TypeName="IFRS9Model.Econ_D_YYYYMMDD">
+              <MappingFragment StoreEntitySet="Econ_D_YYYYMMDD">
+                <ScalarProperty Name="TRDR1T_Index" ColumnName="TRDR1T_Index" />
+                <ScalarProperty Name="MCCCTW_Index" ColumnName="MCCCTW_Index" />
+                <ScalarProperty Name="Real_GDP2011" ColumnName="Real_GDP2011" />
+                <ScalarProperty Name="CATHAY_ESTATE_index" ColumnName="CATHAY_ESTATE_index" />
+                <ScalarProperty Name="SINYI_HOUSE_PRICE_index" ColumnName="SINYI_HOUSE_PRICE_index" />
+                <ScalarProperty Name="TWIRFE_Index" ColumnName="TWIRFE_Index" />
+                <ScalarProperty Name="SLDETIGT_Index" ColumnName="SLDETIGT_Index" />
+                <ScalarProperty Name="TWEOTTL_Index" ColumnName="TWEOTTL_Index" />
+                <ScalarProperty Name="TARSYOY_Index" ColumnName="TARSYOY_Index" />
+                <ScalarProperty Name="TWWPI_Index" ColumnName="TWWPI_Index" />
+                <ScalarProperty Name="TWINDPI_Index" ColumnName="TWINDPI_Index" />
+                <ScalarProperty Name="EHCATW_Index" ColumnName="EHCATW_Index" />
+                <ScalarProperty Name="TWBOPCUR_Index" ColumnName="TWBOPCUR_Index" />
+                <ScalarProperty Name="TWCILI_Index" ColumnName="TWCILI_Index" />
+                <ScalarProperty Name="TAREDSCD_Index" ColumnName="TAREDSCD_Index" />
+                <ScalarProperty Name="TWTRIMP_Index" ColumnName="TWTRIMP_Index" />
+                <ScalarProperty Name="TWTREXP_Index" ColumnName="TWTREXP_Index" />
+                <ScalarProperty Name="TWTRBAL_Index" ColumnName="TWTRBAL_Index" />
+                <ScalarProperty Name="GVTW10YR_Index" ColumnName="GVTW10YR_Index" />
+                <ScalarProperty Name="TWMSAM2_Index" ColumnName="TWMSAM2_Index" />
+                <ScalarProperty Name="TWMSA1B_Index" ColumnName="TWMSA1B_Index" />
+                <ScalarProperty Name="TWMSA1A_Index" ColumnName="TWMSA1A_Index" />
+                <ScalarProperty Name="TWCPI_Index" ColumnName="TWCPI_Index" />
+                <ScalarProperty Name="TWLFADJ_Index" ColumnName="TWLFADJ_Index" />
+                <ScalarProperty Name="TWGDPCON_Index" ColumnName="TWGDPCON_Index" />
+                <ScalarProperty Name="TWRGSARP_Index" ColumnName="TWRGSARP_Index" />
+                <ScalarProperty Name="TWSE_Index" ColumnName="TWSE_Index" />
+                <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
-                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="Data_ID" ColumnName="Data_ID" />
+                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

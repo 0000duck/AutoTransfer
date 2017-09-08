@@ -126,7 +126,7 @@ namespace AutoTransfer
         public Nullable<double> EUCCEMU_Index { get; set; }
         public Nullable<double> CPMINDX_Index { get; set; }
         public Nullable<double> MPMICNMA_Index { get; set; }
-        public Nullable<double> CNFRBAL__Index { get; set; }
+        public Nullable<double> CNFRBAL_Index { get; set; }
         public Nullable<double> CNCPIYOY_Index { get; set; }
         public Nullable<double> CHEFTYOY_Index { get; set; }
         public Nullable<double> CNMS2YOY_Index { get; set; }

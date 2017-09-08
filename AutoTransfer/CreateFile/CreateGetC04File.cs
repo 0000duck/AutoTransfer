@@ -65,7 +65,14 @@ namespace AutoTransfer.CreateFile
                 new Econ_Foreign().GetType().GetProperties()
                     .Skip(2).ToList().ForEach(x =>
                     {
-                        data.Add(x.Name.Replace("_", " "));
+                        if (x.Name == "CNFRBAL_Index") //貿易收支 傳送要加$
+                        {
+                            data.Add(x.Name.Replace("_", "$ "));
+                        }
+                        else
+                        {
+                            data.Add(x.Name.Replace("_", " "));
+                        }
                     });
 
                 data.Add("END-OF-DATA");

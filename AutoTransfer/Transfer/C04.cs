@@ -34,9 +34,60 @@ namespace AutoTransfer.Transfer
         /// <summary>
         /// start Transfer
         /// </summary>
-        /// <param name="dateTime"></param>
-        public void startTransfer(string dateTime)
+        /// <param name="year"></param>
+        public void startTransfer(string year)
         {
+            IFRS9Entities db = new IFRS9Entities();
+            if (!year.IsNullOrWhiteSpace())
+            {
+                var A84datas = db.Econ_Foreign.Where(x => x.Year_Quartly.StartsWith(year));
+                if (A84datas.Any())
+                {
+                    List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
+                    List<string> yearQuartlys = A84datas.Select(x=>x.Year_Quartly).ToList();
+                    var A82Datas = db.Moody_Quartly_PD_Info.Where(x=> yearQuartlys.Contains(x.Year_Quartly)).ToList();
+                    A84datas.ToList().ForEach(x =>
+                    {
+                        Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
+                        C04Data.Year_Quartly = x.Year_Quartly;
+                        var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
+                        if (A82Data != null)
+                            C04Data.PD_Quartly = A82Data.PD;
+                        List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
+                        x.GetType().GetProperties().Where(z=> !notParm.Contains(z.Name)).ToList().ForEach(
+                            y =>
+                            {
+                                var p = C04Data.GetType().GetProperties().FirstOrDefault(i => i.Name == y.Name);
+                                if (p != null)
+                                {
+                                    p.SetValue(C04Data, y.GetValue(x));
+                                }
+                            });
+                    });                                                    
+                    db.Econ_F_YYYYMMDD.AddRange(C04s);
+                    try
+                    {
+                        db.SaveChanges();
+                        db.Dispose();
+                        log.txtLog(
+                            type,
+                            true,
+                            startTime,
+                            logPath,
+                            MessageType.Success.GetDescription());
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        log.txtLog(
+                            type,
+                            false,
+                            startTime,
+                            logPath,
+                            $"message: {ex.Message}" +
+                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                    }
+                }
+            }
         }
     }
 }
