@@ -77,6 +77,12 @@
     <Compile Include="Econ_D_YYYYMMDD.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Econ_Foreign.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Econ_F_YYYYMMDD.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Enum\A53CommpanyBloombergField.cs" />
     <Compile Include="Enum\GroupProductCode.cs" />
     <Compile Include="Enum\RatingOrg.cs" />
@@ -93,15 +99,20 @@
     <Compile Include="Loan_default_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Moody_Quartly_PD_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Rating_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Rating_Info_SampleInfo.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="StartTransferA84.cs" />
     <Compile Include="StartTransferA07.cs" />
     <Compile Include="StartTransferC03Mortgage.cs" />
     <Compile Include="Transfer\A07.cs" />
+    <Compile Include="Transfer\A84.cs" />
     <Compile Include="Transfer\C04.cs" />
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />

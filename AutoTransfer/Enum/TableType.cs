@@ -31,6 +31,12 @@ namespace AutoTransfer.Enum
             A60,
 
             /// <summary>
+            /// 國外總體經濟變數
+            /// </summary>
+            [Description("Econ_Foreign")]
+            A84,
+
+            /// <summary>
             /// 前瞻性國外總經資料
             /// </summary>
             [Description("Econ_F_YYYYMMDD")]
