@@ -86,11 +86,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA07FilePath(),
-            //     setFile.putFileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putA07FilePath(),
+                 setFile.putFileName(),
+                 out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -103,7 +103,7 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
                 getA07SFTP();
             }
         }
@@ -117,11 +117,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA07FilePath(),
-            //     setFile.getFileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getA07FilePath(),
+                 setFile.getFileName(),
+                 out error);
 
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //.Get(string.Empty,
