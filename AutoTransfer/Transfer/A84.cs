@@ -115,7 +115,7 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void getA84SFTP()
         {
-            new FileRelated().createFile(setFile.getA07FilePath());
+            new FileRelated().createFile(setFile.getC04FilePath());
 
             string error = string.Empty;
 
