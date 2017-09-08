@@ -38,6 +38,7 @@ namespace AutoTransfer.Transfer
         public void startTransfer(string year)
         {
             IFRS9Entities db = new IFRS9Entities();
+            DateTime dt = DateTime.Now;
             if (!year.IsNullOrWhiteSpace())
             {
                 var A84datas = db.Econ_Foreign.Where(x => x.Year_Quartly.StartsWith(year));
@@ -49,6 +50,7 @@ namespace AutoTransfer.Transfer
                     A84datas.ToList().ForEach(x =>
                     {
                         Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
+                        C04Data.Processing_Date = dt.ToString("yyyyMMdd");
                         C04Data.Year_Quartly = x.Year_Quartly;
                         var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
                         if (A82Data != null)

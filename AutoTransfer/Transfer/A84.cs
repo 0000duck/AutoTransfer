@@ -55,10 +55,7 @@ namespace AutoTransfer.Transfer
                 reportDateStr = dateTime;
                 //A84 的傳送檔名為 GetC04.req
                 setFile = new SetFile(TableType.C04, dateTime);
-                t.Interval = 1 * 1000;
-                Action f = () => createA84File();
-                t.Start(f); //委派 設定時間後要做的動作
-                //createA84File();
+                createA84File();
             }
         }
 
@@ -97,7 +94,6 @@ namespace AutoTransfer.Transfer
                  setFile.putC04FilePath(),
                  setFile.putFileName(),
                  out error);
-
             if (!error.IsNullOrWhiteSpace()) //fail
             {
                 log.txtLog(
@@ -119,7 +115,7 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void getA84SFTP()
         {
-            new FileRelated().createFile(setFile.getA07FilePath());
+            new FileRelated().createFile(setFile.getC04FilePath());
 
             string error = string.Empty;
 
@@ -128,7 +124,11 @@ namespace AutoTransfer.Transfer
                  setFile.getC04FilePath(),
                  setFile.getFileName(),
                  out error);
-
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //.Get(string.Empty,
+            //     setFile.getC04FilePath(),
+            //     setFile.getGZFileName(),
+            //     out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.txtLog(
@@ -140,6 +140,11 @@ namespace AutoTransfer.Transfer
             }
             else
             {
+                //string sourceFileName = Path.Combine(
+                //setFile.getC04FilePath(), setFile.getGZFileName());
+                //string destFileName = Path.Combine(
+                //setFile.getC04FilePath(), setFile.getFileName());
+                //Extension.Decompress(sourceFileName, destFileName);
                 DataToDb();
             }
         }
