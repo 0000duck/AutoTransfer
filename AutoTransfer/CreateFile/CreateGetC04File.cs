@@ -12,19 +12,18 @@ namespace AutoTransfer.CreateFile
         /// <summary>
         /// create Put Sample File
         /// </summary>
-        /// <param name="type"></param>
         /// <param name="dateTime"></param>
-        public bool create(TableType type, string dateTime)
+        public bool create(string dateTime)
         {
             bool flag = false;
             try
             {
                 List<string> data = new List<string>();
 
-                SetFile f = new SetFile(type, dateTime);
+                SetFile f = new SetFile(TableType.C04, dateTime);
 
                 //ex: GetC04_20170803.csv
-                string getFileName = f.getC04FileName();
+                string getFileName = f.getFileName();
 
                 #region File
 
@@ -63,6 +62,19 @@ namespace AutoTransfer.CreateFile
 
                 data.Add("START-OF-DATA");
 
+                new Econ_Foreign().GetType().GetProperties()
+                    .Skip(2).ToList().ForEach(x =>
+                    {
+                        if (x.Name == "CNFRBAL_Index") //貿易收支 傳送要加$
+                        {
+                            data.Add(x.Name.Replace("_", "$ "));
+                        }
+                        else
+                        {
+                            data.Add(x.Name.Replace("_", " "));
+                        }
+                    });
+
                 data.Add("END-OF-DATA");
 
                 #endregion START-OF-DATA
@@ -74,7 +86,7 @@ namespace AutoTransfer.CreateFile
                 //建立 req 檔案
                 flag = new CreatePutFile().create(
                     f.putC04FilePath(),
-                    f.putC04FileName(),
+                    f.putFileName(),
                     data);
             }
             catch

@@ -44,33 +44,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                string yearString = dateTime.Substring(0, 4);
-
-                switch (dateTime.Substring(4, 2))
-                {
-                    case "04":
-                        new CompleteEvent().saveC03Mortgage(yearString + "Q1");
-                        break;
-                    case "07":
-                        new CompleteEvent().saveC03Mortgage(yearString + "Q2");
-                        break;
-                    case "10":
-                        new CompleteEvent().saveC03Mortgage(yearString + "Q3");
-                        break;
-                    case "01":
-                        new CompleteEvent().saveC03Mortgage((int.Parse(yearString)-1).ToString() + "Q4");
-                        break;
-                    default:
-                        db.Dispose();
-                        log.txtLog(
-                            type,
-                            false,
-                            startTime,
-                            logPath,
-                            "排程執行月份必須是 04,07,10,01 月"
-                        );
-                        break;
-                }
+                new CompleteEvent().saveC03Mortgage(dateTime);
             }
         }
         #endregion

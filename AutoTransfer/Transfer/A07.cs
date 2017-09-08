@@ -50,10 +50,12 @@ namespace AutoTransfer.Transfer
                     MessageType.DateTime_Format_Fail.GetDescription()
                     );
             }
-
-            reportDateStr = dateTime;
-            setFile = new SetFile(tableType, dateTime);
-            createA07File();
+            else
+            {
+                reportDateStr = dateTime;
+                setFile = new SetFile(tableType, dateTime);
+                createA07File();
+            }
         }
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace AutoTransfer.Transfer
                     false,
                     startTime,
                     logPath,
-                    "上傳檔案失敗");
+                    error);
             }
             else //success (wait 20 min and get data)
             {
@@ -130,7 +132,7 @@ namespace AutoTransfer.Transfer
                     false,
                     startTime,
                     logPath,
-                    "下載檔案失敗");
+                    error);
             }
             else
             {

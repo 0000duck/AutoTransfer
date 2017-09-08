@@ -449,19 +449,29 @@ End Try Begin Catch End Catch
         /// <summary>
         /// C03 Mortgage save
         /// </summary>
-        /// <param name="yearQuartly"></param>
-        public void saveC03Mortgage(string yearQuartly)
+        /// <param name="todayDate"></param>
+        public void saveC03Mortgage(string todayDate)
         {
             string logPath = log.txtLocation(TableType.C03Mortgage.ToString());
             DateTime startTime = DateTime.Now;
 
             try
             {
+                string thisYear = todayDate.Substring(0, 4);
+                string lastYear = (int.Parse(thisYear) - 1).ToString();
+                string startYearQuartly = lastYear + "Q1";
+                string endYearQuartly = thisYear + "Q4";
+
                 List<Loan_default_Info> A06Data = db.Loan_default_Info
-                                                  .Where(x => x.Year_Quartly == yearQuartly).ToList();
+                                                  .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0 
+                                                              && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
+                                                        ).ToList();
 
                 List<Econ_Domestic> A07Data = db.Econ_Domestic
-                                              .Where(x => x.Year_Quartly == yearQuartly).ToList();
+                                              .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
+                                                          && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
+                                                    ).ToList();
+
                 if (!A06Data.Any())
                 {
                     log.txtLog(
@@ -469,7 +479,7 @@ End Try Begin Catch End Catch
                        false,
                        startTime,
                        logPath,
-                       "Loan_default_Info 無 " + yearQuartly + " 的資料");
+                       "Loan_default_Info 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料");
                 }
                 else if (!A07Data.Any())
                 {
@@ -478,7 +488,7 @@ End Try Begin Catch End Catch
                        false,
                        startTime,
                        logPath,
-                       "Econ_Domestic 無 " + yearQuartly + " 的資料");
+                       "Econ_Domestic 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料");
                 }
                 else
                 {
@@ -498,48 +508,63 @@ End Try Begin Catch End Catch
                         productCode = gpcm.Product_Code;
 
                         var query = db.Econ_D_YYYYMMDD
-                                    .Where(x => x.Year_Quartly == yearQuartly);
+                                    .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
+                                                && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
+                                          ).ToList();
                         db.Econ_D_YYYYMMDD.RemoveRange(query);
 
-                        db.Econ_D_YYYYMMDD.AddRange(
-                            A07Data.Select(x => new Econ_D_YYYYMMDD()
+                        double pdQuartly = 0;
+                        string yearQuartly = "";
+                        for (int i=0;i < A07Data.Count;i++)
+                        {
+                            yearQuartly = A07Data[i].Year_Quartly;
+                            pdQuartly = 0;
+                            Loan_default_Info ldi = db.Loan_default_Info.Where(x => x.Year_Quartly == yearQuartly).FirstOrDefault();
+                            if (ldi != null)
                             {
-                                Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
-                                Product_Code = productCode,
-                                Data_ID = "",
-                                Year_Quartly = x.Year_Quartly,
-                                PD_Quartly = A06Data[0].PD_Quartly,
-                                var1 = Extension.doubleNToDouble(x.TWSE_Index),
-                                var2 = Extension.doubleNToDouble(x.TWRGSARP_Index),
-                                var3 = Extension.doubleNToDouble(x.TWGDPCON_Index),
-                                var4 = Extension.doubleNToDouble(x.TWLFADJ_Index),
-                                var5 = Extension.doubleNToDouble(x.TWCPI_Index),
-                                var6 = Extension.doubleNToDouble(x.TWMSA1A_Index),
-                                var7 = Extension.doubleNToDouble(x.TWMSA1B_Index),
-                                var8 = Extension.doubleNToDouble(x.TWMSAM2_Index),
-                                var9 = Extension.doubleNToDouble(x.GVTW10YR_Index),
-                                var10 = Extension.doubleNToDouble(x.TWTRBAL_Index),
-                                var11 = Extension.doubleNToDouble(x.TWTREXP_Index),
-                                var12 = Extension.doubleNToDouble(x.TWTRIMP_Index),
-                                var13 = Extension.doubleNToDouble(x.TAREDSCD_Index),
-                                var14 = Extension.doubleNToDouble(x.TWCILI_Index),
-                                var15 = Extension.doubleNToDouble(x.TWBOPCUR_Index),
-                                var16 = Extension.doubleNToDouble(x.EHCATW_Index),
-                                var17 = Extension.doubleNToDouble(x.TWINDPI_Index),
-                                var18 = Extension.doubleNToDouble(x.TWWPI_Index),
-                                var19 = Extension.doubleNToDouble(x.TARSYOY_Index),
-                                var20 = Extension.doubleNToDouble(x.TWEOTTL_Index),
-                                var21 = Extension.doubleNToDouble(x.SLDETIGT_Index),
-                                var22 = Extension.doubleNToDouble(x.TWIRFE_Index),
-                                var23 = Extension.doubleNToDouble(x.SINYI_HOUSE_PRICE_index),
-                                var24 = Extension.doubleNToDouble(x.CATHAY_ESTATE_index),
-                                var25 = Extension.doubleNToDouble(x.Real_GDP2011),
-                                var26 = Extension.doubleNToDouble(x.MCCCTW_Index),
-                                var27 = Extension.doubleNToDouble(x.TRDR1T_Index)
-                            })
-                        );
+                                pdQuartly = ldi.PD_Quartly;
+                            }
 
-                        db.SaveChanges();
+                            db.Econ_D_YYYYMMDD.Add(
+                                new Econ_D_YYYYMMDD()
+                                {
+                                    Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
+                                    Product_Code = productCode,
+                                    Data_ID = "",
+                                    Year_Quartly = A07Data[i].Year_Quartly,
+                                    PD_Quartly = pdQuartly,
+                                    TWSE_Index = Extension.doubleNToDouble(A07Data[i].TWSE_Index),
+                                    TWRGSARP_Index = Extension.doubleNToDouble(A07Data[i].TWRGSARP_Index),
+                                    TWGDPCON_Index = Extension.doubleNToDouble(A07Data[i].TWGDPCON_Index),
+                                    TWLFADJ_Index = Extension.doubleNToDouble(A07Data[i].TWLFADJ_Index),
+                                    TWCPI_Index = Extension.doubleNToDouble(A07Data[i].TWCPI_Index),
+                                    TWMSA1A_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1A_Index),
+                                    TWMSA1B_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1B_Index),
+                                    TWMSAM2_Index = Extension.doubleNToDouble(A07Data[i].TWMSAM2_Index),
+                                    GVTW10YR_Index = Extension.doubleNToDouble(A07Data[i].GVTW10YR_Index),
+                                    TWTRBAL_Index = Extension.doubleNToDouble(A07Data[i].TWTRBAL_Index),
+                                    TWTREXP_Index = Extension.doubleNToDouble(A07Data[i].TWTREXP_Index),
+                                    TWTRIMP_Index = Extension.doubleNToDouble(A07Data[i].TWTRIMP_Index),
+                                    TAREDSCD_Index = Extension.doubleNToDouble(A07Data[i].TAREDSCD_Index),
+                                    TWCILI_Index = Extension.doubleNToDouble(A07Data[i].TWCILI_Index),
+                                    TWBOPCUR_Index = Extension.doubleNToDouble(A07Data[i].TWBOPCUR_Index),
+                                    EHCATW_Index = Extension.doubleNToDouble(A07Data[i].EHCATW_Index),
+                                    TWINDPI_Index = Extension.doubleNToDouble(A07Data[i].TWINDPI_Index),
+                                    TWWPI_Index = Extension.doubleNToDouble(A07Data[i].TWWPI_Index),
+                                    TARSYOY_Index = Extension.doubleNToDouble(A07Data[i].TARSYOY_Index),
+                                    TWEOTTL_Index = Extension.doubleNToDouble(A07Data[i].TWEOTTL_Index),
+                                    SLDETIGT_Index = Extension.doubleNToDouble(A07Data[i].SLDETIGT_Index),
+                                    TWIRFE_Index = Extension.doubleNToDouble(A07Data[i].TWIRFE_Index),
+                                    SINYI_HOUSE_PRICE_index = Extension.doubleNToDouble(A07Data[i].SINYI_HOUSE_PRICE_index),
+                                    CATHAY_ESTATE_index = Extension.doubleNToDouble(A07Data[i].CATHAY_ESTATE_index),
+                                    Real_GDP2011 = Extension.doubleNToDouble(A07Data[i].Real_GDP2011),
+                                    MCCCTW_Index = Extension.doubleNToDouble(A07Data[i].MCCCTW_Index),
+                                    TRDR1T_Index = Extension.doubleNToDouble(A07Data[i].TRDR1T_Index)
+                                }
+                            );
+
+                            db.SaveChanges();
+                        }
 
                         log.txtLog(
                            TableType.C03Mortgage.ToString(),

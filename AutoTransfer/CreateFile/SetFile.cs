@@ -11,9 +11,13 @@ namespace AutoTransfer.CreateFile
         private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
         private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
         private static string samplePut = ConfigurationManager.AppSettings["samplePut"];
- private static string getC04Get = ConfigurationManager.AppSettings["getC04Get"];
-        private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];private static string A07Put = ConfigurationManager.AppSettings["A07Put"];private static string A07Get = ConfigurationManager.AppSettings["A07Get"];        private static string startupPath = Directory.GetCurrentDirectory();
+        private static string getC04Get = ConfigurationManager.AppSettings["getC04Get"];
+        private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];
+        private static string A07Put = ConfigurationManager.AppSettings["A07Put"];
+        private static string A07Get = ConfigurationManager.AppSettings["A07Get"];
+        private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
+
         private TableType _type;
 
         public SetFile(TableType type, string dateTime)
@@ -22,7 +26,14 @@ namespace AutoTransfer.CreateFile
             _dateTime = dateTime;
         }
 
-        public string getC04FileName()
+        public string getGZFileName()
+        {
+            return string.Format("Get{0}_{1}.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
+
+        public string getFileName()
         {
             return string.Format("Get{0}_{1}.csv",
                 _type.ToString(),
@@ -61,7 +72,7 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "sampleGet") : sampleGet;
         }
 
-        public string putC04FileName()
+        public string putFileName()
         {
             return string.Format("Get{0}_{1}.req",
                 _type.ToString(),
@@ -105,7 +116,7 @@ namespace AutoTransfer.CreateFile
             return string.Format("GetC03.csv",
                 _type.ToString(),
                 _dateTime);
-    }
+        }
 
         public string getA07FilePath()
         {

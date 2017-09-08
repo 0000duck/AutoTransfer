@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 namespace AutoTransfer.Utility
@@ -82,7 +84,72 @@ namespace AutoTransfer.Utility
             return null;
         }
 
+        public static string IntToYearQuartly(this int val)
+        {
+            string result = string.Empty;
+            switch (val)
+            {
+                case 1:
+                case 2:
+                case 3:
+                    result = "Q1";
+                    break;
+
+                case 4:
+                case 5:
+                case 6:
+                    result = "Q2";
+                    break;
+
+                case 7:
+                case 8:
+                case 9:
+                    result = "Q3";
+                    break;
+
+                case 10:
+                case 11:
+                case 12:
+                    result = "Q4";
+                    break;
+            }
+            return result;
+        }
+
+        public static void Decompress(string sourceFileName, string destFileName)
+        {
+            try
+            {
+                //被壓縮後的檔案
+                FileStream sourceFile = File.OpenRead(sourceFileName);
+                //解壓縮後的檔案
+                FileStream destFile = File.Create(destFileName);
+                //開始
+                GZipStream compStream = new GZipStream(sourceFile, CompressionMode.Decompress, true);
+                try
+                {
+                    int theByte = compStream.ReadByte();
+                    while (theByte != -1)
+                    {
+                        destFile.WriteByte((byte)theByte);
+                        theByte = compStream.ReadByte();
+                    }
+                }
+                finally
+                {
+                    compStream.Flush();
+                    compStream.Dispose();
+                    sourceFile.Flush();
+                    sourceFile.Dispose();
+                    destFile.Flush();
+                    destFile.Dispose();
+                }
+            }
+            catch{ }
+        }
+
         #region Double? To Double
+
         /// <summary>
         /// Double? 轉 Double (null 回傳 0d)
         /// </summary>
@@ -97,6 +164,7 @@ namespace AutoTransfer.Utility
 
             return 0d;
         }
+
         #endregion Double? To Double
     }
 }
