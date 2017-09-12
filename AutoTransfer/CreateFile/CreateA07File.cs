@@ -1,5 +1,4 @@
-﻿using AutoTransfer.ViewModel;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
@@ -22,8 +21,9 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(type, dateTime);
 
-                //ex: GetC03
-                string getFileName = f.getA07FileName();
+                //ex: GetA07_20170908.csv
+                string getFileName = f.getFileName();
+                //string getFileName = f.getGZFileName();
 
                 #region File
                 data.Add("START-OF-FILE");
@@ -59,9 +59,20 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
-                object obj = null;
-                obj = new A07ViewModel();
-                obj.GetType().GetProperties().ToList().ForEach(x => data.Add(x.Name + " Index"));
+
+                new Econ_Domestic().GetType().GetProperties()
+                    .Skip(2).ToList().ForEach(x =>
+                    {
+                        if (x.Name == "SINYI_HOUSE_PRICE_index" || x.Name == "CATHAY_ESTATE_index" || x.Name == "Real_GDP2011")
+                        {
+                            data.Add(x.Name);
+                        }
+                        else
+                        {
+                            data.Add(x.Name.Replace("_", " "));
+                        }
+                    });
+
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
 
@@ -70,7 +81,7 @@ namespace AutoTransfer.CreateFile
 
                 flag = new CreatePutFile().create(
                     f.putA07FilePath(),
-                    f.putA07FileName(),
+                    f.putFileName(),
                     data);
             }
             catch

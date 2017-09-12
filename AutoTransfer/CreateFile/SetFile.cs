@@ -111,24 +111,10 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "samplePut") : samplePut;
         }
 
-        public string getA07FileName()
-        {
-            return string.Format("GetC03.csv",
-                _type.ToString(),
-                _dateTime);
-        }
-
         public string getA07FilePath()
         {
             return A07Get.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "A07Get") : A07Get;
-        }
-
-        public string putA07FileName()
-        {
-            return string.Format("GetC03.req",
-                _type.ToString(),
-                _dateTime);
         }
 
         public string putA07FilePath()

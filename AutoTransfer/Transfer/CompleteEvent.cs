@@ -34,7 +34,7 @@ namespace AutoTransfer.Transfer
                     .Where(x => x.Report_Date == dt &&
                                  x.Version != null &&
                                  x.Version == version);
-                if (A41Data.Any())
+                if (A41Data.Any() && db.Rating_Info.Any())
                 {
                     try
                     {
