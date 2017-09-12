@@ -643,59 +643,79 @@ namespace AutoTransfer.Transfer
             #endregion commpany Data
 
             #region saveDb
-            db.Rating_Info.RemoveRange(
-                db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
-            db.Rating_Info.AddRange(sampleData);
-            db.Rating_Info.AddRange(commpanyData);
-            db.Rating_Info_SampleInfo.RemoveRange(
-                db.Rating_Info_SampleInfo.Where(x=>x.Report_Date == reportDateDt));
-            db.Rating_Info_SampleInfo.AddRange(
-                sampleInfos.Select(x => new Rating_Info_SampleInfo()
-                {
-                    Bond_Number = x.Bond_Number,
-                    GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
-                    GUARANTOR_NAME = x.GUARANTOR_NAME,
-                    ISSUER_TICKER = x.ISSUER_TICKER,
-                    Report_Date = reportDateDt
-                }));
-            try
-            {
-                db.SaveChanges();
-                db.Dispose();
-                log.saveTransferCheck(
-                    type,
-                    true,
-                    reportDateDt,
-                    1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    true,
-                    startTime,
-                    logPath,
-                    MessageType.Success.GetDescription());
-                sampleData.AddRange(commpanyData);
-                new CompleteEvent().saveDb(reportDateDt, verInt);
-            }
-            catch (DbUpdateException ex)
-            {
-                log.saveTransferCheck(
-                    type,
-                    false,
-                    reportDateDt,
-                    1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
-                    logPath,
-                    $"message: {ex.Message}" +
-                    $", inner message {ex.InnerException?.InnerException?.Message}");
-            }
 
+            if (sampleData.Any() || commpanyData.Any())
+            {
+                db.Rating_Info.RemoveRange(
+    db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
+                db.Rating_Info.AddRange(sampleData);
+                db.Rating_Info.AddRange(commpanyData);
+                db.Rating_Info_SampleInfo.RemoveRange(
+                    db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
+                db.Rating_Info_SampleInfo.AddRange(
+                    sampleInfos.Select(x => new Rating_Info_SampleInfo()
+                    {
+                        Bond_Number = x.Bond_Number,
+                        GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
+                        GUARANTOR_NAME = x.GUARANTOR_NAME,
+                        ISSUER_TICKER = x.ISSUER_TICKER,
+                        Report_Date = reportDateDt
+                    }));
+                try
+                {
+                    db.SaveChanges();
+                    db.Dispose();
+                    log.saveTransferCheck(
+                        type,
+                        true,
+                        reportDateDt,
+                        1,
+                        startTime,
+                        DateTime.Now);
+                    log.txtLog(
+                        type,
+                        true,
+                        startTime,
+                        logPath,
+                        MessageType.Success.GetDescription());
+                    sampleData.AddRange(commpanyData);
+                    new CompleteEvent().saveDb(reportDateDt, verInt);
+                }
+                catch (DbUpdateException ex)
+                {
+                    log.saveTransferCheck(
+                        type,
+                        false,
+                        reportDateDt,
+                        1,
+                        startTime,
+                        DateTime.Now);
+                    log.txtLog(
+                        type,
+                        false,
+                        startTime,
+                        logPath,
+                        $"message: {ex.Message}" +
+                        $", inner message {ex.InnerException?.InnerException?.Message}");
+                }
+            }
+            else
+            {
+                log.saveTransferCheck(
+                    type,
+                    false,
+                    reportDateDt,
+                    1,
+                    startTime,
+                    DateTime.Now);
+                log.txtLog(
+                    type,
+                    false,
+                    startTime,
+                    logPath,
+                    string.Format("{0} ({1}) {2}", TableType.A53.GetDescription() ,
+                    TableType.A53.ToString(),"回傳文件沒有新增任何資料"));
+            }
             #endregion saveDb
         }
 
