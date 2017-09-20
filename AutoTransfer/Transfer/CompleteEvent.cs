@@ -462,15 +462,15 @@ End Try Begin Catch End Catch
                 string startYearQuartly = lastYear + "Q1";
                 string endYearQuartly = thisYear + "Q4";
 
-                List<Loan_default_Info> A06Data = db.Loan_default_Info
-                                                  .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0 
+                IEnumerable<Loan_default_Info> A06Data = db.Loan_default_Info
+                                                  .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
                                                               && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
-                                                        ).ToList();
+                                                        ).AsEnumerable();
 
-                List<Econ_Domestic> A07Data = db.Econ_Domestic
+                IEnumerable<Econ_Domestic> A07Data = db.Econ_Domestic
                                               .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
                                                           && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
-                                                    ).ToList();
+                                                    ).AsEnumerable();
 
                 if (!A06Data.Any())
                 {
@@ -513,58 +513,52 @@ End Try Begin Catch End Catch
                                           ).ToList();
                         db.Econ_D_YYYYMMDD.RemoveRange(query);
 
-                        double pdQuartly = 0;
-                        string yearQuartly = "";
-                        for (int i=0;i < A07Data.Count;i++)
-                        {
-                            yearQuartly = A07Data[i].Year_Quartly;
-                            pdQuartly = 0;
-                            Loan_default_Info ldi = db.Loan_default_Info.Where(x => x.Year_Quartly == yearQuartly).FirstOrDefault();
-                            if (ldi != null)
-                            {
-                                pdQuartly = ldi.PD_Quartly;
-                            }
+                        string nowDate = DateTime.Now.ToString("yyyy/MM/dd");
 
-                            db.Econ_D_YYYYMMDD.Add(
-                                new Econ_D_YYYYMMDD()
-                                {
-                                    Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
-                                    Product_Code = productCode,
-                                    Data_ID = "",
-                                    Year_Quartly = A07Data[i].Year_Quartly,
-                                    PD_Quartly = pdQuartly,
-                                    TWSE_Index = Extension.doubleNToDouble(A07Data[i].TWSE_Index),
-                                    TWRGSARP_Index = Extension.doubleNToDouble(A07Data[i].TWRGSARP_Index),
-                                    TWGDPCON_Index = Extension.doubleNToDouble(A07Data[i].TWGDPCON_Index),
-                                    TWLFADJ_Index = Extension.doubleNToDouble(A07Data[i].TWLFADJ_Index),
-                                    TWCPI_Index = Extension.doubleNToDouble(A07Data[i].TWCPI_Index),
-                                    TWMSA1A_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1A_Index),
-                                    TWMSA1B_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1B_Index),
-                                    TWMSAM2_Index = Extension.doubleNToDouble(A07Data[i].TWMSAM2_Index),
-                                    GVTW10YR_Index = Extension.doubleNToDouble(A07Data[i].GVTW10YR_Index),
-                                    TWTRBAL_Index = Extension.doubleNToDouble(A07Data[i].TWTRBAL_Index),
-                                    TWTREXP_Index = Extension.doubleNToDouble(A07Data[i].TWTREXP_Index),
-                                    TWTRIMP_Index = Extension.doubleNToDouble(A07Data[i].TWTRIMP_Index),
-                                    TAREDSCD_Index = Extension.doubleNToDouble(A07Data[i].TAREDSCD_Index),
-                                    TWCILI_Index = Extension.doubleNToDouble(A07Data[i].TWCILI_Index),
-                                    TWBOPCUR_Index = Extension.doubleNToDouble(A07Data[i].TWBOPCUR_Index),
-                                    EHCATW_Index = Extension.doubleNToDouble(A07Data[i].EHCATW_Index),
-                                    TWINDPI_Index = Extension.doubleNToDouble(A07Data[i].TWINDPI_Index),
-                                    TWWPI_Index = Extension.doubleNToDouble(A07Data[i].TWWPI_Index),
-                                    TARSYOY_Index = Extension.doubleNToDouble(A07Data[i].TARSYOY_Index),
-                                    TWEOTTL_Index = Extension.doubleNToDouble(A07Data[i].TWEOTTL_Index),
-                                    SLDETIGT_Index = Extension.doubleNToDouble(A07Data[i].SLDETIGT_Index),
-                                    TWIRFE_Index = Extension.doubleNToDouble(A07Data[i].TWIRFE_Index),
-                                    SINYI_HOUSE_PRICE_index = Extension.doubleNToDouble(A07Data[i].SINYI_HOUSE_PRICE_index),
-                                    CATHAY_ESTATE_index = Extension.doubleNToDouble(A07Data[i].CATHAY_ESTATE_index),
-                                    Real_GDP2011 = Extension.doubleNToDouble(A07Data[i].Real_GDP2011),
-                                    MCCCTW_Index = Extension.doubleNToDouble(A07Data[i].MCCCTW_Index),
-                                    TRDR1T_Index = Extension.doubleNToDouble(A07Data[i].TRDR1T_Index)
-                                }
-                            );
+                        var addData = (
+                                             from a in A06Data
+                                             join b in A07Data
+                                             on new { a.Year_Quartly }
+                                             equals new { b.Year_Quartly}
+                                             select new Econ_D_YYYYMMDD()
+                                             {
+                                                 Processing_Date = nowDate,
+                                                 Product_Code = productCode,
+                                                 Data_ID = "",
+                                                 Year_Quartly = b.Year_Quartly,
+                                                 PD_Quartly = a.PD_Quartly,
+                                                 TWSE_Index = Extension.doubleNToDouble(b.TWSE_Index),
+                                                 TWRGSARP_Index = Extension.doubleNToDouble(b.TWRGSARP_Index),
+                                                 TWGDPCON_Index = Extension.doubleNToDouble(b.TWGDPCON_Index),
+                                                 TWLFADJ_Index = Extension.doubleNToDouble(b.TWLFADJ_Index),
+                                                 TWCPI_Index = Extension.doubleNToDouble(b.TWCPI_Index),
+                                                 TWMSA1A_Index = Extension.doubleNToDouble(b.TWMSA1A_Index),
+                                                 TWMSA1B_Index = Extension.doubleNToDouble(b.TWMSA1B_Index),
+                                                 TWMSAM2_Index = Extension.doubleNToDouble(b.TWMSAM2_Index),
+                                                 GVTW10YR_Index = Extension.doubleNToDouble(b.GVTW10YR_Index),
+                                                 TWTRBAL_Index = Extension.doubleNToDouble(b.TWTRBAL_Index),
+                                                 TWTREXP_Index = Extension.doubleNToDouble(b.TWTREXP_Index),
+                                                 TWTRIMP_Index = Extension.doubleNToDouble(b.TWTRIMP_Index),
+                                                 TAREDSCD_Index = Extension.doubleNToDouble(b.TAREDSCD_Index),
+                                                 TWCILI_Index = Extension.doubleNToDouble(b.TWCILI_Index),
+                                                 TWBOPCUR_Index = Extension.doubleNToDouble(b.TWBOPCUR_Index),
+                                                 EHCATW_Index = Extension.doubleNToDouble(b.EHCATW_Index),
+                                                 TWINDPI_Index = Extension.doubleNToDouble(b.TWINDPI_Index),
+                                                 TWWPI_Index = Extension.doubleNToDouble(b.TWWPI_Index),
+                                                 TARSYOY_Index = Extension.doubleNToDouble(b.TARSYOY_Index),
+                                                 TWEOTTL_Index = Extension.doubleNToDouble(b.TWEOTTL_Index),
+                                                 SLDETIGT_Index = Extension.doubleNToDouble(b.SLDETIGT_Index),
+                                                 TWIRFE_Index = Extension.doubleNToDouble(b.TWIRFE_Index),
+                                                 SINYI_HOUSE_PRICE_index = Extension.doubleNToDouble(b.SINYI_HOUSE_PRICE_index),
+                                                 CATHAY_ESTATE_index = Extension.doubleNToDouble(b.CATHAY_ESTATE_index),
+                                                 Real_GDP2011 = Extension.doubleNToDouble(b.Real_GDP2011),
+                                                 MCCCTW_Index = Extension.doubleNToDouble(b.MCCCTW_Index),
+                                                 TRDR1T_Index = Extension.doubleNToDouble(b.TRDR1T_Index)
+                                             }
+                                      ).AsEnumerable();
 
-                            db.SaveChanges();
-                        }
+                        db.Econ_D_YYYYMMDD.AddRange(addData);
+                        db.SaveChanges();
 
                         log.txtLog(
                            TableType.C03Mortgage.ToString(),
