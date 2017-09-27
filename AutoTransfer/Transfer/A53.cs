@@ -665,9 +665,22 @@ namespace AutoTransfer.Transfer
                         ISSUER_TICKER = x.ISSUER_TICKER,
                         Report_Date = reportDateDt
                     }));
+
+                #region A95 特殊　PRODUCT
+                List<string> products = new List<string>()
+                {
+                    "411 Gov.CENTRAL",
+                    "931 CDO",
+                    "A11 AGENCY MBS",
+                    "932 CLO"
+                };
+                #endregion
+
                 var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
+
                 db.Bond_Ticker_Info.Where(x => x.Report_Date == reportDateDt &&
-                x.Version == verInt).ToList().ForEach(x =>
+                x.Version == verInt && !products.Contains(x.PRODUCT)).ToList()
+                .ForEach(x =>
                 {
                     var obj = SDs.FirstOrDefault(y => y.Item1 == x.Bond_Number);
                     if (obj != null)
@@ -678,20 +691,20 @@ namespace AutoTransfer.Transfer
                             x.Bloomberg_Ticker = obj.Item2.Trim().Split(' ')[0];
                             x.Processing_Date = startTime;
                             var A45Data = A45Datas.FirstOrDefault(z =>
-                            z.Bloomberg_Ticker == x.Bloomberg_Ticker &&
-                            z.Bond_Type == x.Bond_Type);
+                            z.Bloomberg_Ticker == x.Bloomberg_Ticker);
                             if (A45Data != null)
                             {
-                                x.Assessment_Sub_Kind = A45Data.Assessment_Sub_Kind;
+                                x.Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind,x.Lien_position);
+                                x.Bond_Type = formateBondType(A45Data.Bond_Type);
                                 var A41 = db.Bond_Account_Info.FirstOrDefault(i =>
-                                    i.Bond_Number == x.Bond_Number &&
                                     i.Report_Date == x.Report_Date &&
                                     i.Version == x.Version &&
+                                    i.Bond_Number == x.Bond_Number &&
                                     i.Lots == x.Lots &&
-                                    i.Portfolio_Name == x.Portfolio_Name
-                                    );
+                                    i.Portfolio_Name == x.Portfolio_Name);
                                 if (A41 != null)
                                 {
+                                    A41.Bond_Type = x.Bond_Type;
                                     A41.Assessment_Sub_Kind = x.Assessment_Sub_Kind;
                                     A41.Processing_Date = startTime;
                                 }                                   
@@ -716,7 +729,6 @@ namespace AutoTransfer.Transfer
                         startTime,
                         logPath,
                         MessageType.Success.GetDescription());
-                    //sampleData.AddRange(commpanyData);
                     new CompleteEvent().saveDb(reportDateDt, verInt);
                 }
                 catch (DbUpdateException ex)
@@ -899,6 +911,41 @@ namespace AutoTransfer.Transfer
             };
         }
 
+        /// <summary>
+        /// formate A95 BondType
+        /// </summary>
+        /// <param name="bondType"></param>
+        /// <returns></returns>
+        private string formateBondType(string bondType)
+        {
+            if (bondType.IsNullOrWhiteSpace())
+                return bondType;
+            if (bondType.Trim() == "Quasi Sovereign")
+                return "主權及國營事業債";
+            if (bondType.Trim() == "Non Quasi Sovereign")
+                return "其他債券";
+            return bondType;
+        }
+
+        /// <summary>
+        /// formate A95 AssessmentSubKind
+        /// </summary>
+        /// <param name="assessmentSubKind"></param>
+        /// <param name="lienPosition"></param>
+        /// <returns></returns>
+        private string formateAssessmentSubKind(string assessmentSubKind,string lienPosition)
+        {
+            if (assessmentSubKind.IsNullOrWhiteSpace())
+                return assessmentSubKind;
+            if (assessmentSubKind.Trim() == "金融債")
+            {
+                if (lienPosition.IsNullOrEmpty())
+                    return "金融債主順位債券";
+                if (lienPosition.Trim() == "次順位")
+                    return "金融債次順位債券";
+            }
+            return assessmentSubKind;
+        }
         #endregion private function
     }
 }
