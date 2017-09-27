@@ -23,6 +23,8 @@
         <EntityTypeShape EntityType="IFRS9Model.Moody_Quartly_PD_Info" Width="1.5" PointX="12.75" PointY="0.75" />
         <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="10.375" PointY="3.75" />
         <EntityTypeShape EntityType="IFRS9Model.Econ_F_YYYYMMDD" Width="1.5" PointX="5.375" PointY="12.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Bond_Ticker_Info" Width="1.5" PointX="7.375" PointY="12.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Bond_Category_Info" Width="1.5" PointX="13.375" PointY="3.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

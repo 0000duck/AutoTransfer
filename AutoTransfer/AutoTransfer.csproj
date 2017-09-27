@@ -60,6 +60,9 @@
     <Compile Include="Bond_Account_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Bond_Category_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Bond_Rating_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -67,6 +70,9 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Bond_Rating_Summary.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Bond_Ticker_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="CreateFile\CreateGetC04File.cs" />

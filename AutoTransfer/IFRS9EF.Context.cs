@@ -41,5 +41,7 @@ namespace AutoTransfer
         public virtual DbSet<Moody_Quartly_PD_Info> Moody_Quartly_PD_Info { get; set; }
         public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
         public virtual DbSet<Econ_F_YYYYMMDD> Econ_F_YYYYMMDD { get; set; }
+        public virtual DbSet<Bond_Ticker_Info> Bond_Ticker_Info { get; set; }
+        public virtual DbSet<Bond_Category_Info> Bond_Category_Info { get; set; }
     }
 }

@@ -96,5 +96,14 @@
         public string TRC_EFF_DT { get; set; }
 
         #endregion TRC 原A56
+
+        #region A95 Security_Des
+
+        /// <summary>
+        /// A95 Security_Des
+        /// </summary>
+        public string Security_Des { get; set; }
+
+        #endregion A95 Security_Des
     }
 }

@@ -228,7 +228,7 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        if (arr.Length >= 18)
+                        if (arr.Length >= 19)
                         {
                             if (!arr[3].IsNullOrWhiteSpace() &&
                                 !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
@@ -374,6 +374,7 @@ namespace AutoTransfer.Transfer
             List<Rating_Info> sampleData = new List<Rating_Info>();
             List<Rating_Info> commpanyData = new List<Rating_Info>();
             List<sampleInfo> sampleInfos = new List<sampleInfo>();
+            List<Tuple<string, string>> SDs = new List<Tuple<string, string>>();
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
 
@@ -414,7 +415,9 @@ namespace AutoTransfer.Transfer
                         //--TRC(中華信評)
                         //arr[16] (國內)RTG_TRC (TRC 評等)
                         //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
-                        if (arr.Length >= 18)
+                        //--A95 Security_Des (與A53 一起抓資料)
+                        //arr[18] A95 Security_Des
+                        if (arr.Length >= 19)
                         {
                             //S&P國外評等
                             validateSample(
@@ -463,6 +466,7 @@ namespace AutoTransfer.Transfer
                                 GUARANTOR_EQY_TICKER = arr[6],
                                 GUARANTOR_NAME = arr[7]
                             });
+                            SDs.Add(new Tuple<string, string>(arr[0], arr[18]));
                         }
                     }
                     if ("START-OF-DATA".Equals(line))
@@ -647,7 +651,7 @@ namespace AutoTransfer.Transfer
             if (sampleData.Any() || commpanyData.Any())
             {
                 db.Rating_Info.RemoveRange(
-    db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
+                    db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
                 db.Rating_Info.AddRange(sampleData);
                 db.Rating_Info.AddRange(commpanyData);
                 db.Rating_Info_SampleInfo.RemoveRange(
@@ -661,6 +665,40 @@ namespace AutoTransfer.Transfer
                         ISSUER_TICKER = x.ISSUER_TICKER,
                         Report_Date = reportDateDt
                     }));
+                var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
+                db.Bond_Ticker_Info.Where(x => x.Report_Date == reportDateDt &&
+                x.Version == verInt).ToList().ForEach(x =>
+                {
+                    var obj = SDs.FirstOrDefault(y => y.Item1 == x.Bond_Number);
+                    if (obj != null)
+                    {
+                        if (!obj.Item2.IsNullOrWhiteSpace())
+                        {
+                            x.Security_Des = obj.Item2;
+                            x.Bloomberg_Ticker = obj.Item2.Trim().Split(' ')[0];
+                            x.Processing_Date = startTime;
+                            var A45Data = A45Datas.FirstOrDefault(z =>
+                            z.Bloomberg_Ticker == x.Bloomberg_Ticker &&
+                            z.Bond_Type == x.Bond_Type);
+                            if (A45Data != null)
+                            {
+                                x.Assessment_Sub_Kind = A45Data.Assessment_Sub_Kind;
+                                var A41 = db.Bond_Account_Info.FirstOrDefault(i =>
+                                    i.Bond_Number == x.Bond_Number &&
+                                    i.Report_Date == x.Report_Date &&
+                                    i.Version == x.Version &&
+                                    i.Lots == x.Lots &&
+                                    i.Portfolio_Name == x.Portfolio_Name
+                                    );
+                                if (A41 != null)
+                                {
+                                    A41.Assessment_Sub_Kind = x.Assessment_Sub_Kind;
+                                    A41.Processing_Date = startTime;
+                                }                                   
+                            }
+                        }
+                    }
+                });
                 try
                 {
                     db.SaveChanges();
@@ -678,7 +716,7 @@ namespace AutoTransfer.Transfer
                         startTime,
                         logPath,
                         MessageType.Success.GetDescription());
-                    sampleData.AddRange(commpanyData);
+                    //sampleData.AddRange(commpanyData);
                     new CompleteEvent().saveDb(reportDateDt, verInt);
                 }
                 catch (DbUpdateException ex)
