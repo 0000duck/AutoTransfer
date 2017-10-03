@@ -34,8 +34,8 @@ namespace AutoTransfer.CreateFile
 
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getdata");
-                data.Add("PROGRAMFLAG=oneshot");
-                data.Add("FIRMNAME=dl221"); //確認是否提出來?
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
+                data.Add("FIRMNAME="+f.getFIRMNAME()); //確認是否提出來?
                 data.Add("SECMASTER=YES");
                 data.Add("OUTPUTFORMAT=bulklist");
                 data.Add("DELIMITER=,");

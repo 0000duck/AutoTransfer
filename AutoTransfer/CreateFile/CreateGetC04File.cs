@@ -33,8 +33,8 @@ namespace AutoTransfer.CreateFile
 
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("FILETYPE=pc");
-                data.Add("PROGRAMFLAG=oneshot");
-                data.Add("FIRMNAME=dl221"); //確認是否提出來?
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
+                data.Add("FIRMNAME=" + f.getFIRMNAME()); //確認是否提出來?
                 data.Add("HIST_PERIOD=q");
                 data.Add("PROGRAMNAME=gethistory");
 

@@ -29,8 +29,8 @@ namespace AutoTransfer.CreateFile
                 data.Add("START-OF-FILE");
 
                 #region Title
-                data.Add("FIRMNAME=dl221");
-                data.Add("PROGRAMFLAG=oneshot");
+                data.Add("FIRMNAME="+ f.getFIRMNAME());
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FILETYPE=pc");
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("HIST_PERIOD=q");
