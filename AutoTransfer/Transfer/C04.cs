@@ -41,7 +41,8 @@ namespace AutoTransfer.Transfer
             DateTime dt = DateTime.Now;
             if (!year.IsNullOrWhiteSpace())
             {
-                var A84datas = db.Econ_Foreign.Where(x => x.Year_Quartly.StartsWith(year));
+                var A84datas = db.Econ_Foreign.AsNoTracking()
+                    .Where(x => x.Year_Quartly.StartsWith(year));
                 if (A84datas.Any())
                 {
                     List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
@@ -65,6 +66,7 @@ namespace AutoTransfer.Transfer
                                     p.SetValue(C04Data, y.GetValue(x));
                                 }
                             });
+                        C04s.Add(C04Data);
                     });                                                    
                     db.Econ_F_YYYYMMDD.AddRange(C04s);
                     try

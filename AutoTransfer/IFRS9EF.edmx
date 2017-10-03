@@ -62,6 +62,22 @@
           <Property Name="Value_date" Type="date" />
           <Property Name="Portfolio_Name" Type="varchar" MaxLength="30" />
         </EntityType>
+        <EntityType Name="Bond_Category_Info">
+          <Key>
+            <PropertyRef Name="Bloomberg_Ticker" />
+            <PropertyRef Name="Processing_Date" />
+          </Key>
+          <Property Name="Memo" Type="varchar" MaxLength="10" />
+          <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="Bond_Type" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Corp_NonCorp" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="Sector_External" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Sector_Internal" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Assessment_Sub_Kind" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Sector_Research" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Sector_Extra" Type="varchar" MaxLength="50" />
+          <Property Name="Processing_Date" Type="date" Nullable="false" />
+        </EntityType>
         <EntityType Name="Bond_Rating_Info">
           <Key>
             <PropertyRef Name="Id" />
@@ -133,6 +149,28 @@
           <Property Name="Portfolio_Name" Type="varchar" MaxLength="30" />
           <Property Name="SMF" Type="varchar" MaxLength="50" />
           <Property Name="ISSUER" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Bond_Ticker_Info">
+          <Key>
+            <PropertyRef Name="Report_Date" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Bond_Number" />
+            <PropertyRef Name="Lots" />
+            <PropertyRef Name="Portfolio_Name" />
+          </Key>
+          <Property Name="Report_Date" Type="date" Nullable="false" />
+          <Property Name="Version" Type="int" Nullable="false" />
+          <Property Name="Bond_Number" Type="varchar" MaxLength="40" Nullable="false" />
+          <Property Name="Lots" Type="varchar" MaxLength="4" Nullable="false" />
+          <Property Name="Portfolio_Name" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="PRODUCT" Type="varchar" MaxLength="50" />
+          <Property Name="Lien_position" Type="varchar" MaxLength="10" />
+          <Property Name="Security_Ticker" Type="varchar" MaxLength="50" />
+          <Property Name="Security_Des" Type="varchar" MaxLength="40" />
+          <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="20" />
+          <Property Name="Bond_Type" Type="varchar" MaxLength="30" />
+          <Property Name="Assessment_Sub_Kind" Type="varchar" MaxLength="50" />
+          <Property Name="Processing_Date" Type="date" />
         </EntityType>
         <EntityType Name="Econ_D_YYYYMMDD">
           <Key>
@@ -567,9 +605,11 @@
         </Association>
         <EntityContainer Name="IFRS9ModelStoreContainer">
           <EntitySet Name="Bond_Account_Info" EntityType="Self.Bond_Account_Info" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Bond_Category_Info" EntityType="Self.Bond_Category_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Info" EntityType="Self.Bond_Rating_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Parm" EntityType="Self.Bond_Rating_Parm" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Summary" EntityType="Self.Bond_Rating_Summary" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Bond_Ticker_Info" EntityType="Self.Bond_Ticker_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_D_YYYYMMDD" EntityType="Self.Econ_D_YYYYMMDD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_Domestic" EntityType="Self.Econ_Domestic" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="Self.Econ_F_YYYYMMDD" Schema="dbo" store:Type="Tables" />
@@ -620,6 +660,8 @@
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="IFRS9Model.Moody_Quartly_PD_Info" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
+          <EntitySet Name="Bond_Ticker_Info" EntityType="IFRS9Model.Bond_Ticker_Info" />
+          <EntitySet Name="Bond_Category_Info" EntityType="IFRS9Model.Bond_Category_Info" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1185,6 +1227,44 @@
           <Property Name="CNFREXPY_Index" Type="Double" />
           <Property Name="GRFIDEBT_Index" Type="Double" />
         </EntityType>
+        <EntityType Name="Bond_Ticker_Info">
+          <Key>
+            <PropertyRef Name="Report_Date" />
+            <PropertyRef Name="Version" />
+            <PropertyRef Name="Bond_Number" />
+            <PropertyRef Name="Lots" />
+            <PropertyRef Name="Portfolio_Name" />
+          </Key>
+          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Version" Type="Int32" Nullable="false" />
+          <Property Name="Bond_Number" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Lots" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Portfolio_Name" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="PRODUCT" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Lien_position" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Security_Ticker" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Security_Des" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Bloomberg_Ticker" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Bond_Type" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Assessment_Sub_Kind" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+        </EntityType>
+        <EntityType Name="Bond_Category_Info">
+          <Key>
+            <PropertyRef Name="Bloomberg_Ticker" />
+            <PropertyRef Name="Processing_Date" />
+          </Key>
+          <Property Name="Memo" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Bloomberg_Ticker" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Bond_Type" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Corp_NonCorp" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Sector_External" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Sector_Internal" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Assessment_Sub_Kind" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Sector_Research" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Sector_Extra" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1737,6 +1817,41 @@
                 <ScalarProperty Name="Data_ID" ColumnName="Data_ID" />
                 <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
                 <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bond_Ticker_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Ticker_Info">
+              <MappingFragment StoreEntitySet="Bond_Ticker_Info">
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Assessment_Sub_Kind" ColumnName="Assessment_Sub_Kind" />
+                <ScalarProperty Name="Bond_Type" ColumnName="Bond_Type" />
+                <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
+                <ScalarProperty Name="Security_Des" ColumnName="Security_Des" />
+                <ScalarProperty Name="Security_Ticker" ColumnName="Security_Ticker" />
+                <ScalarProperty Name="Lien_position" ColumnName="Lien_position" />
+                <ScalarProperty Name="PRODUCT" ColumnName="PRODUCT" />
+                <ScalarProperty Name="Portfolio_Name" ColumnName="Portfolio_Name" />
+                <ScalarProperty Name="Lots" ColumnName="Lots" />
+                <ScalarProperty Name="Bond_Number" ColumnName="Bond_Number" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bond_Category_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Category_Info">
+              <MappingFragment StoreEntitySet="Bond_Category_Info">
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Sector_Extra" ColumnName="Sector_Extra" />
+                <ScalarProperty Name="Sector_Research" ColumnName="Sector_Research" />
+                <ScalarProperty Name="Assessment_Sub_Kind" ColumnName="Assessment_Sub_Kind" />
+                <ScalarProperty Name="Sector_Internal" ColumnName="Sector_Internal" />
+                <ScalarProperty Name="Sector_External" ColumnName="Sector_External" />
+                <ScalarProperty Name="Corp_NonCorp" ColumnName="Corp_NonCorp" />
+                <ScalarProperty Name="Bond_Type" ColumnName="Bond_Type" />
+                <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
+                <ScalarProperty Name="Memo" ColumnName="Memo" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

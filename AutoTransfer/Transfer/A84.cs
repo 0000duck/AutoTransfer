@@ -119,16 +119,16 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            .Get(string.Empty,
-                 setFile.getC04FilePath(),
-                 setFile.getFileName(),
-                 out error);
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //.Get(string.Empty,
             //     setFile.getC04FilePath(),
-            //     setFile.getGZFileName(),
+            //     setFile.getFileName(),
             //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getC04FilePath(),
+                 setFile.getGZFileName(),
+                 out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.txtLog(
@@ -140,11 +140,11 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //string sourceFileName = Path.Combine(
-                //setFile.getC04FilePath(), setFile.getGZFileName());
-                //string destFileName = Path.Combine(
-                //setFile.getC04FilePath(), setFile.getFileName());
-                //Extension.Decompress(sourceFileName, destFileName);
+                string sourceFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getGZFileName());
+                string destFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName());
+                Extension.Decompress(sourceFileName, destFileName);
                 DataToDb();
             }
         }

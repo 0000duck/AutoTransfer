@@ -78,6 +78,7 @@ WITH T0 AS (
    from  Bond_Account_Info BA_Info --A41
    Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
+   AND BA_Info.Report_Date = RA_Info.Rating_Date
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND RA_Info.Rating = GMapInfo.Rating
@@ -179,6 +180,7 @@ WITH T1 AS (
    from  Bond_Account_Info BA_Info --A41
    Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
+   AND BA_Info.Report_Date = RA_Info.Report_Date
    Left Join Bond_Rating_Info oldA57 --oldA57
    on BA_Info.Bond_Number = oldA57.Bond_Number 
    AND BA_Info.Lots = oldA57.Lots 
