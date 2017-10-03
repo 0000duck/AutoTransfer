@@ -47,7 +47,7 @@ namespace AutoTransfer.Transfer
                 {
                     List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
                     List<string> yearQuartlys = A84datas.Select(x=>x.Year_Quartly).ToList();
-                    var A82Datas = db.Moody_Quartly_PD_Info.Where(x=> yearQuartlys.Contains(x.Year_Quartly)).ToList();
+                    var A82Datas = db.Moody_Quartly_PD_Info.AsNoTracking().Where(x=> yearQuartlys.Contains(x.Year_Quartly)).ToList();
                     A84datas.ToList().ForEach(x =>
                     {
                         Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
@@ -67,7 +67,7 @@ namespace AutoTransfer.Transfer
                                 }
                             });
                         C04s.Add(C04Data);
-                    });                                                    
+                    });                                               
                     db.Econ_F_YYYYMMDD.AddRange(C04s);
                     try
                     {
