@@ -2,14 +2,11 @@
 {
     public static class SFTPInfo
     {
-        private static string _account =
-            "dl221";
+        private static string _account = "dl789940";
 
-        private static string _ip =
-                    "sftp.bloomberg.com";
+        private static string _ip = "sftp.bloomberg.com";
 
-        private static string _password =
-            "whz1+Vvs.cduo=eY";
+        private static string _password = "S4GkU9,Znmjz[d7y";
 
         public static string account
         {
