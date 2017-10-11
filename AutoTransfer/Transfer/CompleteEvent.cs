@@ -43,111 +43,19 @@ namespace AutoTransfer.Transfer
                             string ver = version.ToString();
                             string sql = string.Empty;
                             sql = $@"
-Begin Try
-
-WITH T0 AS (
-   Select BA_Info.Reference_Nbr AS Reference_Nbr ,
-          BA_Info.Bond_Number AS Bond_Number,
-		  BA_Info.Lots AS Lots,
-		  BA_Info.Portfolio AS Portfolio,
-		  BA_Info.Segment_Name AS Segment_Name,
-		  BA_Info.Bond_Type AS Bond_Type,
-		  BA_Info.Lien_position AS Lien_position,
-		  BA_Info.Origination_Date AS Origination_Date,
-          BA_Info.Report_Date AS Report_Date,
-		  RA_Info.Rating_Date AS Rating_Date,
-		  RA_Info.Rating_Object AS Rating_Object,
-          RA_Info.Rating_Org AS Rating_Org,
-		  RA_Info.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
-	      END) AS Rating_Org_Area,
-		  GMapInfo.PD_Grade AS PD_Grade,
-		  GMooInfo.Grade_Adjust AS Grade_Adjust,
-		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
-		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
-		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
-		  BA_Info.Portfolio_Name AS Portfolio_Name,
-		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
-		  BA_Info.PRODUCT AS SMF,
-		  BA_Info.ISSUER AS ISSUER,
-		  BA_Info.Version AS Version,
-		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
-		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
-		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
-   from  Bond_Account_Info BA_Info --A41
-   Join Rating_Info RA_Info --A53
-   on BA_Info.Bond_Number = RA_Info.Bond_Number   
-   AND BA_Info.Report_Date = RA_Info.Rating_Date
-   Left Join Grade_Mapping_Info GMapInfo --A52
-   on RA_Info.Rating_Org = GMapInfo.Rating_Org
-   AND RA_Info.Rating = GMapInfo.Rating
-   Left Join Grade_Moody_Info GMooInfo --A51
-   on GMapInfo.PD_Grade = GMooInfo.PD_Grade
-   Left Join Rating_Info_SampleInfo RISI --A53 Sample
-   on BA_Info.Bond_Number = RISI.Bond_Number
-   AND RA_Info.Rating_Object = '債項'
-   Where BA_Info.Report_Date = '{reportData}'
-   And   BA_Info.Version = {ver}
-)
-Insert into Bond_Rating_Info
-           (Reference_Nbr,
-           Bond_Number,
-           Lots,
-           Portfolio,
-           Segment_Name,
-           Bond_Type,
-           Lien_position,
-           Origination_Date,
-           Report_Date,
-           Rating_Date,
-           Rating_Type,
-           Rating_Object,
-           Rating_Org,
-           Rating,
-           Rating_Org_Area,
-           PD_Grade,
-           Grade_Adjust,
-           ISSUER_TICKER,
-           GUARANTOR_NAME,
-           GUARANTOR_EQY_TICKER,
-           Parm_ID,
-           Portfolio_Name,
-           RTG_Bloomberg_Field,
-           SMF,
-           ISSUER,
-           Version,
-           Security_Ticker)
-Select     Reference_Nbr,
-		   Bond_Number,
-		   Lots,
-           Portfolio,
-           Segment_Name,
-           Bond_Type,
-           Lien_position,
-           Origination_Date,
-           Report_Date,
-           Rating_Date,
-           '1',
-           Rating_Object,
-           Rating_Org,
-           Rating,
-           Rating_Org_Area,
-           PD_Grade,
-           Grade_Adjust,
-           ISSUER_TICKER,
-           GUARANTOR_NAME,
-           GUARANTOR_EQY_TICKER,
-           '{parmID}',
-           Portfolio_Name,
-           RTG_Bloomberg_Field,
-           SMF,
-           ISSUER,
-           Version,
-           Security_Ticker
-		   From
-		   T0;
-WITH T1 AS (
+with temp2 as
+(
+select MAX(Report_Date) as Report_Date from Bond_Rating_Info 
+),
+temp as
+(
+select A57.*
+from   Bond_Rating_Info A57,temp2
+where  A57.Rating_Type = '2'
+and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
+and    A57.Report_Date = temp2.Report_Date
+),
+T1 AS (
    Select BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -181,12 +89,14 @@ WITH T1 AS (
    Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
    AND BA_Info.Report_Date = RA_Info.Report_Date
-   Left Join Bond_Rating_Info oldA57 --oldA57
+   Left Join temp oldA57 --oldA57
    on BA_Info.Bond_Number = oldA57.Bond_Number 
    AND BA_Info.Lots = oldA57.Lots 
    AND BA_Info.Portfolio_Name = oldA57.Portfolio_Name
    AND BA_Info.Origination_Date = oldA57.Origination_Date 
-   AND oldA57.Rating_Type = '2'
+   AND RA_Info.Rating_Object = oldA57.Rating_Object
+   AND RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
+   AND BA_Info.Lien_position = oldA57.Lien_position
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND oldA57.Rating = GMapInfo.Rating
@@ -194,6 +104,7 @@ WITH T1 AS (
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
+   AND BA_Info.Report_Date = RISI.Report_Date 
    AND RA_Info.Rating_Object = '債項'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
@@ -255,6 +166,109 @@ Select     Reference_Nbr,
            Security_Ticker
 		   From
 		   T1;
+WITH T0 AS (
+   Select BA_Info.Reference_Nbr AS Reference_Nbr ,
+          BA_Info.Bond_Number AS Bond_Number,
+		  BA_Info.Lots AS Lots,
+		  BA_Info.Portfolio AS Portfolio,
+		  BA_Info.Segment_Name AS Segment_Name,
+		  BA_Info.Bond_Type AS Bond_Type,
+		  BA_Info.Lien_position AS Lien_position,
+		  BA_Info.Origination_Date AS Origination_Date,
+          BA_Info.Report_Date AS Report_Date,
+		  RA_Info.Rating_Date AS Rating_Date,
+		  RA_Info.Rating_Object AS Rating_Object,
+          RA_Info.Rating_Org AS Rating_Org,
+		  RA_Info.Rating AS Rating,
+		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
+	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
+	      END) AS Rating_Org_Area,
+		  GMapInfo.PD_Grade AS PD_Grade,
+		  GMooInfo.Grade_Adjust AS Grade_Adjust,
+		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
+		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
+		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
+		  BA_Info.Portfolio_Name AS Portfolio_Name,
+		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
+		  BA_Info.PRODUCT AS SMF,
+		  BA_Info.ISSUER AS ISSUER,
+		  BA_Info.Version AS Version,
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
+		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
+   from  Bond_Account_Info BA_Info --A41
+   Join Rating_Info RA_Info --A53
+   on BA_Info.Bond_Number = RA_Info.Bond_Number   
+   AND BA_Info.Report_Date = RA_Info.Report_Date
+   Left Join Grade_Mapping_Info GMapInfo --A52
+   on RA_Info.Rating_Org = GMapInfo.Rating_Org
+   AND RA_Info.Rating = GMapInfo.Rating
+   Left Join Grade_Moody_Info GMooInfo --A51
+   on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   Left Join Rating_Info_SampleInfo RISI --A53 Sample
+   on BA_Info.Bond_Number = RISI.Bond_Number
+   AND BA_Info.Report_Date = RISI.Report_Date 
+   AND RA_Info.Rating_Object = '債項'
+   Where BA_Info.Report_Date = '{reportData}'
+   And   BA_Info.Version = {ver}
+)
+Insert into Bond_Rating_Info
+           (Reference_Nbr,
+           Bond_Number,
+           Lots,
+           Portfolio,
+           Segment_Name,
+           Bond_Type,
+           Lien_position,
+           Origination_Date,
+           Report_Date,
+           Rating_Date,
+           Rating_Type,
+           Rating_Object,
+           Rating_Org,
+           Rating,
+           Rating_Org_Area,
+           PD_Grade,
+           Grade_Adjust,
+           ISSUER_TICKER,
+           GUARANTOR_NAME,
+           GUARANTOR_EQY_TICKER,
+           Parm_ID,
+           Portfolio_Name,
+           RTG_Bloomberg_Field,
+           SMF,
+           ISSUER,
+           Version,
+           Security_Ticker)
+Select     Reference_Nbr,
+		   Bond_Number,
+		   Lots,
+           Portfolio,
+           Segment_Name,
+           Bond_Type,
+           Lien_position,
+           Origination_Date,
+           Report_Date,
+           Rating_Date,
+           '1',
+           Rating_Object,
+           Rating_Org,
+           Rating,
+           Rating_Org_Area,
+           PD_Grade,
+           Grade_Adjust,
+           ISSUER_TICKER,
+           GUARANTOR_NAME,
+           GUARANTOR_EQY_TICKER,
+           '{parmID}',
+           Portfolio_Name,
+           RTG_Bloomberg_Field,
+           SMF,
+           ISSUER,
+           Version,
+           Security_Ticker
+		   From
+		   T0;
 Insert Into Bond_Rating_Summary
             (
 			  Reference_Nbr,
@@ -299,8 +313,8 @@ Select BR_Info.Reference_Nbr,
 	   BR_Info.Portfolio_Name,
 	   BR_Info.SMF,
 	   BR_Info.ISSUER
-From   Bond_Rating_Info BR_Info
-LEFT JOIN  Bond_Rating_Parm BR_Parm
+From   Bond_Rating_Info BR_Info --A57
+LEFT JOIN  Bond_Rating_Parm BR_Parm --D60
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
 AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
 AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area
@@ -323,7 +337,6 @@ GROUP BY BR_Info.Reference_Nbr,
 	     BR_Info.ISSUER,
 		 BR_Parm.Rating_Selection,
 		 BR_Parm.Rating_Priority;
-End Try Begin Catch End Catch
                     ";
                         db.Database.ExecuteSqlCommand(sql);
                         db.Dispose();
