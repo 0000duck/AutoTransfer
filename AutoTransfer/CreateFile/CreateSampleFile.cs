@@ -14,7 +14,8 @@ namespace AutoTransfer.CreateFile
         /// </summary>
         /// <param name="type"></param>
         /// <param name="dateTime"></param>
-        public bool create(TableType type, string dateTime)
+        /// <param name="ver"></param>
+        public bool create(TableType type, string dateTime,int ver)
         {
             bool flag = false;
             try
@@ -79,7 +80,8 @@ namespace AutoTransfer.CreateFile
                 IFRS9Entities db = new IFRS9Entities();
                 db.Bond_Account_Info.AsNoTracking()
                     .Where(x => x.Report_Date.HasValue &&
-                    x.Report_Date.Value.Equals(date))
+                    x.Report_Date.Value == date &&
+                    x.Version.HasValue && x.Version == ver)
                     .Select(x => x.Bond_Number).Distinct()
                     .OrderBy(x => x)
                     .ToList().ForEach(x =>

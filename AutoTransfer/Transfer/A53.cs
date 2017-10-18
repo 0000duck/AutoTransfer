@@ -115,7 +115,7 @@ namespace AutoTransfer.Transfer
         {
             //建立  檔案
             // create ex:sampleA53_20170807
-            if (new CreateSampleFile().create(tableType, reportDateStr))
+            if (new CreateSampleFile().create(tableType, reportDateStr, verInt))
             {
                 //把資料送給SFTP
                 putSampleSFTP();
