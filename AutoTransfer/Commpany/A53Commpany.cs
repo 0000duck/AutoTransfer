@@ -44,14 +44,14 @@
         public string RTG_SP_LT_LC_ISS_CRED_RTG_DT { get; set; }
 
         /// <summary>
-        /// 標普長期外幣發行人信用評等日期 (國外)
-        /// </summary>
-        public string RTG_SP_LT_FC_ISS_CRED_RTG_DT { get; set; }
-
-        /// <summary>
         /// 標普長期外幣發行人信用評等 (國外)
         /// </summary>
         public string RTG_SP_LT_FC_ISSUER_CREDIT { get; set; }
+
+        /// <summary>
+        /// 標普長期外幣發行人信用評等日期 (國外)
+        /// </summary>
+        public string RTG_SP_LT_FC_ISS_CRED_RTG_DT { get; set; }
 
         #endregion 標普(S&P) 原A53
 

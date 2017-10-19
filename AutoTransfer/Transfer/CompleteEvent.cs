@@ -86,7 +86,7 @@ T1 AS (
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
 		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
    from  Bond_Account_Info BA_Info --A41
-   Join Rating_Info RA_Info --A53
+   Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
    AND BA_Info.Report_Date = RA_Info.Report_Date
    Left Join temp oldA57 --oldA57
@@ -197,7 +197,7 @@ WITH T0 AS (
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
 		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
    from  Bond_Account_Info BA_Info --A41
-   Join Rating_Info RA_Info --A53
+   Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
    AND BA_Info.Report_Date = RA_Info.Report_Date
    Left Join Grade_Mapping_Info GMapInfo --A52
@@ -281,7 +281,7 @@ Insert Into Bond_Rating_Summary
               Rating_Selection,
               Grade_Adjust,
               Rating_Priority,
-              --Processing_Date,
+              Processing_Date,
               Version,
               Bond_Number,
               Lots,
@@ -305,6 +305,7 @@ Select BR_Info.Reference_Nbr,
 			 THEN Max(BR_Info.Grade_Adjust)
 			 ELSE null  END) AS Grade_Adjust,
 	   BR_Parm.Rating_Priority,
+       '{startTime.ToString("yyyy/MM/dd")}',
 	   BR_Info.Version,
 	   BR_Info.Bond_Number,
 	   BR_Info.Lots,
