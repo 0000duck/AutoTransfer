@@ -77,7 +77,7 @@ namespace AutoTransfer.Utility
             if (str.IsNullOrWhiteSpace())
                 return null;
             DateTime ratingDateDt = DateTime.MinValue;
-            if (!DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy", null,
+            if (DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy", null,
                 System.Globalization.DateTimeStyles.AllowWhiteSpaces,
                 out ratingDateDt))
                 return ratingDateDt;
