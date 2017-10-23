@@ -51,7 +51,7 @@ temp as
 (
 select A57.*
 from   Bond_Rating_Info A57,temp2
-where  A57.Rating_Type = '2'
+where  A57.Rating_Type = '{Rating_Type.B.GetDescription()}'
 and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
 and    A57.Report_Date = temp2.Report_Date
 ),
@@ -147,7 +147,7 @@ Select     Reference_Nbr,
            Origination_Date,
            Report_Date,
            Rating_Date,
-           '2',
+           '{Rating_Type.B.GetDescription()}',
            Rating_Object,
            Rating_Org,
            Rating,
@@ -250,7 +250,7 @@ Select     Reference_Nbr,
            Origination_Date,
            Report_Date,
            Rating_Date,
-           '1',
+           '{Rating_Type.A.GetDescription()}',
            Rating_Object,
            Rating_Org,
            Rating,
