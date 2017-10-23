@@ -93,6 +93,7 @@
     <Compile Include="Enum\GroupProductCode.cs" />
     <Compile Include="Enum\RatingOrg.cs" />
     <Compile Include="Enum\A53SampleBloombergField.cs" />
+    <Compile Include="Enum\RatingType.cs" />
     <Compile Include="Grade_Mapping_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
