@@ -318,7 +318,7 @@ From   Bond_Rating_Info BR_Info --A57
 LEFT JOIN  Bond_Rating_Parm BR_Parm --D60
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
 AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
-AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area
+--AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area --2017/11/01修改為不分國內外
 Where  BR_Info.Report_Date = '{reportData}'
 AND    BR_Info.Version = {ver}
 GROUP BY BR_Info.Reference_Nbr,
