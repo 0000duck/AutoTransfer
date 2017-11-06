@@ -69,8 +69,8 @@ T1 AS (
 		  RA_Info.Rating_Object AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  oldA57.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
+		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
 	      END) AS Rating_Org_Area,
 		  GMapInfo.PD_Grade AS PD_Grade,
 		  GMooInfo.Grade_Adjust AS Grade_Adjust,
@@ -180,8 +180,8 @@ WITH T0 AS (
 		  RA_Info.Rating_Object AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  RA_Info.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
+		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
 	      END) AS Rating_Org_Area,
 		  GMapInfo.PD_Grade AS PD_Grade,
 		  GMooInfo.Grade_Adjust AS Grade_Adjust,
@@ -269,6 +269,90 @@ Select     Reference_Nbr,
            Security_Ticker
 		   From
 		   T0;
+
+-- update Guarantor_Ticker(擔保者Ticker) 的設定
+update Bond_Rating_Info
+set GUARANTOR_NAME = Guarantor_Ticker.GUARANTOR_NAME,
+    GUARANTOR_EQY_TICKER = Guarantor_Ticker.GUARANTOR_EQY_TICKER
+from Guarantor_Ticker
+where Bond_Rating_Info.ISSUER = Guarantor_Ticker.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver} ;
+
+-- update Guarantor_Ticker(發行者Ticker) 的設定
+update Bond_Rating_Info
+set ISSUER_TICKER = Issuer_Ticker.ISSUER_EQUITY_TICKER
+from Issuer_Ticker
+where Bond_Rating_Info.ISSUER = Issuer_Ticker.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver} ;
+
+-- update Bond_Rating(債項信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
+	     then Bond_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Bond_Rating.Moodys is not null
+	     then Bond_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Bond_Rating.Fitch is not null
+		 then Bond_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Bond_Rating.Fitch_TW is not null
+		 then Bond_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
+		 then Bond_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Bond_Rating
+where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' ;
+
+-- update Issuer_Rating(發行者信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
+	     then Issuer_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Issuer_Rating.Moodys is not null
+	     then Issuer_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Issuer_Rating.Fitch is not null
+		 then Issuer_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Issuer_Rating.Fitch_TW is not null
+		 then Issuer_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
+		 then Issuer_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Issuer_Rating
+where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' ;
+
+-- update Guarantor_Rating(擔保者信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
+	     then Guarantor_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Guarantor_Rating.Moodys is not null
+	     then Guarantor_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Guarantor_Rating.Fitch is not null
+		 then Guarantor_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Guarantor_Rating.Fitch_TW is not null
+		 then Guarantor_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
+		 then Guarantor_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Guarantor_Rating
+where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
+
 Insert Into Bond_Rating_Summary
             (
 			  Reference_Nbr,
@@ -337,7 +421,7 @@ GROUP BY BR_Info.Reference_Nbr,
 	     BR_Info.SMF,
 	     BR_Info.ISSUER,
 		 BR_Parm.Rating_Selection,
-		 BR_Parm.Rating_Priority;
+		 BR_Parm.Rating_Priority ;
                     ";
                         db.Database.ExecuteSqlCommand(sql);
                         db.Dispose();

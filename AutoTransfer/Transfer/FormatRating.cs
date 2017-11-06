@@ -1,5 +1,6 @@
 ﻿using AutoTransfer.Utility;
 using System;
+using System.Collections.Generic;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.Transfer
@@ -125,6 +126,8 @@ namespace AutoTransfer.Transfer
             string value = rating.Trim();
             if (value.IndexOf("u") > -1)
                 return value.Split('u')[0].Trim();
+            if (value.IndexOf("e") > -1)
+                return value.Split('e')[0].Trim();
             //====================================== 待確認
             if (value.IndexOf("NR") > -1)
                 return string.Empty;
@@ -137,15 +140,30 @@ namespace AutoTransfer.Transfer
             if (value.IndexOf("twWR") > -1)
                 return string.Empty;
             //======================================
-            if (value.IndexOf("/*-") > -1)
-                return value.Split(new string[] { "/*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            if (value.IndexOf("/*+") > -1)
-                return value.Split(new string[] { "/*+" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            if (value.IndexOf("*-") > -1)
-                return value.Split(new string[] { "*-" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            if (value.IndexOf("*+") > -1)
-                return value.Split(new string[] { "*+" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+
+            List<string> splitGetFirst = new List<string>()
+            {
+                "/*-","/*+","*-","*+",
+                "(bra)","(cl)","(col)","(mex)",
+                "(P)","/*","*"
+            };
+            bool flag = true;
+            splitGetFirst.ForEach(x =>
+            {
+                if (flag && value.Contains(x))
+                {
+                    value = SplitFirst(value, x);
+                    flag = false;
+                }
+            });
             return value;
+        }
+
+        private string SplitFirst(string value, string splitStr)
+        {
+            if (value.IsNullOrWhiteSpace())
+                return value;
+            return value.Split(new string[] { splitStr }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
         }
     }
 }

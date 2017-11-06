@@ -15,7 +15,7 @@ namespace AutoTransfer.Enum
             /// <summary>
             /// 穆迪
             /// </summary>
-            [Description("cnSP")]
+            [Description("Moody")]
             Moody,
 
             /// <summary>
