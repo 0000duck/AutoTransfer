@@ -90,13 +90,25 @@ T1 AS (
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
    AND BA_Info.Report_Date = RA_Info.Report_Date
    Left Join temp oldA57 --oldA57
-   on BA_Info.Bond_Number = oldA57.Bond_Number 
-   AND BA_Info.Lots = oldA57.Lots 
-   AND BA_Info.Portfolio_Name = oldA57.Portfolio_Name
-   AND BA_Info.Origination_Date = oldA57.Origination_Date 
+   on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
+   AND BA_Info.Origination_Date = oldA57.Origination_Date
    AND RA_Info.Rating_Object = oldA57.Rating_Object
-   AND RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
-   AND BA_Info.Lien_position = oldA57.Lien_position
+   AND oldA57.Rating_Type = '{Rating_Type.B.GetDescription()}'
+   AND BA_Info.Bond_Number =
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Bond_Number_Old
+	ELSE oldA57.Bond_Number
+	END
+   AND BA_Info.Lots = 
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Lots_Old
+	ELSE oldA57.Lots
+	END
+   AND BA_Info.Portfolio_Name = 
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Portfolio_Name_Old
+	ELSE oldA57.Portfolio_Name
+	END
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND oldA57.Rating = GMapInfo.Rating

@@ -11,19 +11,19 @@
         public static string account
         {
             get { return _account; }
-            set { _account = value; }
+            private set { _account = value; }
         }
 
         public static string ip
         {
             get { return _ip; }
-            set { _ip = value; }
+            private set { _ip = value; }
         }
 
         public static string password
         {
             get { return _password; }
-            set { _password = value; }
+            private set { _password = value; }
         }
     }
 }
