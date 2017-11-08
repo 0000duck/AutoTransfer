@@ -105,5 +105,10 @@
         public string Security_Des { get; set; }
 
         #endregion A95 Security_Des
+
+        /// <summary>
+        /// PARENT_TICKER_EXCHANGE add in 2017/11/08 SMF 條件符合取代使用
+        /// </summary>
+        public string PARENT_TICKER_EXCHANGE { get; set; }
     }
 }

@@ -66,5 +66,9 @@ namespace AutoTransfer
         public Nullable<double> Market_Value_TW { get; set; }
         public Nullable<System.DateTime> Value_date { get; set; }
         public string Portfolio_Name { get; set; }
+        public string ISIN_Changed_Ind { get; set; }
+        public string Bond_Number_Old { get; set; }
+        public string Lots_Old { get; set; }
+        public string Portfolio_Name_Old { get; set; }
     }
 }

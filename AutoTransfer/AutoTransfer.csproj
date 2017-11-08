@@ -97,9 +97,6 @@
     <Compile Include="Grade_Mapping_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
-    <Compile Include="Grade_Moody_Info.cs">
-      <DependentUpon>IFRS9EF.tt</DependentUpon>
-    </Compile>
     <Compile Include="Group_Product_Code_Mapping.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>

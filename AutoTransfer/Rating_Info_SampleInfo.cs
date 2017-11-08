@@ -19,5 +19,7 @@ namespace AutoTransfer
         public string ISSUER_TICKER { get; set; }
         public string GUARANTOR_EQY_TICKER { get; set; }
         public string GUARANTOR_NAME { get; set; }
+        public string PARENT_TICKER_EXCHANGE { get; set; }
+        public string SMF { get; set; }
     }
 }

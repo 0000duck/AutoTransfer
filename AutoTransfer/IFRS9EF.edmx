@@ -61,6 +61,10 @@
           <Property Name="Market_Value_TW" Type="float" />
           <Property Name="Value_date" Type="date" />
           <Property Name="Portfolio_Name" Type="varchar" MaxLength="30" />
+          <Property Name="ISIN_Changed_Ind" Type="varchar" MaxLength="1" />
+          <Property Name="Bond_Number_Old" Type="varchar" MaxLength="40" />
+          <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
+          <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
         </EntityType>
         <EntityType Name="Bond_Category_Info">
           <Key>
@@ -112,6 +116,10 @@
           <Property Name="ISSUER" Type="varchar" MaxLength="50" />
           <Property Name="Version" Type="int" />
           <Property Name="Security_Ticker" Type="varchar" MaxLength="50" />
+          <Property Name="ISIN_Changed_Ind" Type="varchar" MaxLength="1" />
+          <Property Name="Bond_Number_Old" Type="varchar" MaxLength="40" />
+          <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
+          <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
         </EntityType>
         <EntityType Name="Bond_Rating_Parm">
           <Key>
@@ -149,6 +157,10 @@
           <Property Name="Portfolio_Name" Type="varchar" MaxLength="30" />
           <Property Name="SMF" Type="varchar" MaxLength="50" />
           <Property Name="ISSUER" Type="varchar" MaxLength="50" />
+          <Property Name="ISIN_Changed_Ind" Type="varchar" MaxLength="1" />
+          <Property Name="Bond_Number_Old" Type="varchar" MaxLength="40" />
+          <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
+          <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
         </EntityType>
         <EntityType Name="Bond_Ticker_Info">
           <Key>
@@ -504,19 +516,9 @@
           <Property Name="PD_Grade" Type="int" Nullable="false" />
           <Property Name="Rating" Type="varchar" MaxLength="10" Nullable="false" />
         </EntityType>
-        <EntityType Name="Grade_Moody_Info">
-          <Key>
-            <PropertyRef Name="Rating" />
-          </Key>
-          <Property Name="Data_Year" Type="varchar" MaxLength="4" Nullable="false" />
-          <Property Name="Rating" Type="varchar" MaxLength="10" Nullable="false" />
-          <Property Name="PD_Grade" Type="int" />
-          <Property Name="Rating_Adjust" Type="varchar" MaxLength="20" />
-          <Property Name="Grade_Adjust" Type="int" />
-          <Property Name="Moodys_PD" Type="float" />
-        </EntityType>
         <EntityType Name="Group_Product_Code_Mapping">
           <Key>
+            <PropertyRef Name="Group_Product_Code" />
             <PropertyRef Name="Product_Code" />
           </Key>
           <Property Name="Group_Product_Code" Type="varchar" MaxLength="3" Nullable="false" />
@@ -564,6 +566,8 @@
           <Property Name="ISSUER_TICKER" Type="varchar" MaxLength="50" />
           <Property Name="GUARANTOR_EQY_TICKER" Type="varchar" MaxLength="50" />
           <Property Name="GUARANTOR_NAME" Type="varchar" MaxLength="50" />
+          <Property Name="PARENT_TICKER_EXCHANGE" Type="varchar" MaxLength="50" />
+          <Property Name="SMF" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
@@ -591,18 +595,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
-          <End Role="Group_Product_Code_Mapping" Type="Self.Group_Product_Code_Mapping" Multiplicity="1" />
-          <End Role="Econ_D_YYYYMMDD" Type="Self.Econ_D_YYYYMMDD" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Group_Product_Code_Mapping">
-              <PropertyRef Name="Product_Code" />
-            </Principal>
-            <Dependent Role="Econ_D_YYYYMMDD">
-              <PropertyRef Name="Product_Code" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="IFRS9ModelStoreContainer">
           <EntitySet Name="Bond_Account_Info" EntityType="Self.Bond_Account_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Category_Info" EntityType="Self.Bond_Category_Info" Schema="dbo" store:Type="Tables" />
@@ -615,7 +607,6 @@
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="Self.Econ_F_YYYYMMDD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_Foreign" EntityType="Self.Econ_Foreign" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Grade_Mapping_Info" EntityType="Self.Grade_Mapping_Info" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Grade_Moody_Info" EntityType="Self.Grade_Moody_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="Self.Group_Product_Code_Mapping" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Loan_default_Info" EntityType="Self.Loan_default_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="Self.Moody_Quartly_PD_Info" Schema="dbo" store:Type="Tables" />
@@ -626,10 +617,6 @@
             <End Role="Econ_Domestic" EntitySet="Econ_Domestic" />
             <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
           </AssociationSet>
-          <AssociationSet Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" Association="Self.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
-            <End Role="Group_Product_Code_Mapping" EntitySet="Group_Product_Code_Mapping" />
-            <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
-          </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -637,7 +624,6 @@
       <Schema Namespace="IFRS9Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="IFRS9Entities" annotation:LazyLoadingEnabled="true" >
           <EntitySet Name="Grade_Mapping_Info" EntityType="IFRS9Model.Grade_Mapping_Info" />
-          <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
           <EntitySet Name="Bond_Rating_Parm" EntityType="IFRS9Model.Bond_Rating_Parm" />
           <EntitySet Name="Rating_Info" EntityType="IFRS9Model.Rating_Info" />
           <EntitySet Name="Bond_Rating_Info" EntityType="IFRS9Model.Bond_Rating_Info" />
@@ -646,14 +632,9 @@
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="IFRS9Model.Rating_Info_SampleInfo" />
           <EntitySet Name="Bond_Account_Info" EntityType="IFRS9Model.Bond_Account_Info" />
           <EntitySet Name="Econ_Domestic" EntityType="IFRS9Model.Econ_Domestic" />
-          <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
           <EntitySet Name="Econ_D_YYYYMMDD" EntityType="IFRS9Model.Econ_D_YYYYMMDD" />
           <AssociationSet Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
             <End Role="Econ_Domestic" EntitySet="Econ_Domestic" />
-            <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
-          </AssociationSet>
-          <AssociationSet Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
-            <End Role="Group_Product_Code_Mapping" EntitySet="Group_Product_Code_Mapping" />
             <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
           </AssociationSet>
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
@@ -662,6 +643,7 @@
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
           <EntitySet Name="Bond_Ticker_Info" EntityType="IFRS9Model.Bond_Ticker_Info" />
           <EntitySet Name="Bond_Category_Info" EntityType="IFRS9Model.Bond_Category_Info" />
+          <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -672,17 +654,6 @@
           <Property Name="Rating_Org" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="PD_Grade" Type="Int32" Nullable="false" />
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Grade_Moody_Info">
-          <Key>
-            <PropertyRef Name="Rating" />
-          </Key>
-          <Property Name="Data_Year" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="PD_Grade" Type="Int32" />
-          <Property Name="Rating_Adjust" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="Grade_Adjust" Type="Int32" />
-          <Property Name="Moodys_PD" Type="Double" />
         </EntityType>
         <EntityType Name="Bond_Rating_Parm">
           <Key>
@@ -743,6 +714,10 @@
           <Property Name="ISSUER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Version" Type="Int32" />
           <Property Name="Security_Ticker" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ISIN_Changed_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Bond_Number_Old" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Bond_Rating_Summary">
           <Key>
@@ -768,6 +743,10 @@
           <Property Name="Portfolio_Name" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="SMF" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="ISSUER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="ISIN_Changed_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Bond_Number_Old" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
@@ -793,6 +772,8 @@
           <Property Name="ISSUER_TICKER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="GUARANTOR_EQY_TICKER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="GUARANTOR_NAME" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="PARENT_TICKER_EXCHANGE" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SMF" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Bond_Account_Info">
           <Key>
@@ -850,6 +831,10 @@
           <Property Name="Market_Value_TW" Type="Double" />
           <Property Name="Value_date" Type="DateTime" Precision="0" />
           <Property Name="Portfolio_Name" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="ISIN_Changed_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Bond_Number_Old" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Econ_Domestic">
           <Key>
@@ -885,15 +870,6 @@
           <Property Name="MCCCTW_Index" Type="Double" />
           <Property Name="TRDR1T_Index" Type="Double" />
           <NavigationProperty Name="Econ_D_YYYYMMDD" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" FromRole="Econ_Domestic" ToRole="Econ_D_YYYYMMDD" />
-        </EntityType>
-        <EntityType Name="Group_Product_Code_Mapping">
-          <Key>
-            <PropertyRef Name="Product_Code" />
-          </Key>
-          <Property Name="Group_Product_Code" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
-          <Property Name="Product_Code" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
-          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <NavigationProperty Name="Econ_D_YYYYMMDD" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" FromRole="Group_Product_Code_Mapping" ToRole="Econ_D_YYYYMMDD" />
         </EntityType>
         <EntityType Name="Econ_D_YYYYMMDD">
           <Key>
@@ -932,7 +908,6 @@
           <Property Name="MCCCTW_Index" Type="Double" />
           <Property Name="TRDR1T_Index" Type="Double" />
           <NavigationProperty Name="Econ_Domestic" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" FromRole="Econ_D_YYYYMMDD" ToRole="Econ_Domestic" />
-          <NavigationProperty Name="Group_Product_Code_Mapping" Relationship="IFRS9Model.FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping" FromRole="Econ_D_YYYYMMDD" ToRole="Group_Product_Code_Mapping" />
         </EntityType>
         <Association Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
           <End Type="IFRS9Model.Econ_Domestic" Role="Econ_Domestic" Multiplicity="1" />
@@ -943,18 +918,6 @@
             </Principal>
             <Dependent Role="Econ_D_YYYYMMDD">
               <PropertyRef Name="Year_Quartly" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_Econ_D_YYYYMMDD_Group_Product_Code_Mapping">
-          <End Type="IFRS9Model.Group_Product_Code_Mapping" Role="Group_Product_Code_Mapping" Multiplicity="1" />
-          <End Type="IFRS9Model.Econ_D_YYYYMMDD" Role="Econ_D_YYYYMMDD" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Group_Product_Code_Mapping">
-              <PropertyRef Name="Product_Code" />
-            </Principal>
-            <Dependent Role="Econ_D_YYYYMMDD">
-              <PropertyRef Name="Product_Code" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -1265,6 +1228,15 @@
           <Property Name="Sector_Extra" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
         </EntityType>
+        <EntityType Name="Group_Product_Code_Mapping">
+          <Key>
+            <PropertyRef Name="Group_Product_Code" />
+            <PropertyRef Name="Product_Code" />
+          </Key>
+          <Property Name="Group_Product_Code" Type="String" Nullable="false" MaxLength="3" FixedLength="false" Unicode="false" />
+          <Property Name="Product_Code" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1277,18 +1249,6 @@
                 <ScalarProperty Name="Rating" ColumnName="Rating" />
                 <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
                 <ScalarProperty Name="Rating_Org" ColumnName="Rating_Org" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Grade_Moody_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Grade_Moody_Info">
-              <MappingFragment StoreEntitySet="Grade_Moody_Info">
-                <ScalarProperty Name="Moodys_PD" ColumnName="Moodys_PD" />
-                <ScalarProperty Name="Grade_Adjust" ColumnName="Grade_Adjust" />
-                <ScalarProperty Name="Rating_Adjust" ColumnName="Rating_Adjust" />
-                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
-                <ScalarProperty Name="Rating" ColumnName="Rating" />
-                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1322,6 +1282,10 @@
           <EntitySetMapping Name="Bond_Rating_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Info">
               <MappingFragment StoreEntitySet="Bond_Rating_Info">
+                <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
+                <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
+                <ScalarProperty Name="Bond_Number_Old" ColumnName="Bond_Number_Old" />
+                <ScalarProperty Name="ISIN_Changed_Ind" ColumnName="ISIN_Changed_Ind" />
                 <ScalarProperty Name="Security_Ticker" ColumnName="Security_Ticker" />
                 <ScalarProperty Name="Version" ColumnName="Version" />
                 <ScalarProperty Name="ISSUER" ColumnName="ISSUER" />
@@ -1358,6 +1322,10 @@
           <EntitySetMapping Name="Bond_Rating_Summary">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Summary">
               <MappingFragment StoreEntitySet="Bond_Rating_Summary">
+                <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
+                <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
+                <ScalarProperty Name="Bond_Number_Old" ColumnName="Bond_Number_Old" />
+                <ScalarProperty Name="ISIN_Changed_Ind" ColumnName="ISIN_Changed_Ind" />
                 <ScalarProperty Name="ISSUER" ColumnName="ISSUER" />
                 <ScalarProperty Name="SMF" ColumnName="SMF" />
                 <ScalarProperty Name="Portfolio_Name" ColumnName="Portfolio_Name" />
@@ -1399,6 +1367,8 @@
           <EntitySetMapping Name="Rating_Info_SampleInfo">
             <EntityTypeMapping TypeName="IFRS9Model.Rating_Info_SampleInfo">
               <MappingFragment StoreEntitySet="Rating_Info_SampleInfo">
+                <ScalarProperty Name="SMF" ColumnName="SMF" />
+                <ScalarProperty Name="PARENT_TICKER_EXCHANGE" ColumnName="PARENT_TICKER_EXCHANGE" />
                 <ScalarProperty Name="GUARANTOR_NAME" ColumnName="GUARANTOR_NAME" />
                 <ScalarProperty Name="GUARANTOR_EQY_TICKER" ColumnName="GUARANTOR_EQY_TICKER" />
                 <ScalarProperty Name="ISSUER_TICKER" ColumnName="ISSUER_TICKER" />
@@ -1410,6 +1380,10 @@
           <EntitySetMapping Name="Bond_Account_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Account_Info">
               <MappingFragment StoreEntitySet="Bond_Account_Info">
+                <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
+                <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
+                <ScalarProperty Name="Bond_Number_Old" ColumnName="Bond_Number_Old" />
+                <ScalarProperty Name="ISIN_Changed_Ind" ColumnName="ISIN_Changed_Ind" />
                 <ScalarProperty Name="Portfolio_Name" ColumnName="Portfolio_Name" />
                 <ScalarProperty Name="Value_date" ColumnName="Value_date" />
                 <ScalarProperty Name="Market_Value_TW" ColumnName="Market_Value_TW" />
@@ -1497,15 +1471,6 @@
                 <ScalarProperty Name="TWSE_Index" ColumnName="TWSE_Index" />
                 <ScalarProperty Name="Date" ColumnName="Date" />
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Group_Product_Code_Mapping">
-            <EntityTypeMapping TypeName="IFRS9Model.Group_Product_Code_Mapping">
-              <MappingFragment StoreEntitySet="Group_Product_Code_Mapping">
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
-                <ScalarProperty Name="Group_Product_Code" ColumnName="Group_Product_Code" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1852,6 +1817,15 @@
                 <ScalarProperty Name="Bond_Type" ColumnName="Bond_Type" />
                 <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
                 <ScalarProperty Name="Memo" ColumnName="Memo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Group_Product_Code_Mapping">
+            <EntityTypeMapping TypeName="IFRS9Model.Group_Product_Code_Mapping">
+              <MappingFragment StoreEntitySet="Group_Product_Code_Mapping">
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
+                <ScalarProperty Name="Group_Product_Code" ColumnName="Group_Product_Code" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

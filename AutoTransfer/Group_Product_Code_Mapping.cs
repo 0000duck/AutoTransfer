@@ -14,17 +14,8 @@ namespace AutoTransfer
     
     public partial class Group_Product_Code_Mapping
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Group_Product_Code_Mapping()
-        {
-            this.Econ_D_YYYYMMDD = new HashSet<Econ_D_YYYYMMDD>();
-        }
-    
         public string Group_Product_Code { get; set; }
         public string Product_Code { get; set; }
         public System.DateTime Processing_Date { get; set; }
-    
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Econ_D_YYYYMMDD> Econ_D_YYYYMMDD { get; set; }
     }
 }

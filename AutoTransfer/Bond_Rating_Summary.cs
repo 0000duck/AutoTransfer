@@ -34,5 +34,9 @@ namespace AutoTransfer
         public string Portfolio_Name { get; set; }
         public string SMF { get; set; }
         public string ISSUER { get; set; }
+        public string ISIN_Changed_Ind { get; set; }
+        public string Bond_Number_Old { get; set; }
+        public string Lots_Old { get; set; }
+        public string Portfolio_Name_Old { get; set; }
     }
 }

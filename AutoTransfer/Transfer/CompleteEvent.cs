@@ -51,7 +51,7 @@ temp as
 (
 select A57.*
 from   Bond_Rating_Info A57,temp2
-where  A57.Rating_Type = '{Rating_Type.B.GetDescription()}'
+where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
 and    A57.Report_Date = temp2.Report_Date
 ),
@@ -93,7 +93,7 @@ T1 AS (
    on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
    AND BA_Info.Origination_Date = oldA57.Origination_Date
    AND RA_Info.Rating_Object = oldA57.Rating_Object
-   AND oldA57.Rating_Type = '{Rating_Type.B.GetDescription()}'
+   AND oldA57.Rating_Type = '{Rating_Type.A.GetDescription()}'
    AND BA_Info.Bond_Number =
     CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
 	THEN oldA57.Bond_Number_Old
@@ -117,7 +117,7 @@ T1 AS (
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-   AND RA_Info.Rating_Object = '債項'
+   AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -159,7 +159,7 @@ Select     Reference_Nbr,
            Origination_Date,
            Report_Date,
            Rating_Date,
-           '{Rating_Type.B.GetDescription()}',
+           '{Rating_Type.A.GetDescription()}',
            Rating_Object,
            Rating_Org,
            Rating,
@@ -220,7 +220,7 @@ WITH T0 AS (
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-   AND RA_Info.Rating_Object = '債項'
+   AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -262,7 +262,7 @@ Select     Reference_Nbr,
            Origination_Date,
            Report_Date,
            Rating_Date,
-           '{Rating_Type.A.GetDescription()}',
+           '{Rating_Type.B.GetDescription()}',
            Rating_Object,
            Rating_Org,
            Rating,
@@ -281,6 +281,62 @@ Select     Reference_Nbr,
            Security_Ticker
 		   From
 		   T0;
+
+-- If left(SMF,3)='411' then 從BBG撈<ISSUER_EQUITY_TICKER>的欄位參數改為<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+-- If left(SMF,3)='421' and (Issuer= 'GOV-Kaohsiung' or Issuer= 'GOV-TAIPEI') 
+-- then <ISSUER_EQUITY_TICKER>的欄位內容放剛剛抓的<GOV-TW-CEN>的<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+WITH GOVTWCEN AS
+(
+   select TOP 1 
+   sampleInfo.PARENT_TICKER_EXCHANGE AS PARENT_TICKER_EXCHANGE
+   from Bond_Rating_Info A57 
+   JOIN Rating_Info_SampleInfo sampleInfo
+   ON A57.Bond_Number = sampleInfo.Bond_Number
+   and A57.SMF = sampleInfo.SMF
+   and A57.Report_Date = sampleInfo.Report_Date
+   where A57.Report_Date = '{reportData}'
+   and A57.Version = {ver}
+   and A57.ISSUER = 'GOV-TW-CEN'
+   UNION
+   select null
+)
+update Bond_Rating_Info
+set ISSUER_TICKER = 
+    CASE WHEN LEFT(Bond_Rating_Info.SMF,3) = '411'
+	     THEN Rating_Info_SampleInfo.PARENT_TICKER_EXCHANGE
+         WHEN LEFT(Bond_Rating_Info.SMF,3) = '421' and ISSUER IN ('GOV-Kaohsiung','GOV-TAIPEI')
+		 THEN GOVTWCEN.PARENT_TICKER_EXCHANGE
+    END
+from Rating_Info_SampleInfo,GOVTWCEN
+where Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and LEFT(Bond_Rating_Info.SMF,3) IN ('411','421') 
+and Rating_Info_SampleInfo.SMF = Bond_Rating_Info.SMF
+and Rating_Info_SampleInfo.Bond_Number = Bond_Rating_Info.Bond_Number
+and Bond_Rating_Info.Report_Date = Rating_Info_SampleInfo.Report_Date;
+ 
+
+--Left(SMF,1)='C'此類的商品會串不出<ISSUER_EQUITY_TICKER>，但其它種類債券有一樣的Issuer，
+--且有串出他的Ticker及信評，所以要找其它Left(SMF,1)<>'C'的商品，
+--有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER>再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
+WITH A57SMFNOTC AS
+(
+   select * from
+   Bond_Rating_Info A57
+   where A57.Report_Date = '{reportData}'
+   and Version = {ver}
+   and LEFT(A57.SMF,1) != 'C'
+)
+update Bond_Rating_Info
+set ISSUER_TICKER =
+    (select TOP 1 A57SMFNOTC.ISSUER_TICKER
+	from A57SMFNOTC
+	 where Bond_Rating_Info.ISSUER = A57SMFNOTC.ISSUER
+	 UNION
+    select null)
+where Report_Date = '{reportData}'
+and Version = {ver}
+and LEFT(SMF,1) = 'C';
 
 -- update Guarantor_Ticker(擔保者Ticker) 的設定
 update Bond_Rating_Info
@@ -434,7 +490,33 @@ GROUP BY BR_Info.Reference_Nbr,
 	     BR_Info.ISSUER,
 		 BR_Parm.Rating_Selection,
 		 BR_Parm.Rating_Priority ;
+
+--If issuer='GOV - TW - CEN' or 'GOV - Kaohsiung' or 'GOV - TAIPEI' then他們的債項評等放他們發行人的評等
+WITH A58ISSUER AS
+(
+   select *
+   from Bond_Rating_Summary
+   where Report_Date = '{reportData}'
+   and Version = {ver}
+   and ISSUER IN('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
+   and Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
+)
+update Bond_Rating_Summary
+set Bond_Rating_Summary.Grade_Adjust = A58ISSUER.Grade_Adjust
+from Bond_Rating_Summary, A58ISSUER
+where Bond_Rating_Summary.Report_Date = '{reportData}'
+and Bond_Rating_Summary.Version = {ver}
+and Bond_Rating_Summary.ISSUER IN ('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
+and Bond_Rating_Summary.ISSUER = A58ISSUER.ISSUER
+and Bond_Rating_Summary.Bond_Number = A58ISSUER.Bond_Number
+and Bond_Rating_Summary.Lots = A58ISSUER.Lots
+and Bond_Rating_Summary.Reference_Nbr = A58ISSUER.Reference_Nbr
+and Bond_Rating_Summary.Portfolio_Name = A58ISSUER.Portfolio_Name
+and Bond_Rating_Summary.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+and Bond_Rating_Summary.Rating_Type = A58ISSUER.Rating_Type
+and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
                     ";
+                        db.Database.CommandTimeout = 300;
                         db.Database.ExecuteSqlCommand(sql);
                         db.Dispose();
                         log.saveTransferCheck(

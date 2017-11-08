@@ -67,7 +67,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now);
             }
             
-            var A41 = db.Bond_Account_Info
+            var A41 = db.Bond_Account_Info.AsNoTracking()
                .Any(x => x.Report_Date == reportDateDt);
             verInt = db.Bond_Account_Info
                 .Where(x => x.Report_Date == reportDateDt && x.Version != null)
@@ -100,7 +100,6 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-
                 db.Dispose();
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
@@ -228,7 +227,7 @@ namespace AutoTransfer.Transfer
                     if (flag) //找到的資料
                     {
                         var arr = line.Split('|');
-                        if (arr.Length >= 19)
+                        if (arr.Length >= 20)
                         {
                             if (!arr[3].IsNullOrWhiteSpace() &&
                                 !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
@@ -380,6 +379,10 @@ namespace AutoTransfer.Transfer
 
             #region sample Data
 
+            List<Bond_Account_Info> A41s = db.Bond_Account_Info
+                .Where(x => x.Report_Date == reportDateDt &&
+                           x.Version == verInt).ToList();
+
             using (StreamReader sr = new StreamReader(Path.Combine(
                 setFile.getSampleFilePath(), setFile.getSampleFileName())))
             {
@@ -417,7 +420,9 @@ namespace AutoTransfer.Transfer
                         //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
                         //--A95 Security_Des (與A53 一起抓資料)
                         //arr[18] A95 Security_Des
-                        if (arr.Length >= 19)
+                        //--SMF 條件符合取代使用
+                        //arr[19] PARENT_TICKER_EXCHANGE
+                        if (arr.Length >= 20)
                         {
                             //S&P國外評等
                             validateSample(
@@ -459,12 +464,18 @@ namespace AutoTransfer.Transfer
                                 A53SampleBloombergField.RTG_TRC.ToString(),
                                 RatingOrg.CW,
                                 sampleData);
+                            var A41 = A41s.FirstOrDefault(x => x.Bond_Number == arr[0]);
+                            var SMF = string.Empty;
+                            if (A41 != null)
+                                SMF = A41.PRODUCT;
                             sampleInfos.Add(new sampleInfo()
                             {
                                 Bond_Number = arr[0],
                                 ISSUER_TICKER = arr[3],
                                 GUARANTOR_EQY_TICKER = arr[6],
-                                GUARANTOR_NAME = arr[7]
+                                GUARANTOR_NAME = arr[7],
+                                SMF = SMF,
+                                PARENT_TICKER_EXCHANGE = arr[19]
                             });
                             SDs.Add(new Tuple<string, string>(arr[0], arr[18]));
                         }
@@ -663,7 +674,9 @@ namespace AutoTransfer.Transfer
                         GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
                         GUARANTOR_NAME = x.GUARANTOR_NAME,
                         ISSUER_TICKER = x.ISSUER_TICKER,
-                        Report_Date = reportDateDt
+                        Report_Date = reportDateDt,
+                        PARENT_TICKER_EXCHANGE = x.PARENT_TICKER_EXCHANGE,
+                        SMF = x.SMF
                     }));
 
                 #region A95 特殊　PRODUCT
@@ -775,6 +788,8 @@ namespace AutoTransfer.Transfer
             public string GUARANTOR_EQY_TICKER { get; set; }
             public string GUARANTOR_NAME { get; set; }
             public string ISSUER_TICKER { get; set; }
+            public string SMF { get; set; }
+            public string PARENT_TICKER_EXCHANGE { get; set; }
         }
 
         #region private function
