@@ -321,19 +321,18 @@ and Bond_Rating_Info.Report_Date = Rating_Info_SampleInfo.Report_Date;
 --有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER>再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
 WITH A57SMFNOTC AS
 (
-   select * from
+   select distinct ISSUER,ISSUER_TICKER from
    Bond_Rating_Info A57
    where A57.Report_Date = '{reportData}'
    and Version = {ver}
    and LEFT(A57.SMF,1) != 'C'
+   and ISSUER_TICKER is not null
 )
 update Bond_Rating_Info
 set ISSUER_TICKER =
     (select TOP 1 A57SMFNOTC.ISSUER_TICKER
 	from A57SMFNOTC
-	 where Bond_Rating_Info.ISSUER = A57SMFNOTC.ISSUER
-	 UNION
-    select null)
+	 where Bond_Rating_Info.ISSUER = A57SMFNOTC.ISSUER)
 where Report_Date = '{reportData}'
 and Version = {ver}
 and LEFT(SMF,1) = 'C';
