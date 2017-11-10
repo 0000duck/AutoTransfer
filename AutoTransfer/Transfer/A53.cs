@@ -373,7 +373,6 @@ namespace AutoTransfer.Transfer
             List<Rating_Info> sampleData = new List<Rating_Info>();
             List<Rating_Info> commpanyData = new List<Rating_Info>();
             List<sampleInfo> sampleInfos = new List<sampleInfo>();
-            List<Tuple<string, string>> SDs = new List<Tuple<string, string>>();
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
 
@@ -475,9 +474,10 @@ namespace AutoTransfer.Transfer
                                 GUARANTOR_EQY_TICKER = arr[6],
                                 GUARANTOR_NAME = arr[7],
                                 SMF = SMF,
-                                PARENT_TICKER_EXCHANGE = arr[19]
+                                PARENT_TICKER_EXCHANGE = arr[19],
+                                Security_Des = arr[18],
+                                Bloomberg_Ticker = arr[18].IsNullOrWhiteSpace() ? null : arr[18].Split(' ')[0]
                             });
-                            SDs.Add(new Tuple<string, string>(arr[0], arr[18]));
                         }
                     }
                     if ("START-OF-DATA".Equals(line))
@@ -661,12 +661,15 @@ namespace AutoTransfer.Transfer
 
             if (sampleData.Any() || commpanyData.Any())
             {
+                #region save Rating_Info
                 db.Rating_Info.RemoveRange(
-                    db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
+                db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
                 db.Rating_Info.AddRange(sampleData);
                 db.Rating_Info.AddRange(commpanyData);
+                #endregion
+                #region save Rating_Info_SampleInfo
                 db.Rating_Info_SampleInfo.RemoveRange(
-                    db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
+                db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
                 db.Rating_Info_SampleInfo.AddRange(
                     sampleInfos.Select(x => new Rating_Info_SampleInfo()
                     {
@@ -676,9 +679,11 @@ namespace AutoTransfer.Transfer
                         ISSUER_TICKER = x.ISSUER_TICKER,
                         Report_Date = reportDateDt,
                         PARENT_TICKER_EXCHANGE = x.PARENT_TICKER_EXCHANGE,
-                        SMF = x.SMF
+                        SMF = x.SMF,
+                        Bloomberg_Ticker = x.Bloomberg_Ticker,
+                        Security_Des = x.Security_Des
                     }));
-
+                #endregion
                 #region A95 特殊　PRODUCT
                 List<string> products = new List<string>()
                 {
@@ -688,26 +693,27 @@ namespace AutoTransfer.Transfer
                     "932 CLO"
                 };
                 #endregion
-
+                #region update A41 & A95 Security_Des & Bloomberg_Ticker
+                //A45
                 var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
-
+                //A95
                 db.Bond_Ticker_Info.Where(x => x.Report_Date == reportDateDt &&
                 x.Version == verInt && !products.Contains(x.PRODUCT)).ToList()
                 .ForEach(x =>
                 {
-                    var obj = SDs.FirstOrDefault(y => y.Item1 == x.Bond_Number);
+                    var obj = sampleInfos.FirstOrDefault(y => y.Bond_Number == x.Bond_Number);
                     if (obj != null)
                     {
-                        if (!obj.Item2.IsNullOrWhiteSpace())
+                        if (!obj.Security_Des.IsNullOrWhiteSpace())
                         {
-                            x.Security_Des = obj.Item2;
-                            x.Bloomberg_Ticker = obj.Item2.Trim().Split(' ')[0];
+                            x.Security_Des = obj.Security_Des;
+                            x.Bloomberg_Ticker = obj.Bloomberg_Ticker;
                             x.Processing_Date = startTime;
                             var A45Data = A45Datas.FirstOrDefault(z =>
                             z.Bloomberg_Ticker == x.Bloomberg_Ticker);
                             if (A45Data != null)
                             {
-                                x.Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind,x.Lien_position);
+                                x.Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind, x.Lien_position);
                                 x.Bond_Type = formateBondType(A45Data.Bond_Type);
                                 var A41 = db.Bond_Account_Info.FirstOrDefault(i =>
                                     i.Report_Date == x.Report_Date &&
@@ -720,11 +726,12 @@ namespace AutoTransfer.Transfer
                                     A41.Bond_Type = x.Bond_Type;
                                     A41.Assessment_Sub_Kind = x.Assessment_Sub_Kind;
                                     A41.Processing_Date = startTime;
-                                }                                   
+                                }
                             }
                         }
                     }
                 });
+                #endregion
                 try
                 {
                     db.SaveChanges();
@@ -790,6 +797,8 @@ namespace AutoTransfer.Transfer
             public string ISSUER_TICKER { get; set; }
             public string SMF { get; set; }
             public string PARENT_TICKER_EXCHANGE { get; set; }
+            public string Bloomberg_Ticker { get; set; }
+            public string Security_Des { get; set; }
         }
 
         #region private function

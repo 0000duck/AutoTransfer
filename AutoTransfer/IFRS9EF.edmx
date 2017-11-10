@@ -568,6 +568,8 @@
           <Property Name="GUARANTOR_NAME" Type="varchar" MaxLength="50" />
           <Property Name="PARENT_TICKER_EXCHANGE" Type="varchar" MaxLength="50" />
           <Property Name="SMF" Type="varchar" MaxLength="50" />
+          <Property Name="Security_Des" Type="varchar" MaxLength="40" />
+          <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
@@ -774,6 +776,8 @@
           <Property Name="GUARANTOR_NAME" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="PARENT_TICKER_EXCHANGE" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="SMF" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Security_Des" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Bloomberg_Ticker" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Bond_Account_Info">
           <Key>
@@ -1367,6 +1371,8 @@
           <EntitySetMapping Name="Rating_Info_SampleInfo">
             <EntityTypeMapping TypeName="IFRS9Model.Rating_Info_SampleInfo">
               <MappingFragment StoreEntitySet="Rating_Info_SampleInfo">
+                <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
+                <ScalarProperty Name="Security_Des" ColumnName="Security_Des" />
                 <ScalarProperty Name="SMF" ColumnName="SMF" />
                 <ScalarProperty Name="PARENT_TICKER_EXCHANGE" ColumnName="PARENT_TICKER_EXCHANGE" />
                 <ScalarProperty Name="GUARANTOR_NAME" ColumnName="GUARANTOR_NAME" />
