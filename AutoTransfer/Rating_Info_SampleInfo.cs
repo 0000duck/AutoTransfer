@@ -21,5 +21,7 @@ namespace AutoTransfer
         public string GUARANTOR_NAME { get; set; }
         public string PARENT_TICKER_EXCHANGE { get; set; }
         public string SMF { get; set; }
+        public string Security_Des { get; set; }
+        public string Bloomberg_Ticker { get; set; }
     }
 }
