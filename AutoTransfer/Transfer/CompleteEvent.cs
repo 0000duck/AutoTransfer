@@ -49,11 +49,33 @@ select MAX(Report_Date) as Report_Date from Bond_Rating_Info
 ),
 temp as
 (
-select A57.*
+select RTG_Bloomberg_Field,
+       Origination_Date,
+	   Rating_Object,
+	   ISIN_Changed_Ind,
+	   Bond_Number_Old,
+	   Bond_Number,
+	   Lots_Old,
+	   Lots,
+	   Portfolio_Name_Old,
+	   Portfolio_Name,
+	   Rating
 from   Bond_Rating_Info A57,temp2
 where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
 and    A57.Report_Date = temp2.Report_Date
+group by
+       RTG_Bloomberg_Field,
+       Origination_Date,
+	   Rating_Object,
+	   ISIN_Changed_Ind,
+	   Bond_Number_Old,
+	   Bond_Number,
+	   Lots_Old,
+	   Lots,
+	   Portfolio_Name_Old,
+	   Portfolio_Name,
+	   Rating
 ),
 T1 AS (
    Select BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -72,8 +94,14 @@ T1 AS (
 		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
 	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
 	      END) AS Rating_Org_Area,
-		  GMapInfo.PD_Grade AS PD_Grade,
-		  GMooInfo.Grade_Adjust AS Grade_Adjust,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.PD_Grade
+          ELSE GMapInfo.PD_Grade 
+          END AS PD_Grade,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.Grade_Adjust
+          ELSE GMooInfo.Grade_Adjust
+          END AS Grade_Adjust,
 		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
@@ -93,7 +121,6 @@ T1 AS (
    on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
    AND BA_Info.Origination_Date = oldA57.Origination_Date
    AND RA_Info.Rating_Object = oldA57.Rating_Object
-   AND oldA57.Rating_Type = '{Rating_Type.A.GetDescription()}'
    AND BA_Info.Bond_Number =
     CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
 	THEN oldA57.Bond_Number_Old
@@ -114,6 +141,10 @@ T1 AS (
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   Left Join Grade_Moody_Info GMooInfo2 --A51Second
+   on GMooInfo2.Rating = RA_Info.Rating
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
@@ -195,8 +226,14 @@ WITH T0 AS (
 		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
 	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
 	      END) AS Rating_Org_Area,
-		  GMapInfo.PD_Grade AS PD_Grade,
-		  GMooInfo.Grade_Adjust AS Grade_Adjust,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.PD_Grade
+          ELSE GMapInfo.PD_Grade 
+          END AS PD_Grade,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.Grade_Adjust
+          ELSE GMooInfo.Grade_Adjust
+          END AS Grade_Adjust,
 		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
@@ -217,6 +254,10 @@ WITH T0 AS (
    AND RA_Info.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   Left Join Grade_Moody_Info GMooInfo2 --A51Second
+   on GMooInfo2.Rating = RA_Info.Rating
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
@@ -868,6 +909,7 @@ and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
                 return null;
             return value.Trim();
         }
+
         #endregion
 
 
