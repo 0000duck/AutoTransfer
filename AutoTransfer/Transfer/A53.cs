@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using static AutoTransfer.Enum.Ref;
 
@@ -103,7 +104,7 @@ namespace AutoTransfer.Transfer
                 db.Dispose();
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
-                createSampleFile();
+                createSampleFile();           
             }
         }
 
@@ -375,7 +376,7 @@ namespace AutoTransfer.Transfer
             List<sampleInfo> sampleInfos = new List<sampleInfo>();
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
-
+            List<StringBuilder> sbs = new List<StringBuilder>();
             #region sample Data
 
             List<Bond_Account_Info> A41s = db.Bond_Account_Info
@@ -661,28 +662,101 @@ namespace AutoTransfer.Transfer
 
             if (sampleData.Any() || commpanyData.Any())
             {
+                
                 #region save Rating_Info
-                db.Rating_Info.RemoveRange(
-                db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
-                db.Rating_Info.AddRange(sampleData);
-                db.Rating_Info.AddRange(commpanyData);
+                //db.Rating_Info.RemoveRange(
+                //db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
+                sbs.Add(new StringBuilder($@"
+delete Rating_Info where Report_Date = {reportDateDt.dateTimeToStrSql()}
+"));
+                sampleData.ForEach(x => {
+                    sbs.Add(new StringBuilder($@"
+INSERT INTO Rating_Info
+           ([Bond_Number]
+           ,[Rating_Date]
+           ,[Rating_Object]
+           ,[Rating]
+           ,[RTG_Bloomberg_Field]
+           ,[Report_Date]
+           ,[Rating_Org])
+     VALUES
+           ({x.Bond_Number.stringToStrSql()}
+           ,{x.Rating_Date.dateTimeNToStrSql()}
+           ,{x.Rating_Object.stringToStrSql()}
+           ,{x.Rating.stringToStrSql()}
+           ,{x.RTG_Bloomberg_Field.stringToStrSql()}
+           ,{x.Report_Date.dateTimeToStrSql()}
+           ,{x.Rating_Org.stringToStrSql()}) ;
+"));
+                });
+                commpanyData.ForEach(x => {
+                    sbs.Add(new StringBuilder($@"
+INSERT INTO Rating_Info
+           ([Bond_Number]
+           ,[Rating_Date]
+           ,[Rating_Object]
+           ,[Rating]
+           ,[RTG_Bloomberg_Field]
+           ,[Report_Date]
+           ,[Rating_Org])
+     VALUES
+           ({x.Bond_Number.stringToStrSql()}
+           ,{x.Rating_Date.dateTimeNToStrSql()}
+           ,{x.Rating_Object.stringToStrSql()}
+           ,{x.Rating.stringToStrSql()}
+           ,{x.RTG_Bloomberg_Field.stringToStrSql()}
+           ,{x.Report_Date.dateTimeToStrSql()}
+           ,{x.Rating_Org.stringToStrSql()}) ;
+"));
+                });
+                //db.Rating_Info.AddRange(sampleData);
+                //db.Rating_Info.AddRange(commpanyData);
                 #endregion
                 #region save Rating_Info_SampleInfo
-                db.Rating_Info_SampleInfo.RemoveRange(
-                db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
-                db.Rating_Info_SampleInfo.AddRange(
-                    sampleInfos.Select(x => new Rating_Info_SampleInfo()
-                    {
-                        Bond_Number = x.Bond_Number,
-                        GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
-                        GUARANTOR_NAME = x.GUARANTOR_NAME,
-                        ISSUER_TICKER = x.ISSUER_TICKER,
-                        Report_Date = reportDateDt,
-                        PARENT_TICKER_EXCHANGE = x.PARENT_TICKER_EXCHANGE,
-                        SMF = x.SMF,
-                        Bloomberg_Ticker = x.Bloomberg_Ticker,
-                        Security_Des = x.Security_Des
-                    }));
+                //db.Rating_Info_SampleInfo.RemoveRange(
+                //db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
+
+                sbs.Add(new StringBuilder($@"
+delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql()}
+"));
+                //db.Rating_Info_SampleInfo.AddRange(
+                //    sampleInfos.Select(x => new Rating_Info_SampleInfo()
+                //    {
+                //        Bond_Number = x.Bond_Number,
+                //        GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
+                //        GUARANTOR_NAME = x.GUARANTOR_NAME,
+                //        ISSUER_TICKER = x.ISSUER_TICKER,
+                //        Report_Date = reportDateDt,
+                //        PARENT_TICKER_EXCHANGE = x.PARENT_TICKER_EXCHANGE,
+                //        SMF = x.SMF,
+                //        Bloomberg_Ticker = x.Bloomberg_Ticker,
+                //        Security_Des = x.Security_Des
+                //    }));
+                sampleInfos.ForEach(x => {
+                    sbs.Add(new StringBuilder($@"
+INSERT INTO [Rating_Info_SampleInfo]
+           ([Bond_Number]
+           ,[Report_Date]
+           ,[ISSUER_TICKER]
+           ,[GUARANTOR_EQY_TICKER]
+           ,[GUARANTOR_NAME]
+           ,[PARENT_TICKER_EXCHANGE]
+           ,[SMF]
+           ,[Security_Des]
+           ,[Bloomberg_Ticker])
+     VALUES
+           ({x.Bond_Number.stringToStrSql()}
+           ,{reportDateDt.dateTimeToStrSql()}
+           ,{x.ISSUER_TICKER.stringToStrSql()}
+           ,{x.GUARANTOR_EQY_TICKER.stringToStrSql()}
+           ,{x.GUARANTOR_NAME.stringToStrSql()}
+           ,{x.PARENT_TICKER_EXCHANGE.stringToStrSql()}
+           ,{x.SMF.stringToStrSql()}
+           ,{x.Security_Des.stringToStrSql()}
+           ,{x.Bloomberg_Ticker.stringToStrSql()}) ;
+"));
+                });
+               
                 #endregion
                 #region A95 特殊　PRODUCT
                 List<string> products = new List<string>()
@@ -693,18 +767,23 @@ namespace AutoTransfer.Transfer
                     "932 CLO"
                 };
                 #endregion
-                #region update A41 & A95 Security_Des & Bloomberg_Ticker
+                #region update A95 Security_Des & Bloomberg_Ticker AND A41 & A95 Bond_Type & Assessment_Sub_Kind
                 //A45
                 var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
+                var A41Datas = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version == verInt).ToList();
                 //A95
-                db.Bond_Ticker_Info.Where(x => x.Report_Date == reportDateDt &&
-                x.Version == verInt && !products.Contains(x.PRODUCT)).ToList()
+                db.Bond_Ticker_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt &&
+                x.Version == verInt && 
+                !products.Contains(x.PRODUCT) && 
+                x.Bond_Number != null).ToList().GroupBy(x=>x.Bond_Number)
+                .Select(x=>x.First()).ToList()
                 .ForEach(x =>
                 {
+                    //obj => Rating_Info_SampleInfo
                     var obj = sampleInfos.FirstOrDefault(y => y.Bond_Number == x.Bond_Number);
                     if (obj != null)
                     {
-                        if (!obj.Security_Des.IsNullOrWhiteSpace())
+                        if (!obj.Security_Des.IsNullOrWhiteSpace() && obj.Security_Des != x.Security_Des)
                         {
                             x.Security_Des = obj.Security_Des;
                             x.Bloomberg_Ticker = obj.Bloomberg_Ticker;
@@ -713,61 +792,150 @@ namespace AutoTransfer.Transfer
                             z.Bloomberg_Ticker == x.Bloomberg_Ticker);
                             if (A45Data != null)
                             {
-                                x.Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind, x.Lien_position);
-                                x.Bond_Type = formateBondType(A45Data.Bond_Type);
-                                var A41 = db.Bond_Account_Info.FirstOrDefault(i =>
-                                    i.Report_Date == x.Report_Date &&
-                                    i.Version == x.Version &&
-                                    i.Bond_Number == x.Bond_Number &&
-                                    i.Lots == x.Lots &&
-                                    i.Portfolio_Name == x.Portfolio_Name);
-                                if (A41 != null)
-                                {
-                                    A41.Bond_Type = x.Bond_Type;
-                                    A41.Assessment_Sub_Kind = x.Assessment_Sub_Kind;
-                                    A41.Processing_Date = startTime;
-                                }
+                                var Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind, x.Lien_position);
+                                var Bond_Type = formateBondType(A45Data.Bond_Type);
+                                //x.Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind, x.Lien_position);
+                                //x.Bond_Type = formateBondType(A45Data.Bond_Type);
+                                //var A41 = A41Datas.FirstOrDefault(i =>
+                                //    i.Report_Date == x.Report_Date &&
+                                //    i.Version == x.Version &&
+                                //    i.Bond_Number == x.Bond_Number &&
+                                //    i.Lots == x.Lots &&
+                                //    i.Portfolio_Name == x.Portfolio_Name);
+                                //if (A41 != null)
+                                //{
+                                //    A41.Bond_Type = x.Bond_Type;
+                                //    A41.Assessment_Sub_Kind = x.Assessment_Sub_Kind;
+                                //    A41.Processing_Date = startTime;
+                                //}
+                                sbs.Add(new StringBuilder($@"
+UPDATE  Bond_Ticker_Info
+SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()} ,
+    Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
+    Bond_Type = {Bond_Type.stringToStrSql()}
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+
+UPDATE Bond_Account_Info
+SET Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
+    Bond_Type = {Bond_Type.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()} 
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+"));
+                            }
+                            else
+                            {
+                                sbs.Add(new StringBuilder($@"
+UPDATE  Bond_Ticker_Info
+SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()}
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+"));
                             }
                         }
                     }
                 });
                 #endregion
-                try
+
+
+                using (var dbContextTransaction = db.Database.BeginTransaction())
                 {
-                    db.SaveChanges();
-                    db.Dispose();
-                    log.saveTransferCheck(
-                        type,
-                        true,
-                        reportDateDt,
-                        1,
-                        startTime,
-                        DateTime.Now);
-                    log.txtLog(
-                        type,
-                        true,
-                        startTime,
-                        logPath,
-                        MessageType.Success.GetDescription());
-                    new CompleteEvent().saveDb(reportDateDt, verInt);
+                    try
+                    {
+                        int size = 1000;
+                        for (int q = 0; (sbs.Count() / size) >= q; q += 1)
+                        {
+                            StringBuilder sql = new StringBuilder();
+                            sbs.Skip((q) * size).Take(size).ToList()
+                                .ForEach(x =>
+                                {
+                                    sql.Append(x.ToString());
+                                });
+                            db.Database.ExecuteSqlCommand(sql.ToString());
+                        }
+                        dbContextTransaction.Commit();
+                        log.saveTransferCheck(
+                            type,
+                            true,
+                            reportDateDt,
+                            1,
+                            startTime,
+                            DateTime.Now);
+                        log.txtLog(
+                            type,
+                            true,
+                            startTime,
+                            logPath,
+                            MessageType.Success.GetDescription());
+                        new CompleteEvent().saveDb(reportDateDt, verInt);
+                    }
+                    catch (Exception ex)
+                    {
+                        dbContextTransaction.Rollback(); //Required according to MSDN article 
+                        log.saveTransferCheck(
+                            type,
+                            false,
+                            reportDateDt,
+                            1,
+                            startTime,
+                            DateTime.Now);
+                        log.txtLog(
+                            type,
+                            false,
+                            startTime,
+                            logPath,
+                            $"message: {ex.Message}" +
+                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                    }
+                    finally
+                    {
+                        db.Dispose();
+                    }
                 }
-                catch (DbUpdateException ex)
-                {
-                    log.saveTransferCheck(
-                        type,
-                        false,
-                        reportDateDt,
-                        1,
-                        startTime,
-                        DateTime.Now);
-                    log.txtLog(
-                        type,
-                        false,
-                        startTime,
-                        logPath,
-                        $"message: {ex.Message}" +
-                        $", inner message {ex.InnerException?.InnerException?.Message}");
-                }
+                //try
+                //{
+                //    //db.SaveChanges();
+                //    db.Dispose();
+                //    log.saveTransferCheck(
+                //        type,
+                //        true,
+                //        reportDateDt,
+                //        1,
+                //        startTime,
+                //        DateTime.Now);
+                //    log.txtLog(
+                //        type,
+                //        true,
+                //        startTime,
+                //        logPath,
+                //        MessageType.Success.GetDescription());
+                //    new CompleteEvent().saveDb(reportDateDt, verInt);
+                //}
+                //catch (DbUpdateException ex)
+                //{
+                //    log.saveTransferCheck(
+                //        type,
+                //        false,
+                //        reportDateDt,
+                //        1,
+                //        startTime,
+                //        DateTime.Now);
+                //    log.txtLog(
+                //        type,
+                //        false,
+                //        startTime,
+                //        logPath,
+                //        $"message: {ex.Message}" +
+                //        $", inner message {ex.InnerException?.InnerException?.Message}");
+                //}
             }
             else
             {
