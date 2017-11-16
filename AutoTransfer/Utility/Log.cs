@@ -71,8 +71,8 @@ namespace AutoTransfer.Utility
         /// <summary>
         /// 判斷轉檔紀錄是否有存在
         /// </summary>
-        /// <param name="fileNames">檔案名稱</param>
-        /// <param name="checkName">要判斷的檔案名稱</param>
+        /// <param name="fileNames">檔案名稱(這次要轉檔的名稱)</param>
+        /// <param name="checkName">要判斷的檔案名稱(執行這次轉檔前要完成的動作的檔案名稱)</param>
         /// <param name="reportDate">基準日</param>
         /// <param name="version">版本</param>
         /// <returns></returns>
@@ -82,25 +82,28 @@ namespace AutoTransfer.Utility
             DateTime reportDate,
             int version)
         {
-            IFRS9Entities db = new IFRS9Entities();
             if (fileName.IsNullOrWhiteSpace() || checkName.IsNullOrWhiteSpace())
                 return false;
-            //須符合有一筆"Y"(上一部完成) 自己沒有"Y"(重複做) 才算符合
-            if (db.Transfer_CheckTable.Any(x => x.ReportDate == reportDate &&
-                                                (( checkName == "A53" &&
-                                                 x.Version == 1) ||
-                                                (x.File_Name == checkName &&                                             
-                                               x.Version == version)) &&
-                                               x.TransferType == "Y") &&
-                                               (fileName == "A53" ||
-                !db.Transfer_CheckTable.Any(x => x.File_Name == fileName &&
-                                              x.ReportDate == reportDate &&
-                                              x.Version == version &&
-                                              x.TransferType == "Y")))
+            using (IFRS9Entities db = new IFRS9Entities())
             {
-                db.Dispose();
-                return true;
-            }
+                var checkTable = db.Transfer_CheckTable.AsNoTracking();
+                //須符合有一筆"Y"(上一部完成),前置動作檢查檔案為A53版本只會有一版
+                if (checkTable.Any(x => x.ReportDate == reportDate &&
+                                                    ((checkName == "A53" &&
+                                                     x.Version == 1) ||
+                                                    (x.File_Name == checkName &&
+                                                   x.Version == version)) &&
+                                                   x.TransferType == "Y") &&
+                //自己沒有"Y"(重複做) 才算符合,轉檔為A53不用判斷
+                    (fileName == "A53" ||
+                    !checkTable.Any(x => x.File_Name == fileName &&
+                                                  x.ReportDate == reportDate &&
+                                                  x.Version == version &&
+                                                  x.TransferType == "Y")))
+                {
+                    return true;
+                }
+            }               
             return false;
         }
 
@@ -154,13 +157,16 @@ namespace AutoTransfer.Utility
                 });
                 try
                 {
-                    db.SaveChanges();
-                    db.Dispose();
+                    db.SaveChanges();                   
                     return true;
                 }
                 catch
                 {
                     return false;
+                }
+                finally
+                {
+                    db.Dispose();
                 }
             }
             return false;
