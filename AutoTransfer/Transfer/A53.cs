@@ -6,7 +6,6 @@ using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -88,7 +87,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now);
                 List<string> errs = new List<string>();
                 if (!A41)
-                    errs.Add(MessageType.not_Find_Any.GetDescription());
+                    errs.Add(MessageType.not_Find_Any.GetDescription("A41"));
                 if (!check || verInt == 0)
                     errs.Add(MessageType.transferError.GetDescription());
                 log.txtLog(
@@ -104,7 +103,7 @@ namespace AutoTransfer.Transfer
                 db.Dispose();
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
-                createSampleFile();           
+                createSampleFile();
             }
         }
 
@@ -845,6 +844,125 @@ AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
                 });
                 #endregion
 
+                string lastA95 = $@"
+--A95TEMP
+with TEMP2 AS
+(
+select 
+TOP 1
+Report_Date ,Version 
+from Bond_Account_Info 
+where 
+(
+Report_Date != {reportDateDt.dateTimeToStrSql()}
+or 
+Version != {verInt.ToString()}
+)
+group by Report_Date ,Version
+order by Report_Date DESC,Version DESC
+),
+TEMP AS 
+(
+select A95.Bond_Number,
+       A95.Lots,
+	   A95.Portfolio_Name,
+	   A95.Security_Des,
+	   A95.Bloomberg_Ticker
+from   Bond_Ticker_Info A95,TEMP2
+where  A95.Report_Date = TEMP2.Report_Date
+and    A95.Version = TEMP2.Version
+and    A95.Bloomberg_Ticker is not null
+),
+";
+                sbs.Add( new StringBuilder(
+                                      lastA95 +
+                  $@"
+A95TEMP AS
+(
+select 
+A95.Report_Date,
+A95.Version,
+A95.Lots,
+A95.Bond_Number,
+A95.Portfolio_Name,
+T1.Bloomberg_Ticker,
+T1.Security_Des,
+CASE WHEN A45.Bond_Type = 'Quasi Sovereign'
+     THEN '主權及國營事業債'
+	 WHEN A45.Bond_Type = 'Non Quasi Sovereign'
+	 THEN '其他債券'
+	 ELSE A45.Bond_Type
+	 END  AS Bond_Type,
+CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A95.Lien_position = '次順位' )
+     THEN '金融債次順位債券'
+	 WHEN (A45.Assessment_Sub_Kind = '金融債' AND( A95.Lien_position = '' OR A95.Lien_position is null) )
+	 THEN '金融債主順位債券'
+	 ELSE A45.Assessment_Sub_Kind
+	 END AS Assessment_Sub_Kind
+from  
+Bond_Ticker_Info A95
+JOIN TEMP T1
+ON A95.Lots = T1.Lots
+AND A95.Bond_Number = T1.Bond_Number
+AND A95.Portfolio_Name = T1.Portfolio_Name
+JOIN Bond_Category_Info A45
+ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
+where A95.Report_Date = {reportDateDt.dateTimeToStrSql()}
+and A95.version = {verInt.ToString()}
+and A95.Security_Des is null
+and A95.Bloomberg_Ticker is null
+and A95.Bond_Type is null
+and A95.Assessment_Sub_Kind is null
+)
+update Bond_Ticker_Info 
+set Assessment_Sub_Kind = A95TEMP.Assessment_Sub_Kind,
+    Bond_Type = A95TEMP.Bond_Type
+from Bond_Ticker_Info A95, A95TEMP 
+where A95.Report_Date = A95TEMP.Report_Date
+and A95.Version = A95TEMP.Version
+and A95.Lots = A95TEMP.Lots
+and A95.Bond_Number = A95TEMP.Bond_Number
+and A95.Portfolio_Name = A95TEMP.Portfolio_Name ;
+"
+                    ));
+                sbs.Add(
+                    new StringBuilder(
+                         lastA95 +
+                    $@"
+A41TEMP AS
+(
+select A41.Reference_Nbr,
+CASE WHEN A45.Bond_Type = 'Quasi Sovereign'
+     THEN '主權及國營事業債'
+	 WHEN A45.Bond_Type = 'Non Quasi Sovereign'
+	 THEN '其他債券'
+	 ELSE A45.Bond_Type
+	 END  AS Bond_Type,
+CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A41.Lien_position = '次順位' )
+     THEN '金融債次順位債券'
+	 WHEN (A45.Assessment_Sub_Kind = '金融債' AND( A41.Lien_position = '' OR A41.Lien_position is null) )
+	 THEN '金融債主順位債券'
+	 ELSE A45.Assessment_Sub_Kind
+	 END AS Assessment_Sub_Kind
+from Bond_Account_Info A41
+JOIN TEMP T1
+ON A41.Lots = T1.Lots
+AND A41.Bond_Number = T1.Bond_Number
+AND A41.Portfolio_Name = T1.Portfolio_Name
+JOIN Bond_Category_Info A45
+ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
+where A41.Report_Date = {reportDateDt.dateTimeToStrSql()}
+and A41.version = {verInt.ToString()}
+and A41.Bond_Type is null
+and A41.Assessment_Sub_Kind is null
+)
+update Bond_Account_Info
+set Assessment_Sub_Kind = A41TEMP.Assessment_Sub_Kind,
+    Bond_Type = A41TEMP.Bond_Type
+FROM Bond_Account_Info A41,  A41TEMP
+where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
+"
+                        ));
 
                 using (var dbContextTransaction = db.Database.BeginTransaction())
                 {

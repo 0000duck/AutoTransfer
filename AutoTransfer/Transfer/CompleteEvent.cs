@@ -1,7 +1,6 @@
 ﻿using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using static AutoTransfer.Enum.Ref;
 using static AutoTransfer.Transfer.A53;
@@ -117,6 +116,7 @@ T1 AS (
    Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
    AND BA_Info.Report_Date = RA_Info.Report_Date
+   AND RA_Info.Rating_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 大於等於 債券購入(認列)日期
    Left Join temp oldA57 --oldA57
    on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
    AND BA_Info.Origination_Date = oldA57.Origination_Date
