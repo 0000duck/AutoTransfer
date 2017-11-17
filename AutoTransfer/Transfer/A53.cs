@@ -449,8 +449,7 @@ and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
                         });
                         if (new CreateCommpanyFile().create(tableType, reportDateStr, data))
                         {
-                            //putCommpanySFTP();
-                            DataToDb();
+                            putCommpanySFTP();
                         }
                         else
                         {
@@ -1132,42 +1131,6 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                         db.Dispose();
                     }
                 }
-                //try
-                //{
-                //    //db.SaveChanges();
-                //    db.Dispose();
-                //    log.saveTransferCheck(
-                //        type,
-                //        true,
-                //        reportDateDt,
-                //        1,
-                //        startTime,
-                //        DateTime.Now);
-                //    log.txtLog(
-                //        type,
-                //        true,
-                //        startTime,
-                //        logPath,
-                //        MessageType.Success.GetDescription());
-                //    new CompleteEvent().saveDb(reportDateDt, verInt);
-                //}
-                //catch (DbUpdateException ex)
-                //{
-                //    log.saveTransferCheck(
-                //        type,
-                //        false,
-                //        reportDateDt,
-                //        1,
-                //        startTime,
-                //        DateTime.Now);
-                //    log.txtLog(
-                //        type,
-                //        false,
-                //        startTime,
-                //        logPath,
-                //        $"message: {ex.Message}" +
-                //        $", inner message {ex.InnerException?.InnerException?.Message}");
-                //}
             }
             else
             {
