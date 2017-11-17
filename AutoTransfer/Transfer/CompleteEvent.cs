@@ -1,7 +1,6 @@
 ﻿using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using static AutoTransfer.Enum.Ref;
 using static AutoTransfer.Transfer.A53;
@@ -43,110 +42,41 @@ namespace AutoTransfer.Transfer
                             string ver = version.ToString();
                             string sql = string.Empty;
                             sql = $@"
-Begin Try
-
-WITH T0 AS (
-   Select BA_Info.Reference_Nbr AS Reference_Nbr ,
-          BA_Info.Bond_Number AS Bond_Number,
-		  BA_Info.Lots AS Lots,
-		  BA_Info.Portfolio AS Portfolio,
-		  BA_Info.Segment_Name AS Segment_Name,
-		  BA_Info.Bond_Type AS Bond_Type,
-		  BA_Info.Lien_position AS Lien_position,
-		  BA_Info.Origination_Date AS Origination_Date,
-          BA_Info.Report_Date AS Report_Date,
-		  RA_Info.Rating_Date AS Rating_Date,
-		  RA_Info.Rating_Object AS Rating_Object,
-          RA_Info.Rating_Org AS Rating_Org,
-		  RA_Info.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
-	      END) AS Rating_Org_Area,
-		  GMapInfo.PD_Grade AS PD_Grade,
-		  GMooInfo.Grade_Adjust AS Grade_Adjust,
-		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
-		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
-		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
-		  BA_Info.Portfolio_Name AS Portfolio_Name,
-		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
-		  BA_Info.PRODUCT AS SMF,
-		  BA_Info.ISSUER AS ISSUER,
-		  BA_Info.Version AS Version,
-		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
-		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
-		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
-   from  Bond_Account_Info BA_Info --A41
-   Join Rating_Info RA_Info --A53
-   on BA_Info.Bond_Number = RA_Info.Bond_Number   
-   Left Join Grade_Mapping_Info GMapInfo --A52
-   on RA_Info.Rating_Org = GMapInfo.Rating_Org
-   AND RA_Info.Rating = GMapInfo.Rating
-   Left Join Grade_Moody_Info GMooInfo --A51
-   on GMapInfo.PD_Grade = GMooInfo.PD_Grade
-   Left Join Rating_Info_SampleInfo RISI --A53 Sample
-   on BA_Info.Bond_Number = RISI.Bond_Number
-   AND RA_Info.Rating_Object = '債項'
-   Where BA_Info.Report_Date = '{reportData}'
-   And   BA_Info.Version = {ver}
-)
-Insert into Bond_Rating_Info
-           (Reference_Nbr,
-           Bond_Number,
-           Lots,
-           Portfolio,
-           Segment_Name,
-           Bond_Type,
-           Lien_position,
-           Origination_Date,
-           Report_Date,
-           Rating_Date,
-           Rating_Type,
-           Rating_Object,
-           Rating_Org,
-           Rating,
-           Rating_Org_Area,
-           PD_Grade,
-           Grade_Adjust,
-           ISSUER_TICKER,
-           GUARANTOR_NAME,
-           GUARANTOR_EQY_TICKER,
-           Parm_ID,
-           Portfolio_Name,
-           RTG_Bloomberg_Field,
-           SMF,
-           ISSUER,
-           Version,
-           Security_Ticker)
-Select     Reference_Nbr,
-		   Bond_Number,
-		   Lots,
-           Portfolio,
-           Segment_Name,
-           Bond_Type,
-           Lien_position,
-           Origination_Date,
-           Report_Date,
-           Rating_Date,
-           '1',
-           Rating_Object,
-           Rating_Org,
-           Rating,
-           Rating_Org_Area,
-           PD_Grade,
-           Grade_Adjust,
-           ISSUER_TICKER,
-           GUARANTOR_NAME,
-           GUARANTOR_EQY_TICKER,
-           '{parmID}',
-           Portfolio_Name,
-           RTG_Bloomberg_Field,
-           SMF,
-           ISSUER,
-           Version,
-           Security_Ticker
-		   From
-		   T0;
-WITH T1 AS (
+with temp2 as
+(
+select MAX(Report_Date) as Report_Date from Bond_Rating_Info 
+),
+temp as
+(
+select RTG_Bloomberg_Field,
+       Origination_Date,
+	   Rating_Object,
+	   ISIN_Changed_Ind,
+	   Bond_Number_Old,
+	   Bond_Number,
+	   Lots_Old,
+	   Lots,
+	   Portfolio_Name_Old,
+	   Portfolio_Name,
+	   Rating
+from   Bond_Rating_Info A57,temp2
+where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
+and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
+and    A57.Report_Date = temp2.Report_Date
+group by
+       RTG_Bloomberg_Field,
+       Origination_Date,
+	   Rating_Object,
+	   ISIN_Changed_Ind,
+	   Bond_Number_Old,
+	   Bond_Number,
+	   Lots_Old,
+	   Lots,
+	   Portfolio_Name_Old,
+	   Portfolio_Name,
+	   Rating
+),
+T1 AS (
    Select BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -160,11 +90,17 @@ WITH T1 AS (
 		  RA_Info.Rating_Object AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  oldA57.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('SP','cnSP','Fitch') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('Fitch(twn)','CW') THEN '國內'
+		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
 	      END) AS Rating_Org_Area,
-		  GMapInfo.PD_Grade AS PD_Grade,
-		  GMooInfo.Grade_Adjust AS Grade_Adjust,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.PD_Grade
+          ELSE GMapInfo.PD_Grade 
+          END AS PD_Grade,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.Grade_Adjust
+          ELSE GMooInfo.Grade_Adjust
+          END AS Grade_Adjust,
 		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
@@ -177,22 +113,42 @@ WITH T1 AS (
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
 		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
    from  Bond_Account_Info BA_Info --A41
-   Join Rating_Info RA_Info --A53
+   Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
-   Left Join Bond_Rating_Info oldA57 --oldA57
-   on BA_Info.Bond_Number = oldA57.Bond_Number 
-   AND BA_Info.Lots = oldA57.Lots 
-   AND BA_Info.Portfolio_Name = oldA57.Portfolio_Name
-   AND BA_Info.Origination_Date = oldA57.Origination_Date 
-   AND oldA57.Rating_Type = '2'
+   AND BA_Info.Report_Date = RA_Info.Report_Date
+   AND RA_Info.Rating_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 大於等於 債券購入(認列)日期
+   Left Join temp oldA57 --oldA57
+   on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
+   AND BA_Info.Origination_Date = oldA57.Origination_Date
+   AND RA_Info.Rating_Object = oldA57.Rating_Object
+   AND BA_Info.Bond_Number =
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Bond_Number_Old
+	ELSE oldA57.Bond_Number
+	END
+   AND BA_Info.Lots = 
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Lots_Old
+	ELSE oldA57.Lots
+	END
+   AND BA_Info.Portfolio_Name = 
+    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
+	THEN oldA57.Portfolio_Name_Old
+	ELSE oldA57.Portfolio_Name
+	END
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   Left Join Grade_Moody_Info GMooInfo2 --A51Second
+   on GMooInfo2.Rating = RA_Info.Rating
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
-   AND RA_Info.Rating_Object = '債項'
+   AND BA_Info.Report_Date = RISI.Report_Date 
+   -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -234,7 +190,7 @@ Select     Reference_Nbr,
            Origination_Date,
            Report_Date,
            Rating_Date,
-           '2',
+           '{Rating_Type.A.GetDescription()}',
            Rating_Object,
            Rating_Org,
            Rating,
@@ -253,6 +209,186 @@ Select     Reference_Nbr,
            Security_Ticker
 		   From
 		   T1;
+WITH T0 AS (
+   Select BA_Info.Reference_Nbr AS Reference_Nbr ,
+          BA_Info.Bond_Number AS Bond_Number,
+		  BA_Info.Lots AS Lots,
+		  BA_Info.Portfolio AS Portfolio,
+		  BA_Info.Segment_Name AS Segment_Name,
+		  BA_Info.Bond_Type AS Bond_Type,
+		  BA_Info.Lien_position AS Lien_position,
+		  BA_Info.Origination_Date AS Origination_Date,
+          BA_Info.Report_Date AS Report_Date,
+		  RA_Info.Rating_Date AS Rating_Date,
+		  RA_Info.Rating_Object AS Rating_Object,
+          RA_Info.Rating_Org AS Rating_Org,
+		  RA_Info.Rating AS Rating,
+		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+	      END) AS Rating_Org_Area,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.PD_Grade
+          ELSE GMapInfo.PD_Grade 
+          END AS PD_Grade,
+          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+               THEN GMooInfo2.Grade_Adjust
+          ELSE GMooInfo.Grade_Adjust
+          END AS Grade_Adjust,
+		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
+		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
+		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
+		  BA_Info.Portfolio_Name AS Portfolio_Name,
+		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
+		  BA_Info.PRODUCT AS SMF,
+		  BA_Info.ISSUER AS ISSUER,
+		  BA_Info.Version AS Version,
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
+		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
+   from  Bond_Account_Info BA_Info --A41
+   Left Join Rating_Info RA_Info --A53
+   on BA_Info.Bond_Number = RA_Info.Bond_Number   
+   AND BA_Info.Report_Date = RA_Info.Report_Date
+   Left Join Grade_Mapping_Info GMapInfo --A52
+   on RA_Info.Rating_Org = GMapInfo.Rating_Org
+   AND RA_Info.Rating = GMapInfo.Rating
+   Left Join Grade_Moody_Info GMooInfo --A51
+   on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   Left Join Grade_Moody_Info GMooInfo2 --A51Second
+   on GMooInfo2.Rating = RA_Info.Rating
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
+   Left Join Rating_Info_SampleInfo RISI --A53 Sample
+   on BA_Info.Bond_Number = RISI.Bond_Number
+   AND BA_Info.Report_Date = RISI.Report_Date 
+   -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+   Where BA_Info.Report_Date = '{reportData}'
+   And   BA_Info.Version = {ver}
+)
+Insert into Bond_Rating_Info
+           (Reference_Nbr,
+           Bond_Number,
+           Lots,
+           Portfolio,
+           Segment_Name,
+           Bond_Type,
+           Lien_position,
+           Origination_Date,
+           Report_Date,
+           Rating_Date,
+           Rating_Type,
+           Rating_Object,
+           Rating_Org,
+           Rating,
+           Rating_Org_Area,
+           PD_Grade,
+           Grade_Adjust,
+           ISSUER_TICKER,
+           GUARANTOR_NAME,
+           GUARANTOR_EQY_TICKER,
+           Parm_ID,
+           Portfolio_Name,
+           RTG_Bloomberg_Field,
+           SMF,
+           ISSUER,
+           Version,
+           Security_Ticker)
+Select     Reference_Nbr,
+		   Bond_Number,
+		   Lots,
+           Portfolio,
+           Segment_Name,
+           Bond_Type,
+           Lien_position,
+           Origination_Date,
+           Report_Date,
+           Rating_Date,
+           '{Rating_Type.B.GetDescription()}',
+           Rating_Object,
+           Rating_Org,
+           Rating,
+           Rating_Org_Area,
+           PD_Grade,
+           Grade_Adjust,
+           ISSUER_TICKER,
+           GUARANTOR_NAME,
+           GUARANTOR_EQY_TICKER,
+           '{parmID}',
+           Portfolio_Name,
+           RTG_Bloomberg_Field,
+           SMF,
+           ISSUER,
+           Version,
+           Security_Ticker
+		   From
+		   T0;
+
+-- update Bond_Rating(債項信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
+	     then Bond_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Bond_Rating.Moodys is not null
+	     then Bond_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Bond_Rating.Fitch is not null
+		 then Bond_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Bond_Rating.Fitch_TW is not null
+		 then Bond_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
+		 then Bond_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Bond_Rating
+where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' ;
+
+-- update Issuer_Rating(發行者信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
+	     then Issuer_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Issuer_Rating.Moodys is not null
+	     then Issuer_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Issuer_Rating.Fitch is not null
+		 then Issuer_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Issuer_Rating.Fitch_TW is not null
+		 then Issuer_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
+		 then Issuer_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Issuer_Rating
+where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' ;
+
+-- update Guarantor_Rating(擔保者信評) 的設定
+update Bond_Rating_Info   
+set Rating = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
+	     then Guarantor_Rating.S_And_P
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Guarantor_Rating.Moodys is not null
+	     then Guarantor_Rating.Moodys
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Guarantor_Rating.Fitch is not null
+		 then Guarantor_Rating.Fitch
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Guarantor_Rating.Fitch_TW is not null
+		 then Guarantor_Rating.Fitch_TW
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
+		 then Guarantor_Rating.TRC
+	  else Bond_Rating_Info.Rating
+	  end
+from Guarantor_Rating
+where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
+and Bond_Rating_Info.Report_Date = '{reportData}'
+and Bond_Rating_Info.Version = {ver}
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
+
 Insert Into Bond_Rating_Summary
             (
 			  Reference_Nbr,
@@ -265,7 +401,7 @@ Insert Into Bond_Rating_Summary
               Rating_Selection,
               Grade_Adjust,
               Rating_Priority,
-              --Processing_Date,
+              Processing_Date,
               Version,
               Bond_Number,
               Lots,
@@ -289,6 +425,7 @@ Select BR_Info.Reference_Nbr,
 			 THEN Max(BR_Info.Grade_Adjust)
 			 ELSE null  END) AS Grade_Adjust,
 	   BR_Parm.Rating_Priority,
+       '{startTime.ToString("yyyy/MM/dd")}',
 	   BR_Info.Version,
 	   BR_Info.Bond_Number,
 	   BR_Info.Lots,
@@ -297,11 +434,11 @@ Select BR_Info.Reference_Nbr,
 	   BR_Info.Portfolio_Name,
 	   BR_Info.SMF,
 	   BR_Info.ISSUER
-From   Bond_Rating_Info BR_Info
-LEFT JOIN  Bond_Rating_Parm BR_Parm
+From   Bond_Rating_Info BR_Info --A57
+LEFT JOIN  Bond_Rating_Parm BR_Parm --D60
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
 AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
-AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area
+--AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area --2017/11/01修改為不分國內外
 Where  BR_Info.Report_Date = '{reportData}'
 AND    BR_Info.Version = {ver}
 GROUP BY BR_Info.Reference_Nbr,
@@ -320,9 +457,34 @@ GROUP BY BR_Info.Reference_Nbr,
 	     BR_Info.SMF,
 	     BR_Info.ISSUER,
 		 BR_Parm.Rating_Selection,
-		 BR_Parm.Rating_Priority;
-End Try Begin Catch End Catch
+		 BR_Parm.Rating_Priority ;
+
+--If issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
+WITH A58ISSUER AS
+(
+   select *
+   from Bond_Rating_Summary
+   where Report_Date = '{reportData}'
+   and Version = {ver}
+   and ISSUER IN('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
+   and Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
+)
+update Bond_Rating_Summary
+set Bond_Rating_Summary.Grade_Adjust = A58ISSUER.Grade_Adjust
+from Bond_Rating_Summary, A58ISSUER
+where Bond_Rating_Summary.Report_Date = '{reportData}'
+and Bond_Rating_Summary.Version = {ver}
+and Bond_Rating_Summary.ISSUER IN ('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
+and Bond_Rating_Summary.ISSUER = A58ISSUER.ISSUER
+and Bond_Rating_Summary.Bond_Number = A58ISSUER.Bond_Number
+and Bond_Rating_Summary.Lots = A58ISSUER.Lots
+and Bond_Rating_Summary.Reference_Nbr = A58ISSUER.Reference_Nbr
+and Bond_Rating_Summary.Portfolio_Name = A58ISSUER.Portfolio_Name
+and Bond_Rating_Summary.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+and Bond_Rating_Summary.Rating_Type = A58ISSUER.Rating_Type
+and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
                     ";
+                        db.Database.CommandTimeout = 300;
                         db.Database.ExecuteSqlCommand(sql);
                         db.Dispose();
                         log.saveTransferCheck(
@@ -462,15 +624,15 @@ End Try Begin Catch End Catch
                 string startYearQuartly = lastYear + "Q1";
                 string endYearQuartly = thisYear + "Q4";
 
-                List<Loan_default_Info> A06Data = db.Loan_default_Info
-                                                  .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0 
+                IEnumerable<Loan_default_Info> A06Data = db.Loan_default_Info
+                                                  .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
                                                               && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
-                                                        ).ToList();
+                                                        ).AsEnumerable();
 
-                List<Econ_Domestic> A07Data = db.Econ_Domestic
+                IEnumerable<Econ_Domestic> A07Data = db.Econ_Domestic
                                               .Where(x => x.Year_Quartly.CompareTo(startYearQuartly) >= 0
                                                           && x.Year_Quartly.CompareTo(endYearQuartly) <= 0
-                                                    ).ToList();
+                                                    ).AsEnumerable();
 
                 if (!A06Data.Any())
                 {
@@ -513,58 +675,52 @@ End Try Begin Catch End Catch
                                           ).ToList();
                         db.Econ_D_YYYYMMDD.RemoveRange(query);
 
-                        double pdQuartly = 0;
-                        string yearQuartly = "";
-                        for (int i=0;i < A07Data.Count;i++)
-                        {
-                            yearQuartly = A07Data[i].Year_Quartly;
-                            pdQuartly = 0;
-                            Loan_default_Info ldi = db.Loan_default_Info.Where(x => x.Year_Quartly == yearQuartly).FirstOrDefault();
-                            if (ldi != null)
-                            {
-                                pdQuartly = ldi.PD_Quartly;
-                            }
+                        string nowDate = DateTime.Now.ToString("yyyy/MM/dd");
 
-                            db.Econ_D_YYYYMMDD.Add(
-                                new Econ_D_YYYYMMDD()
-                                {
-                                    Processing_Date = DateTime.Now.ToString("yyyy/MM/dd"),
-                                    Product_Code = productCode,
-                                    Data_ID = "",
-                                    Year_Quartly = A07Data[i].Year_Quartly,
-                                    PD_Quartly = pdQuartly,
-                                    TWSE_Index = Extension.doubleNToDouble(A07Data[i].TWSE_Index),
-                                    TWRGSARP_Index = Extension.doubleNToDouble(A07Data[i].TWRGSARP_Index),
-                                    TWGDPCON_Index = Extension.doubleNToDouble(A07Data[i].TWGDPCON_Index),
-                                    TWLFADJ_Index = Extension.doubleNToDouble(A07Data[i].TWLFADJ_Index),
-                                    TWCPI_Index = Extension.doubleNToDouble(A07Data[i].TWCPI_Index),
-                                    TWMSA1A_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1A_Index),
-                                    TWMSA1B_Index = Extension.doubleNToDouble(A07Data[i].TWMSA1B_Index),
-                                    TWMSAM2_Index = Extension.doubleNToDouble(A07Data[i].TWMSAM2_Index),
-                                    GVTW10YR_Index = Extension.doubleNToDouble(A07Data[i].GVTW10YR_Index),
-                                    TWTRBAL_Index = Extension.doubleNToDouble(A07Data[i].TWTRBAL_Index),
-                                    TWTREXP_Index = Extension.doubleNToDouble(A07Data[i].TWTREXP_Index),
-                                    TWTRIMP_Index = Extension.doubleNToDouble(A07Data[i].TWTRIMP_Index),
-                                    TAREDSCD_Index = Extension.doubleNToDouble(A07Data[i].TAREDSCD_Index),
-                                    TWCILI_Index = Extension.doubleNToDouble(A07Data[i].TWCILI_Index),
-                                    TWBOPCUR_Index = Extension.doubleNToDouble(A07Data[i].TWBOPCUR_Index),
-                                    EHCATW_Index = Extension.doubleNToDouble(A07Data[i].EHCATW_Index),
-                                    TWINDPI_Index = Extension.doubleNToDouble(A07Data[i].TWINDPI_Index),
-                                    TWWPI_Index = Extension.doubleNToDouble(A07Data[i].TWWPI_Index),
-                                    TARSYOY_Index = Extension.doubleNToDouble(A07Data[i].TARSYOY_Index),
-                                    TWEOTTL_Index = Extension.doubleNToDouble(A07Data[i].TWEOTTL_Index),
-                                    SLDETIGT_Index = Extension.doubleNToDouble(A07Data[i].SLDETIGT_Index),
-                                    TWIRFE_Index = Extension.doubleNToDouble(A07Data[i].TWIRFE_Index),
-                                    SINYI_HOUSE_PRICE_index = Extension.doubleNToDouble(A07Data[i].SINYI_HOUSE_PRICE_index),
-                                    CATHAY_ESTATE_index = Extension.doubleNToDouble(A07Data[i].CATHAY_ESTATE_index),
-                                    Real_GDP2011 = Extension.doubleNToDouble(A07Data[i].Real_GDP2011),
-                                    MCCCTW_Index = Extension.doubleNToDouble(A07Data[i].MCCCTW_Index),
-                                    TRDR1T_Index = Extension.doubleNToDouble(A07Data[i].TRDR1T_Index)
-                                }
-                            );
+                        var addData = (
+                                             from a in A06Data
+                                             join b in A07Data
+                                             on new { a.Year_Quartly }
+                                             equals new { b.Year_Quartly}
+                                             select new Econ_D_YYYYMMDD()
+                                             {
+                                                 Processing_Date = nowDate,
+                                                 Product_Code = productCode,
+                                                 Data_ID = "",
+                                                 Year_Quartly = b.Year_Quartly,
+                                                 PD_Quartly = a.PD_Quartly,
+                                                 TWSE_Index = Extension.doubleNToDouble(b.TWSE_Index),
+                                                 TWRGSARP_Index = Extension.doubleNToDouble(b.TWRGSARP_Index),
+                                                 TWGDPCON_Index = Extension.doubleNToDouble(b.TWGDPCON_Index),
+                                                 TWLFADJ_Index = Extension.doubleNToDouble(b.TWLFADJ_Index),
+                                                 TWCPI_Index = Extension.doubleNToDouble(b.TWCPI_Index),
+                                                 TWMSA1A_Index = Extension.doubleNToDouble(b.TWMSA1A_Index),
+                                                 TWMSA1B_Index = Extension.doubleNToDouble(b.TWMSA1B_Index),
+                                                 TWMSAM2_Index = Extension.doubleNToDouble(b.TWMSAM2_Index),
+                                                 GVTW10YR_Index = Extension.doubleNToDouble(b.GVTW10YR_Index),
+                                                 TWTRBAL_Index = Extension.doubleNToDouble(b.TWTRBAL_Index),
+                                                 TWTREXP_Index = Extension.doubleNToDouble(b.TWTREXP_Index),
+                                                 TWTRIMP_Index = Extension.doubleNToDouble(b.TWTRIMP_Index),
+                                                 TAREDSCD_Index = Extension.doubleNToDouble(b.TAREDSCD_Index),
+                                                 TWCILI_Index = Extension.doubleNToDouble(b.TWCILI_Index),
+                                                 TWBOPCUR_Index = Extension.doubleNToDouble(b.TWBOPCUR_Index),
+                                                 EHCATW_Index = Extension.doubleNToDouble(b.EHCATW_Index),
+                                                 TWINDPI_Index = Extension.doubleNToDouble(b.TWINDPI_Index),
+                                                 TWWPI_Index = Extension.doubleNToDouble(b.TWWPI_Index),
+                                                 TARSYOY_Index = Extension.doubleNToDouble(b.TARSYOY_Index),
+                                                 TWEOTTL_Index = Extension.doubleNToDouble(b.TWEOTTL_Index),
+                                                 SLDETIGT_Index = Extension.doubleNToDouble(b.SLDETIGT_Index),
+                                                 TWIRFE_Index = Extension.doubleNToDouble(b.TWIRFE_Index),
+                                                 SINYI_HOUSE_PRICE_index = Extension.doubleNToDouble(b.SINYI_HOUSE_PRICE_index),
+                                                 CATHAY_ESTATE_index = Extension.doubleNToDouble(b.CATHAY_ESTATE_index),
+                                                 Real_GDP2011 = Extension.doubleNToDouble(b.Real_GDP2011),
+                                                 MCCCTW_Index = Extension.doubleNToDouble(b.MCCCTW_Index),
+                                                 TRDR1T_Index = Extension.doubleNToDouble(b.TRDR1T_Index)
+                                             }
+                                      ).AsEnumerable();
 
-                            db.SaveChanges();
-                        }
+                        db.Econ_D_YYYYMMDD.AddRange(addData);
+                        db.SaveChanges();
 
                         log.txtLog(
                            TableType.C03Mortgage.ToString(),
@@ -681,8 +837,7 @@ End Try Begin Catch End Catch
                 return null;
             return value.Trim();
         }
+
         #endregion
-
-
     }
 }

@@ -48,6 +48,5 @@ namespace AutoTransfer
         public Nullable<double> TRDR1T_Index { get; set; }
     
         public virtual Econ_Domestic Econ_Domestic { get; set; }
-        public virtual Group_Product_Code_Mapping Group_Product_Code_Mapping { get; set; }
     }
 }

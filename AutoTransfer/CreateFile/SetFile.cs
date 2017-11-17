@@ -7,6 +7,7 @@ namespace AutoTransfer.CreateFile
 {
     public class SetFile
     {
+
         private static string commpanyGet = ConfigurationManager.AppSettings["commpanyGet"];
         private static string commpanyPut = ConfigurationManager.AppSettings["commpanyPut"];
         private static string sampleGet = ConfigurationManager.AppSettings["sampleGet"];
@@ -15,6 +16,8 @@ namespace AutoTransfer.CreateFile
         private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];
         private static string A07Put = ConfigurationManager.AppSettings["A07Put"];
         private static string A07Get = ConfigurationManager.AppSettings["A07Get"];
+        private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
+        private static string flag = ConfigurationManager.AppSettings["PROGRAMFLAG"];
         private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
 
@@ -24,6 +27,16 @@ namespace AutoTransfer.CreateFile
         {
             _type = type;
             _dateTime = dateTime;
+        }
+
+        public string getFIRMNAME()
+        {
+            return name;
+        }
+
+        public string getPROGRAMFLAG()
+        {
+            return flag;
         }
 
         public string getGZFileName()

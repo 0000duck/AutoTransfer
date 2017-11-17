@@ -14,7 +14,8 @@ namespace AutoTransfer.CreateFile
         /// </summary>
         /// <param name="type"></param>
         /// <param name="dateTime"></param>
-        public bool create(TableType type, string dateTime)
+        /// <param name="ver"></param>
+        public bool create(TableType type, string dateTime,int ver)
         {
             bool flag = false;
             try
@@ -34,8 +35,8 @@ namespace AutoTransfer.CreateFile
 
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getdata");
-                data.Add("PROGRAMFLAG=oneshot");
-                data.Add("FIRMNAME=dl221"); //確認是否提出來?
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
+                data.Add("FIRMNAME="+f.getFIRMNAME()); //確認是否提出來?
                 data.Add("SECMASTER=YES");
                 data.Add("OUTPUTFORMAT=bulklist");
                 data.Add("DELIMITER=,");
@@ -77,9 +78,10 @@ namespace AutoTransfer.CreateFile
                 int day = Int32.Parse(dateTime.Substring(6, 2));
                 DateTime date = new DateTime(year, month, day);
                 IFRS9Entities db = new IFRS9Entities();
-                db.Bond_Account_Info
+                db.Bond_Account_Info.AsNoTracking()
                     .Where(x => x.Report_Date.HasValue &&
-                    x.Report_Date.Value.Equals(date))
+                    x.Report_Date.Value == date &&
+                    x.Version.HasValue && x.Version == ver)
                     .Select(x => x.Bond_Number).Distinct()
                     .OrderBy(x => x)
                     .ToList().ForEach(x =>

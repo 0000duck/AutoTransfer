@@ -56,6 +56,7 @@ namespace AutoTransfer.Transfer
                 //A84 的傳送檔名為 GetC04.req
                 setFile = new SetFile(TableType.C04, dateTime);
                 createA84File();
+                //getA84SFTP();
             }
         }
 
@@ -119,16 +120,16 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            .Get(string.Empty,
-                 setFile.getC04FilePath(),
-                 setFile.getFileName(),
-                 out error);
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //.Get(string.Empty,
             //     setFile.getC04FilePath(),
-            //     setFile.getGZFileName(),
+            //     setFile.getFileName(),
             //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getC04FilePath(),
+                 setFile.getGZFileName(),
+                 out error);
             if (!error.IsNullOrWhiteSpace())
             {
                 log.txtLog(
@@ -140,11 +141,11 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //string sourceFileName = Path.Combine(
-                //setFile.getC04FilePath(), setFile.getGZFileName());
-                //string destFileName = Path.Combine(
-                //setFile.getC04FilePath(), setFile.getFileName());
-                //Extension.Decompress(sourceFileName, destFileName);
+                string sourceFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getGZFileName());
+                string destFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName());
+                Extension.Decompress(sourceFileName, destFileName);
                 DataToDb();
             }
         }
@@ -189,7 +190,8 @@ namespace AutoTransfer.Transfer
                             if (arr[2] != null && double.TryParse(arr[2],out d) &&
                                 DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
                                 System.Globalization.DateTimeStyles.AllowWhiteSpaces,
-                                out dt) && !index.IsNullOrWhiteSpace())
+                                out dt) && !index.IsNullOrWhiteSpace() && 
+                                DateTime.Now.Date >= dt)
                             {
                                 if (index == "CNFRBAL$ Index") //貿易收支 要排除$
                                     index = "CNFRBAL Index"; 

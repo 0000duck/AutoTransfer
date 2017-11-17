@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
@@ -25,14 +26,18 @@ namespace AutoTransfer.CreateFile
                 string getFileName = f.getFileName();
                 //string getFileName = f.getGZFileName();
 
+                DateTime dt = DateTime.Now;
+                DateTime dt2 = dt.AddMonths(-18);
+
                 #region File
                 data.Add("START-OF-FILE");
 
                 #region Title
-                data.Add("FIRMNAME=dl221");
-                data.Add("PROGRAMFLAG=oneshot");
+                data.Add("FIRMNAME="+ f.getFIRMNAME());
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FILETYPE=pc");
                 data.Add($"REPLYFILENAME={getFileName}");
+                data.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
                 data.Add("HIST_PERIOD=q");
                 data.Add("PROGRAMNAME=gethistory");
                 #endregion Title
@@ -67,7 +72,7 @@ namespace AutoTransfer.CreateFile
                         {
                             data.Add(x.Name);
                         }
-                        else
+                        else if(x.Name != "Econ_D_YYYYMMDD")
                         {
                             data.Add(x.Name.Replace("_", " "));
                         }

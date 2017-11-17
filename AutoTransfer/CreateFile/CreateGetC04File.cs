@@ -25,6 +25,9 @@ namespace AutoTransfer.CreateFile
                 //ex: GetC04_20170803.csv
                 string getFileName = f.getFileName();
 
+                DateTime dt = DateTime.Now;
+                DateTime dt2 = dt.AddMonths(-18);
+
                 #region File
 
                 data.Add("START-OF-FILE");
@@ -33,8 +36,9 @@ namespace AutoTransfer.CreateFile
 
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("FILETYPE=pc");
-                data.Add("PROGRAMFLAG=oneshot");
-                data.Add("FIRMNAME=dl221"); //確認是否提出來?
+                data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
+                data.Add("FIRMNAME=" + f.getFIRMNAME());
+                data.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
                 data.Add("HIST_PERIOD=q");
                 data.Add("PROGRAMNAME=gethistory");
 

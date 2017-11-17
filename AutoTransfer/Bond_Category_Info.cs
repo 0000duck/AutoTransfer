@@ -12,16 +12,17 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Rating_Info_SampleInfo
+    public partial class Bond_Category_Info
     {
-        public string Bond_Number { get; set; }
-        public System.DateTime Report_Date { get; set; }
-        public string ISSUER_TICKER { get; set; }
-        public string GUARANTOR_EQY_TICKER { get; set; }
-        public string GUARANTOR_NAME { get; set; }
-        public string PARENT_TICKER_EXCHANGE { get; set; }
-        public string SMF { get; set; }
-        public string Security_Des { get; set; }
+        public string Memo { get; set; }
         public string Bloomberg_Ticker { get; set; }
+        public string Bond_Type { get; set; }
+        public string Corp_NonCorp { get; set; }
+        public string Sector_External { get; set; }
+        public string Sector_Internal { get; set; }
+        public string Assessment_Sub_Kind { get; set; }
+        public string Sector_Research { get; set; }
+        public string Sector_Extra { get; set; }
+        public System.DateTime Processing_Date { get; set; }
     }
 }

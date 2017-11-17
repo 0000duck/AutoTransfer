@@ -20,13 +20,8 @@ namespace AutoTransfer.Transfer
 
         private Log log = new Log();
         private string logPath = string.Empty;
-        private DateTime reportDateDt = DateTime.MinValue;
         private string reportDateStr = string.Empty;
-        private int verInt = 0;
-        private SetFile setFile = null;
-        private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
-        private TableType tableType = TableType.C04;
         private string type = TableType.C04.ToString();
 
         #endregion 共用參數
@@ -37,26 +32,30 @@ namespace AutoTransfer.Transfer
         /// <param name="year"></param>
         public void startTransfer(string year)
         {
+            logPath = log.txtLocation(type);
             IFRS9Entities db = new IFRS9Entities();
             DateTime dt = DateTime.Now;
+            List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
             if (!year.IsNullOrWhiteSpace())
             {
-                var A84datas = db.Econ_Foreign.Where(x => x.Year_Quartly.StartsWith(year));
+                var A84datas = db.Econ_Foreign.AsNoTracking()
+                    .Where(x => x.Year_Quartly.StartsWith(year));
                 if (A84datas.Any())
                 {
                     List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
-                    List<string> yearQuartlys = A84datas.Select(x=>x.Year_Quartly).ToList();
-                    var A82Datas = db.Moody_Quartly_PD_Info.Where(x=> yearQuartlys.Contains(x.Year_Quartly)).ToList();
+                    List<string> yearQuartlys = A84datas.Select(x => x.Year_Quartly).ToList();
+                    var A82Datas = db.Moody_Quartly_PD_Info.AsNoTracking().Where(x => yearQuartlys.Contains(x.Year_Quartly)).ToList();
                     A84datas.ToList().ForEach(x =>
                     {
                         Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
-                        C04Data.Processing_Date = dt.ToString("yyyyMMdd");
-                        C04Data.Year_Quartly = x.Year_Quartly;
-                        var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
-                        if (A82Data != null)
-                            C04Data.PD_Quartly = A82Data.PD;
-                        List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
-                        x.GetType().GetProperties().Where(z=> !notParm.Contains(z.Name)).ToList().ForEach(
+                        C04Data = db.Econ_F_YYYYMMDD.FirstOrDefault(i => i.Year_Quartly == x.Year_Quartly);
+                        if (C04Data != null)
+                        {
+                            C04Data.Processing_Date = dt.ToString("yyyyMMdd");
+                            var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
+                            if (A82Data != null)
+                                C04Data.PD_Quartly = A82Data.PD;
+                            x.GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList().ForEach(
                             y =>
                             {
                                 var p = C04Data.GetType().GetProperties().FirstOrDefault(i => i.Name == y.Name);
@@ -65,7 +64,27 @@ namespace AutoTransfer.Transfer
                                     p.SetValue(C04Data, y.GetValue(x));
                                 }
                             });
-                    });                                                    
+                        }
+                        else
+                        {
+                            C04Data = new Econ_F_YYYYMMDD();
+                            C04Data.Processing_Date = dt.ToString("yyyyMMdd");
+                            C04Data.Year_Quartly = x.Year_Quartly;
+                            var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
+                            if (A82Data != null)
+                                C04Data.PD_Quartly = A82Data.PD;
+                            x.GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList().ForEach(
+                                y =>
+                                {
+                                    var p = C04Data.GetType().GetProperties().FirstOrDefault(i => i.Name == y.Name);
+                                    if (p != null)
+                                    {
+                                        p.SetValue(C04Data, y.GetValue(x));
+                                    }
+                                });
+                            C04s.Add(C04Data);
+                        }
+                    });
                     db.Econ_F_YYYYMMDD.AddRange(C04s);
                     try
                     {
@@ -74,7 +93,7 @@ namespace AutoTransfer.Transfer
                         log.txtLog(
                             type,
                             true,
-                            startTime,
+                            dt,
                             logPath,
                             MessageType.Success.GetDescription());
                     }
@@ -83,11 +102,20 @@ namespace AutoTransfer.Transfer
                         log.txtLog(
                             type,
                             false,
-                            startTime,
+                            dt,
                             logPath,
                             $"message: {ex.Message}" +
                             $", inner message {ex.InnerException?.InnerException?.Message}");
                     }
+                }
+                else
+                {
+                    log.txtLog(
+                     type,
+                     false,
+                     dt,
+                     logPath,
+                     "找不到A84符合的資料(Econ_Foreign)");
                 }
             }
         }

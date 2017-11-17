@@ -6,9 +6,9 @@ using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using static AutoTransfer.Enum.Ref;
 
@@ -19,10 +19,10 @@ namespace AutoTransfer.Transfer
         #region 共用參數
 
         private FormatRating fr = new FormatRating();
-
+        
         private Dictionary<string, commpayInfo> info =
             new Dictionary<string, commpayInfo>();
-
+        //ISSUER_EQUITY_TICKER or GUARANTOR_EQY_TICKER, commpayInfo=> Bond_Numbers,Rating_Object
         private Log log = new Log();
         private string logPath = string.Empty;
         private DateTime reportDateDt = DateTime.MinValue;
@@ -33,6 +33,10 @@ namespace AutoTransfer.Transfer
         private ThreadTask t = new ThreadTask();
         private TableType tableType = TableType.A53;
         private string type = TableType.A53.ToString();
+
+        #region 處理參數
+        private List<Rating_Info_SampleInfo> sampleInfos = new List<Rating_Info_SampleInfo>();
+        #endregion
 
         #endregion 共用參數
 
@@ -67,7 +71,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now);
             }
             
-            var A41 = db.Bond_Account_Info
+            var A41 = db.Bond_Account_Info.AsNoTracking()
                .Any(x => x.Report_Date == reportDateDt);
             verInt = db.Bond_Account_Info
                 .Where(x => x.Report_Date == reportDateDt && x.Version != null)
@@ -87,7 +91,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now);
                 List<string> errs = new List<string>();
                 if (!A41)
-                    errs.Add(MessageType.not_Find_Any.GetDescription());
+                    errs.Add(MessageType.not_Find_Any.GetDescription("A41"));
                 if (!check || verInt == 0)
                     errs.Add(MessageType.transferError.GetDescription());
                 log.txtLog(
@@ -100,7 +104,6 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-
                 db.Dispose();
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
@@ -115,7 +118,7 @@ namespace AutoTransfer.Transfer
         {
             //建立  檔案
             // create ex:sampleA53_20170807
-            if (new CreateSampleFile().create(tableType, reportDateStr))
+            if (new CreateSampleFile().create(tableType, reportDateStr, verInt))
             {
                 //把資料送給SFTP
                 putSampleSFTP();
@@ -221,76 +224,269 @@ namespace AutoTransfer.Transfer
                 bool flag = false; //判斷是否為要讀取的資料行數
                 string line = string.Empty;
                 info = new Dictionary<string, commpayInfo>();
-                while ((line = sr.ReadLine()) != null)
+
+                #region save Rating_Info_SampleInfo
+                
+                using (IFRS9Entities db = new IFRS9Entities())
                 {
-                    if ("END-OF-DATA".Equals(line))
-                        flag = false;
-                    if (flag) //找到的資料
+                    List<Bond_Account_Info> A41s = new List<Bond_Account_Info>();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append($@"
+delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql()} ;");
+                    A41s = db.Bond_Account_Info.AsNoTracking()
+                        .Where(x => x.Report_Date == reportDateDt &&
+                        x.Version == verInt).ToList();
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        var arr = line.Split('|');
-                        if (arr.Length >= 18)
+                        if ("END-OF-DATA".Equals(line))
+                            flag = false;
+                        if (flag) //找到的資料
                         {
-                            if (!arr[3].IsNullOrWhiteSpace() &&
-                                !nullarr.Contains(arr[3].Trim()))  //ISSUER_EQUITY_TICKER (發行人)
+                            var arr = line.Split('|');
+                            //arr[0]  ex: US00206RDH21 (債券編號)
+                            //arr[1]  ex: 0
+                            //arr[2]  ex: 20
+                            //arr[3]  ISSUER_EQUITY_TICKER (發行人)
+                            //arr[4]  ISSUE_DT (債券評等日期)
+                            //arr[5]  ISSUER (債券名稱)
+                            //arr[6]  GUARANTOR_EQY_TICKER (擔保人)
+                            //arr[7]  GUARANTOR_NAME (擔保人名稱)
+                            //--標普(S&P)
+                            //arr[8]  (國外)RTG_SP (SP國外評等)
+                            //arr[9] (國外)SP_EFF_DT (SP國外評等日期)
+                            //--穆迪(Moody's)
+                            //arr[10] (國外)RTG_MOODY (Moody's國外評等)
+                            //arr[11] (國外)MOODY_EFF_DT (Moody's國外評等日期)
+                            //--惠譽台灣(Fitch(twn))
+                            //arr[12] (國內)RTG_FITCH_NATIONAL (惠譽國內評等)
+                            //arr[13] (國內)RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
+                            //--惠譽(Fitch)
+                            //arr[14] (國外)RTG_FITCH (惠譽評等)
+                            //arr[15] (國外)FITCH_EFF_DT (惠譽評等日期)
+                            //--TRC(中華信評)
+                            //arr[16] (國內)RTG_TRC (TRC 評等)
+                            //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
+                            //--A95 Security_Des (與A53 一起抓資料)
+                            //arr[18] A95 Security_Des
+                            //--SMF 條件符合取代使用
+                            //arr[19] PARENT_TICKER_EXCHANGE
+                            if (arr.Length >= 20)
+                            {
+                                var bond_Number = arr[0].Trim();
+                                var A41 = A41s.First(x => x.Bond_Number == bond_Number);
+                                var SMF = A41.PRODUCT;
+                                var ISSUER = A41.ISSUER;
+                                var LSMF = SMF.IsNullOrWhiteSpace() ? string.Empty:SMF.Substring(0, 3);
+                                var ISSUER_EQUITY_TICKER = arr[3].Trim(); //ISSUER_EQUITY_TICKER
+                                var GUARANTOR_EQY_TICKER = arr[6].Trim(); //GUARANTOR_EQY_TICKER
+                                var GUARANTOR_NAME = arr[7].Trim(); //GUARANTOR_NAME
+                                var Security_Des = arr[18];
+                                var Bloomberg_Ticker = Security_Des.IsNullOrWhiteSpace() ? null : Security_Des.Split(' ')[0];
+                                var PARENT_TICKER_EXCHANGE = arr[19].Trim(); //PARENT_TICKER_EXCHANGE     
+                                if (nullarr.Contains(ISSUER_EQUITY_TICKER))
+                                    ISSUER_EQUITY_TICKER = null;
+                                if (nullarr.Contains(GUARANTOR_EQY_TICKER))
+                                    GUARANTOR_EQY_TICKER = null;
+                                if (nullarr.Contains(GUARANTOR_NAME))
+                                    GUARANTOR_NAME = null;
+                                // insert Rating_Info_SampleInfo
+                                sb.Append($@"
+INSERT INTO [Rating_Info_SampleInfo]
+           ([Bond_Number]
+           ,[Report_Date]
+           ,[ISSUER_TICKER]
+           ,[GUARANTOR_EQY_TICKER]
+           ,[GUARANTOR_NAME]
+           ,[PARENT_TICKER_EXCHANGE]
+           ,[SMF]
+           ,[Security_Des]
+           ,[Bloomberg_Ticker]
+           ,[ISSUER])
+     VALUES
+           ({bond_Number.stringToStrSql()}
+           ,{reportDateDt.dateTimeToStrSql()}
+           ,{ISSUER_EQUITY_TICKER.stringToStrSql()}
+           ,{GUARANTOR_EQY_TICKER.stringToStrSql()}
+           ,{GUARANTOR_NAME.stringToStrSql()}
+           ,{PARENT_TICKER_EXCHANGE.stringToStrSql()}
+           ,{SMF.stringToStrSql()}
+           ,{Security_Des.stringToStrSql()}
+           ,{Bloomberg_Ticker.stringToStrSql()}
+           ,{ISSUER.stringToStrSql()} ); ");
+                            }
+                        }
+                        if ("START-OF-DATA".Equals(line))
+                            flag = true;
+                    }
+                    //特別處理
+                    sb.Append($@"
+--select issuer from Rating_Info_SampleInfo
+
+--公債類：
+--1. If left(SMF,3)='411' then 從BBG撈<ISSUER_EQUITY_TICKER>的欄位參數改為<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = PARENT_TICKER_EXCHANGE
+where LEFT(SMF, 3) = '411'
+and Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+--2.If left(SMF, 3) = '421' and(Issuer = 'GOV-Kaohsiung' or Issuer = 'GOV-TAIPEI') 
+--then<ISSUER_EQUITY_TICKER> 的欄位內容放剛剛抓的<GOV-TW-CEN> 的 <PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+with TEMP421 as
+(
+select TOP 1
+PARENT_TICKER_EXCHANGE
+from Rating_Info_SampleInfo
+where ISSUER = 'GOV-TW-CEN'
+and PARENT_TICKER_EXCHANGE is not null
+and Report_Date = {reportDateDt.dateTimeToStrSql()}
+)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = TEMP421.PARENT_TICKER_EXCHANGE
+from TEMP421
+where LEFT(SMF, 3) = '421'
+and ISSUER IN('GOV-Kaohsiung', 'GOV-TAIPEI')
+and Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+--3.If issuer = 'GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
+--ps(在A58做調整)
+
+--SMF的C開頭
+
+--1.Left(SMF, 1) = 'C'此類的商品會串不出 <ISSUER_EQUITY_TICKER>，但其它種類債券有一樣的Issuer，
+--且有串出他的Ticker及信評，所以要找其它Left(SMF, 1) <> 'C'的商品，
+--有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER> 再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
+with TEMPC as
+(
+   select Issuer_Ticker, ISSUER
+   from Rating_Info_SampleInfo
+   where Report_Date = {reportDateDt.dateTimeToStrSql()}
+   and SMF is not null
+   and LEFT(SMF,1) <> 'C'
+   and Issuer_Ticker is not null
+   group by Issuer_Ticker,ISSUER
+)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = TEMPC.ISSUER_TICKER
+from TEMPC
+where Rating_Info_SampleInfo.ISSUER = TEMPC.ISSUER
+and Report_Date = {reportDateDt.dateTimeToStrSql()}
+and LEFT(SMF,1) = 'C';
+
+--2.但目前有一個Issuer也沒有出現在Left(SMF, 1) <> 'C'的商品中：FUBON銀，
+--所以需將他的<ISSUER_EQUITY_TICKER>(2830 TT Equity)維護在下方<發行者Ticker> 表格
+--ps=>(Issuer_Ticker)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = Issuer_Ticker.ISSUER_EQUITY_TICKER
+from Issuer_Ticker
+where Rating_Info_SampleInfo.ISSUER = Issuer_Ticker.Issuer
+and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+
+--補充擔保者Ticker(債項、發行者及擔保者皆無信評才需採用)
+
+--1.If Left(SMF, 3) = 'A11' and(Issuer = 'FREDDIE MAC' or 'FANNIE MAE' or 'GNMA') 
+--then<GUARANTOR_EQY_TICKER> 固定放'3352Z US'，再用這個Ticker去串擔保者信評
+update Rating_Info_SampleInfo
+    set GUARANTOR_EQY_TICKER = '3352Z US'
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and LEFT(SMF,3) = 'A11'
+and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
+
+--2.還有部分Issuer的 <GUARANTOR_EQY_TICKER> 是串不出來的，需指定給 <GUARANTOR_EQY_TICKER>，再去抓擔保者信評
+--ps => (Guarantor_Ticker)
+update Rating_Info_SampleInfo
+    set GUARANTOR_EQY_TICKER = Guarantor_Ticker.GUARANTOR_EQY_TICKER,
+        GUARANTOR_NAME = Guarantor_Ticker.GUARANTOR_NAME
+from Guarantor_Ticker
+where Rating_Info_SampleInfo.ISSUER = Guarantor_Ticker.Issuer
+and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+--3.此類狀況有維護一個表格，凡是表格中的Issuer，他的<GUARANTOR_NAME> 跟<GUARANTOR_EQY_TICKER> 就都給表格內容，再去串他的擔保者信評
+--ps(在A57做調整)
+");
+                    try
+                    {
+                        db.Database.ExecuteSqlCommand(sb.ToString());
+                        sampleInfos = new List<Rating_Info_SampleInfo>();
+                        sampleInfos = db.Rating_Info_SampleInfo.AsNoTracking()
+                            .Where(x => x.Report_Date == reportDateDt).ToList();
+                        sampleInfos.ForEach(y =>
+                        {
+                            if (!y.ISSUER_TICKER.IsNullOrWhiteSpace())
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(arr[3].Trim(), out x))
+                                if (!info.TryGetValue(y.ISSUER_TICKER, out x))
                                 {
-                                    data.Add(arr[3].Trim());
-                                    info.Add(arr[3].Trim(), new commpayInfo()
+                                    data.Add(y.ISSUER_TICKER);
+                                    info.Add(y.ISSUER_TICKER, new commpayInfo()
                                     {
-                                        Bond_Number = new List<string>() { arr[0].Trim() },
+                                        Bond_Number = new List<string>() { y.Bond_Number },
                                         Rating_Object = RatingObject.ISSUER.GetDescription()
                                     });
                                 }
                                 else
                                 {
-                                    x.Bond_Number.Add(arr[0].Trim());
+                                    x.Bond_Number.Add(y.Bond_Number);
                                 }
                             }
-                            if (!arr[6].Trim().IsNullOrWhiteSpace() &&
-                                !nullarr.Contains(arr[6].Trim()))  //GUARANTOR_EQY_TICKER (擔保人)
+                            if (!y.GUARANTOR_EQY_TICKER.IsNullOrWhiteSpace())
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(arr[6].Trim(), out x))
+                                if (!info.TryGetValue(y.GUARANTOR_EQY_TICKER, out x))
                                 {
-                                    data.Add(arr[6].Trim());
-                                    info.Add(arr[6].Trim(), new commpayInfo()
+                                    data.Add(y.GUARANTOR_EQY_TICKER);
+                                    info.Add(y.GUARANTOR_EQY_TICKER, new commpayInfo()
                                     {
-                                        Bond_Number = new List<string>() { arr[0].Trim() },
+                                        Bond_Number = new List<string>() { y.Bond_Number },
                                         Rating_Object = RatingObject.GUARANTOR.GetDescription()
                                     });
                                 }
                                 else
                                 {
-                                    x.Bond_Number.Add(arr[0].Trim());
+                                    x.Bond_Number.Add(y.Bond_Number);
                                 }
                             }
+                        });
+                        if (new CreateCommpanyFile().create(tableType, reportDateStr, data))
+                        {
+                            putCommpanySFTP();
+                        }
+                        else
+                        {
+                            log.saveTransferCheck(
+                                type,
+                                false,
+                                reportDateDt,
+                                1,
+                                startTime,
+                                DateTime.Now);
+                            log.txtLog(
+                                type,
+                                false,
+                                startTime,
+                                logPath,
+                                MessageType.Create_Commpany_File_Fail.GetDescription());
                         }
                     }
-                    if ("START-OF-DATA".Equals(line))
-                        flag = true;
+                    catch(Exception ex)
+                    {
+                        log.saveTransferCheck(
+                            type,
+                            false,
+                            reportDateDt,
+                            1,
+                            startTime,
+                            DateTime.Now);
+                        log.txtLog(
+                            type,
+                            false,
+                            startTime,
+                            logPath,
+                            $"message: {ex.Message}" +
+                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                    }
                 }
-            }
-            if (new CreateCommpanyFile().create(tableType, reportDateStr, data))
-            {
-                putCommpanySFTP();
-            }
-            else
-            {
-                log.saveTransferCheck(
-                    type,
-                    false,
-                    reportDateDt,
-                    1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
-                    logPath,
-                    MessageType.Create_Commpany_File_Fail.GetDescription());
+                #endregion
             }
         }
 
@@ -373,10 +569,9 @@ namespace AutoTransfer.Transfer
             IFRS9Entities db = new IFRS9Entities();
             List<Rating_Info> sampleData = new List<Rating_Info>();
             List<Rating_Info> commpanyData = new List<Rating_Info>();
-            List<sampleInfo> sampleInfos = new List<sampleInfo>();
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
-
+            List<StringBuilder> sbs = new List<StringBuilder>();
             #region sample Data
 
             using (StreamReader sr = new StreamReader(Path.Combine(
@@ -414,7 +609,11 @@ namespace AutoTransfer.Transfer
                         //--TRC(中華信評)
                         //arr[16] (國內)RTG_TRC (TRC 評等)
                         //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
-                        if (arr.Length >= 18)
+                        //--A95 Security_Des (與A53 一起抓資料)
+                        //arr[18] A95 Security_Des
+                        //--SMF 條件符合取代使用
+                        //arr[19] PARENT_TICKER_EXCHANGE
+                        if (arr.Length >= 20)
                         {
                             //S&P國外評等
                             validateSample(
@@ -456,13 +655,6 @@ namespace AutoTransfer.Transfer
                                 A53SampleBloombergField.RTG_TRC.ToString(),
                                 RatingOrg.CW,
                                 sampleData);
-                            sampleInfos.Add(new sampleInfo()
-                            {
-                                Bond_Number = arr[0],
-                                ISSUER_TICKER = arr[3],
-                                GUARANTOR_EQY_TICKER = arr[6],
-                                GUARANTOR_NAME = arr[7]
-                            });
                         }
                     }
                     if ("START-OF-DATA".Equals(line))
@@ -646,57 +838,298 @@ namespace AutoTransfer.Transfer
 
             if (sampleData.Any() || commpanyData.Any())
             {
-                db.Rating_Info.RemoveRange(
-    db.Rating_Info.Where(x => x.Report_Date == reportDateDt));
-                db.Rating_Info.AddRange(sampleData);
-                db.Rating_Info.AddRange(commpanyData);
-                db.Rating_Info_SampleInfo.RemoveRange(
-                    db.Rating_Info_SampleInfo.Where(x => x.Report_Date == reportDateDt));
-                db.Rating_Info_SampleInfo.AddRange(
-                    sampleInfos.Select(x => new Rating_Info_SampleInfo()
+                
+                #region save Rating_Info
+                sbs.Add(new StringBuilder($@"
+delete Rating_Info where Report_Date = {reportDateDt.dateTimeToStrSql()}
+"));
+                sampleData.ForEach(x => {
+                    sbs.Add(new StringBuilder($@"
+INSERT INTO Rating_Info
+           ([Bond_Number]
+           ,[Rating_Date]
+           ,[Rating_Object]
+           ,[Rating]
+           ,[RTG_Bloomberg_Field]
+           ,[Report_Date]
+           ,[Rating_Org])
+     VALUES
+           ({x.Bond_Number.stringToStrSql()}
+           ,{x.Rating_Date.dateTimeNToStrSql()}
+           ,{x.Rating_Object.stringToStrSql()}
+           ,{x.Rating.stringToStrSql()}
+           ,{x.RTG_Bloomberg_Field.stringToStrSql()}
+           ,{x.Report_Date.dateTimeToStrSql()}
+           ,{x.Rating_Org.stringToStrSql()}) ;
+"));
+                });
+                commpanyData.ForEach(x => {
+                    sbs.Add(new StringBuilder($@"
+INSERT INTO Rating_Info
+           ([Bond_Number]
+           ,[Rating_Date]
+           ,[Rating_Object]
+           ,[Rating]
+           ,[RTG_Bloomberg_Field]
+           ,[Report_Date]
+           ,[Rating_Org])
+     VALUES
+           ({x.Bond_Number.stringToStrSql()}
+           ,{x.Rating_Date.dateTimeNToStrSql()}
+           ,{x.Rating_Object.stringToStrSql()}
+           ,{x.Rating.stringToStrSql()}
+           ,{x.RTG_Bloomberg_Field.stringToStrSql()}
+           ,{x.Report_Date.dateTimeToStrSql()}
+           ,{x.Rating_Org.stringToStrSql()}) ;
+"));
+                });
+                #endregion
+                #region A95 特殊　PRODUCT
+                List<string> products = new List<string>()
+                {
+                    "411 Gov.CENTRAL",
+                    "931 CDO",
+                    "A11 AGENCY MBS",
+                    "932 CLO"
+                };
+                #endregion
+                #region update A95 Security_Des & Bloomberg_Ticker AND A41 & A95 Bond_Type & Assessment_Sub_Kind
+                //A45
+                var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
+                var A41Datas = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version == verInt).ToList();
+                //A95
+                db.Bond_Ticker_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt &&
+                x.Version == verInt && 
+                !products.Contains(x.PRODUCT) && 
+                x.Bond_Number != null).ToList().GroupBy(x=>x.Bond_Number)
+                .Select(x=>x.First()).ToList()
+                .ForEach(x =>
+                {
+                    //obj => Rating_Info_SampleInfo
+                    var obj = sampleInfos.FirstOrDefault(y => y.Bond_Number == x.Bond_Number);
+                    if (obj != null)
                     {
-                        Bond_Number = x.Bond_Number,
-                        GUARANTOR_EQY_TICKER = x.GUARANTOR_EQY_TICKER,
-                        GUARANTOR_NAME = x.GUARANTOR_NAME,
-                        ISSUER_TICKER = x.ISSUER_TICKER,
-                        Report_Date = reportDateDt
-                    }));
-                try
+                        if (!obj.Security_Des.IsNullOrWhiteSpace() && obj.Security_Des != x.Security_Des)
+                        {
+                            x.Security_Des = obj.Security_Des;
+                            x.Bloomberg_Ticker = obj.Bloomberg_Ticker;
+                            x.Processing_Date = startTime;
+                            var A45Data = A45Datas.FirstOrDefault(z =>
+                            z.Bloomberg_Ticker == x.Bloomberg_Ticker);
+                            if (A45Data != null)
+                            {
+                                var Assessment_Sub_Kind = formateAssessmentSubKind(A45Data.Assessment_Sub_Kind, x.Lien_position);
+                                var Bond_Type = formateBondType(A45Data.Bond_Type);
+                                sbs.Add(new StringBuilder($@"
+UPDATE  Bond_Ticker_Info
+SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()} ,
+    Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
+    Bond_Type = {Bond_Type.stringToStrSql()}
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+
+UPDATE Bond_Account_Info
+SET Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
+    Bond_Type = {Bond_Type.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()} 
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+"));
+                            }
+                            else
+                            {
+                                sbs.Add(new StringBuilder($@"
+UPDATE  Bond_Ticker_Info
+SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()}
+WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
+AND  Version = {verInt.ToString()}
+AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+"));
+                            }
+                        }
+                    }
+                });
+                #endregion
+
+                string lastA95 = $@"
+--A95TEMP
+with TEMP2 AS
+(
+select 
+TOP 1
+Report_Date ,Version 
+from Bond_Account_Info 
+where 
+(
+Report_Date != {reportDateDt.dateTimeToStrSql()}
+or 
+Version != {verInt.ToString()}
+)
+group by Report_Date ,Version
+order by Report_Date DESC,Version DESC
+),
+TEMP AS 
+(
+select A95.Bond_Number,
+       A95.Lots,
+	   A95.Portfolio_Name,
+	   A95.Security_Des,
+	   A95.Bloomberg_Ticker
+from   Bond_Ticker_Info A95,TEMP2
+where  A95.Report_Date = TEMP2.Report_Date
+and    A95.Version = TEMP2.Version
+and    A95.Bloomberg_Ticker is not null
+),
+";
+                sbs.Add( new StringBuilder(
+                                      lastA95 +
+                  $@"
+A95TEMP AS
+(
+select 
+A95.Report_Date,
+A95.Version,
+A95.Lots,
+A95.Bond_Number,
+A95.Portfolio_Name,
+T1.Bloomberg_Ticker,
+T1.Security_Des,
+CASE WHEN A45.Bond_Type = 'Quasi Sovereign'
+     THEN '主權及國營事業債'
+	 WHEN A45.Bond_Type = 'Non Quasi Sovereign'
+	 THEN '其他債券'
+	 ELSE A45.Bond_Type
+	 END  AS Bond_Type,
+CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A95.Lien_position = '次順位' )
+     THEN '金融債次順位債券'
+	 WHEN (A45.Assessment_Sub_Kind = '金融債' AND( A95.Lien_position = '' OR A95.Lien_position is null) )
+	 THEN '金融債主順位債券'
+	 ELSE A45.Assessment_Sub_Kind
+	 END AS Assessment_Sub_Kind
+from  
+Bond_Ticker_Info A95
+JOIN TEMP T1
+ON A95.Lots = T1.Lots
+AND A95.Bond_Number = T1.Bond_Number
+AND A95.Portfolio_Name = T1.Portfolio_Name
+JOIN Bond_Category_Info A45
+ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
+where A95.Report_Date = {reportDateDt.dateTimeToStrSql()}
+and A95.version = {verInt.ToString()}
+and A95.Security_Des is null
+and A95.Bloomberg_Ticker is null
+and A95.Bond_Type is null
+and A95.Assessment_Sub_Kind is null
+)
+update Bond_Ticker_Info 
+set Assessment_Sub_Kind = A95TEMP.Assessment_Sub_Kind,
+    Bond_Type = A95TEMP.Bond_Type
+from Bond_Ticker_Info A95, A95TEMP 
+where A95.Report_Date = A95TEMP.Report_Date
+and A95.Version = A95TEMP.Version
+and A95.Lots = A95TEMP.Lots
+and A95.Bond_Number = A95TEMP.Bond_Number
+and A95.Portfolio_Name = A95TEMP.Portfolio_Name ;
+"
+                    ));
+                sbs.Add(
+                    new StringBuilder(
+                         lastA95 +
+                    $@"
+A41TEMP AS
+(
+select A41.Reference_Nbr,
+CASE WHEN A45.Bond_Type = 'Quasi Sovereign'
+     THEN '主權及國營事業債'
+	 WHEN A45.Bond_Type = 'Non Quasi Sovereign'
+	 THEN '其他債券'
+	 ELSE A45.Bond_Type
+	 END  AS Bond_Type,
+CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A41.Lien_position = '次順位' )
+     THEN '金融債次順位債券'
+	 WHEN (A45.Assessment_Sub_Kind = '金融債' AND( A41.Lien_position = '' OR A41.Lien_position is null) )
+	 THEN '金融債主順位債券'
+	 ELSE A45.Assessment_Sub_Kind
+	 END AS Assessment_Sub_Kind
+from Bond_Account_Info A41
+JOIN TEMP T1
+ON A41.Lots = T1.Lots
+AND A41.Bond_Number = T1.Bond_Number
+AND A41.Portfolio_Name = T1.Portfolio_Name
+JOIN Bond_Category_Info A45
+ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
+where A41.Report_Date = {reportDateDt.dateTimeToStrSql()}
+and A41.version = {verInt.ToString()}
+and A41.Bond_Type is null
+and A41.Assessment_Sub_Kind is null
+)
+update Bond_Account_Info
+set Assessment_Sub_Kind = A41TEMP.Assessment_Sub_Kind,
+    Bond_Type = A41TEMP.Bond_Type
+FROM Bond_Account_Info A41,  A41TEMP
+where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
+"
+                        ));
+
+                using (var dbContextTransaction = db.Database.BeginTransaction())
                 {
-                    db.SaveChanges();
-                    db.Dispose();
-                    log.saveTransferCheck(
-                        type,
-                        true,
-                        reportDateDt,
-                        1,
-                        startTime,
-                        DateTime.Now);
-                    log.txtLog(
-                        type,
-                        true,
-                        startTime,
-                        logPath,
-                        MessageType.Success.GetDescription());
-                    sampleData.AddRange(commpanyData);
-                    new CompleteEvent().saveDb(reportDateDt, verInt);
-                }
-                catch (DbUpdateException ex)
-                {
-                    log.saveTransferCheck(
-                        type,
-                        false,
-                        reportDateDt,
-                        1,
-                        startTime,
-                        DateTime.Now);
-                    log.txtLog(
-                        type,
-                        false,
-                        startTime,
-                        logPath,
-                        $"message: {ex.Message}" +
-                        $", inner message {ex.InnerException?.InnerException?.Message}");
+                    try
+                    {
+                        int size = 1000;
+                        for (int q = 0; (sbs.Count() / size) >= q; q += 1)
+                        {
+                            StringBuilder sql = new StringBuilder();
+                            sbs.Skip((q) * size).Take(size).ToList()
+                                .ForEach(x =>
+                                {
+                                    sql.Append(x.ToString());
+                                });
+                            db.Database.ExecuteSqlCommand(sql.ToString());
+                        }
+                        dbContextTransaction.Commit();
+                        log.saveTransferCheck(
+                            type,
+                            true,
+                            reportDateDt,
+                            1,
+                            startTime,
+                            DateTime.Now);
+                        log.txtLog(
+                            type,
+                            true,
+                            startTime,
+                            logPath,
+                            MessageType.Success.GetDescription());
+                        new CompleteEvent().saveDb(reportDateDt, verInt);
+                    }
+                    catch (Exception ex)
+                    {
+                        dbContextTransaction.Rollback(); //Required according to MSDN article 
+                        log.saveTransferCheck(
+                            type,
+                            false,
+                            reportDateDt,
+                            1,
+                            startTime,
+                            DateTime.Now);
+                        log.txtLog(
+                            type,
+                            false,
+                            startTime,
+                            logPath,
+                            $"message: {ex.Message}" +
+                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                    }
+                    finally
+                    {
+                        db.Dispose();
+                    }
                 }
             }
             else
@@ -725,6 +1158,10 @@ namespace AutoTransfer.Transfer
             public string GUARANTOR_EQY_TICKER { get; set; }
             public string GUARANTOR_NAME { get; set; }
             public string ISSUER_TICKER { get; set; }
+            public string SMF { get; set; }
+            public string PARENT_TICKER_EXCHANGE { get; set; }
+            public string Bloomberg_Ticker { get; set; }
+            public string Security_Des { get; set; }
         }
 
         #region private function
@@ -859,6 +1296,42 @@ namespace AutoTransfer.Transfer
                 Rating_Org = org.GetDescription(), //評等機構
                 Report_Date = reportDateDt //評估日/報導日
             };
+        }
+
+        /// <summary>
+        /// formate A95 BondType
+        /// </summary>
+        /// <param name="bondType"></param>
+        /// <returns></returns>
+        private string formateBondType(string bondType)
+        {
+            if (bondType.IsNullOrWhiteSpace())
+                return bondType;
+            if (bondType.Trim() == "Quasi Sovereign")
+                return "主權及國營事業債";
+            if (bondType.Trim() == "Non Quasi Sovereign")
+                return "其他債券";
+            return bondType;
+        }
+
+        /// <summary>
+        /// formate A95 AssessmentSubKind
+        /// </summary>
+        /// <param name="assessmentSubKind"></param>
+        /// <param name="lienPosition"></param>
+        /// <returns></returns>
+        private string formateAssessmentSubKind(string assessmentSubKind,string lienPosition)
+        {
+            if (assessmentSubKind.IsNullOrWhiteSpace())
+                return assessmentSubKind;
+            if (assessmentSubKind.Trim() == "金融債")
+            {
+                if (lienPosition.IsNullOrEmpty())
+                    return "金融債主順位債券";
+                if (lienPosition.Trim() == "次順位")
+                    return "金融債次順位債券";
+            }
+            return assessmentSubKind;
         }
 
         #endregion private function

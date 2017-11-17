@@ -77,7 +77,7 @@ namespace AutoTransfer.Utility
             if (str.IsNullOrWhiteSpace())
                 return null;
             DateTime ratingDateDt = DateTime.MinValue;
-            if (!DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy", null,
+            if (DateTime.TryParseExact(str.Trim(), "MM/dd/yyyy", null,
                 System.Globalization.DateTimeStyles.AllowWhiteSpaces,
                 out ratingDateDt))
                 return ratingDateDt;
@@ -146,6 +146,25 @@ namespace AutoTransfer.Utility
                 }
             }
             catch{ }
+        }
+
+        public static string stringToStrSql(this string par)
+        {
+            if (!par.IsNullOrWhiteSpace())
+                return $" '{par.Replace("'", "''")}' ";
+            return " null ";
+        }
+
+        public static string dateTimeNToStrSql(this DateTime? par)
+        {
+            if (par.HasValue)
+                return par.Value.ToString("yyyy/MM/dd").stringToStrSql();
+            return " null ";
+        }
+
+        public static string dateTimeToStrSql(this DateTime par)
+        {
+            return par.ToString("yyyy/MM/dd").stringToStrSql();
         }
 
         #region Double? To Double
