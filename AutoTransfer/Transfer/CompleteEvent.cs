@@ -148,7 +148,7 @@ T1 AS (
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-   AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+   -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -261,7 +261,7 @@ WITH T0 AS (
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-   AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+   -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -322,78 +322,6 @@ Select     Reference_Nbr,
            Security_Ticker
 		   From
 		   T0;
-
--- If left(SMF,3)='411' then 從BBG撈<ISSUER_EQUITY_TICKER>的欄位參數改為<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
--- If left(SMF,3)='421' and (Issuer= 'GOV-Kaohsiung' or Issuer= 'GOV-TAIPEI') 
--- then <ISSUER_EQUITY_TICKER>的欄位內容放剛剛抓的<GOV-TW-CEN>的<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
-WITH GOVTWCEN AS
-(
-   select TOP 1 
-   sampleInfo.PARENT_TICKER_EXCHANGE AS PARENT_TICKER_EXCHANGE
-   from Bond_Rating_Info A57 
-   JOIN Rating_Info_SampleInfo sampleInfo
-   ON A57.Bond_Number = sampleInfo.Bond_Number
-   and A57.SMF = sampleInfo.SMF
-   and A57.Report_Date = sampleInfo.Report_Date
-   where A57.Report_Date = '{reportData}'
-   and A57.Version = {ver}
-   and A57.ISSUER = 'GOV-TW-CEN'
-   UNION
-   select null
-)
-update Bond_Rating_Info
-set ISSUER_TICKER = 
-    CASE WHEN LEFT(Bond_Rating_Info.SMF,3) = '411'
-	     THEN Rating_Info_SampleInfo.PARENT_TICKER_EXCHANGE
-         WHEN LEFT(Bond_Rating_Info.SMF,3) = '421' and ISSUER IN ('GOV-Kaohsiung','GOV-TAIPEI')
-		 THEN GOVTWCEN.PARENT_TICKER_EXCHANGE
-    END
-from Rating_Info_SampleInfo,GOVTWCEN
-where Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and LEFT(Bond_Rating_Info.SMF,3) IN ('411','421') 
-and Rating_Info_SampleInfo.SMF = Bond_Rating_Info.SMF
-and Rating_Info_SampleInfo.Bond_Number = Bond_Rating_Info.Bond_Number
-and Bond_Rating_Info.Report_Date = Rating_Info_SampleInfo.Report_Date;
- 
-
---Left(SMF,1)='C'此類的商品會串不出<ISSUER_EQUITY_TICKER>，但其它種類債券有一樣的Issuer，
---且有串出他的Ticker及信評，所以要找其它Left(SMF,1)<>'C'的商品，
---有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER>再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
-WITH A57SMFNOTC AS
-(
-   select distinct ISSUER,ISSUER_TICKER from
-   Bond_Rating_Info A57
-   where A57.Report_Date = '{reportData}'
-   and Version = {ver}
-   and LEFT(A57.SMF,1) != 'C'
-   and ISSUER_TICKER is not null
-)
-update Bond_Rating_Info
-set ISSUER_TICKER =
-    (select TOP 1 A57SMFNOTC.ISSUER_TICKER
-	from A57SMFNOTC
-	 where Bond_Rating_Info.ISSUER = A57SMFNOTC.ISSUER)
-where Report_Date = '{reportData}'
-and Version = {ver}
-and LEFT(SMF,1) = 'C';
-
--- update Guarantor_Ticker(擔保者Ticker) 的設定
-update Bond_Rating_Info
-set GUARANTOR_NAME = Guarantor_Ticker.GUARANTOR_NAME,
-    GUARANTOR_EQY_TICKER = Guarantor_Ticker.GUARANTOR_EQY_TICKER
-from Guarantor_Ticker
-where Bond_Rating_Info.ISSUER = Guarantor_Ticker.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver} ;
-
--- update Guarantor_Ticker(發行者Ticker) 的設定
-update Bond_Rating_Info
-set ISSUER_TICKER = Issuer_Ticker.ISSUER_EQUITY_TICKER
-from Issuer_Ticker
-where Bond_Rating_Info.ISSUER = Issuer_Ticker.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver} ;
 
 -- update Bond_Rating(債項信評) 的設定
 update Bond_Rating_Info   
@@ -531,7 +459,7 @@ GROUP BY BR_Info.Reference_Nbr,
 		 BR_Parm.Rating_Selection,
 		 BR_Parm.Rating_Priority ;
 
---If issuer='GOV - TW - CEN' or 'GOV - Kaohsiung' or 'GOV - TAIPEI' then他們的債項評等放他們發行人的評等
+--If issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
 WITH A58ISSUER AS
 (
    select *
@@ -911,7 +839,5 @@ and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
         }
 
         #endregion
-
-
     }
 }
