@@ -159,6 +159,22 @@ namespace AutoTransfer.Transfer
             return value;
         }
 
+        /// <summary>
+        /// 修正 
+        /// </summary>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        public string forRating2(string rating,RatingOrg org)
+        {
+            if ((org & RatingOrg.FitchTwn) == RatingOrg.FitchTwn)
+            {
+                if (rating.IsNullOrWhiteSpace())
+                    return string.Empty;
+                return rating.Split('(')[0].Trim() + "(twn)";
+            }
+            return rating;
+        }
+
         private string SplitFirst(string value, string splitStr)
         {
             if (value.IsNullOrWhiteSpace())

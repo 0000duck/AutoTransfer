@@ -1079,6 +1079,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
 
                 using (var dbContextTransaction = db.Database.BeginTransaction())
                 {
+                    db.Database.CommandTimeout = 300;
                     try
                     {
                         int size = 1000;
@@ -1185,6 +1186,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             )
         {
             rating = fr.forRating(rating); //ForMate Rating
+            rating = fr.forRating2(rating,org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Sample評等判斷
             {
@@ -1217,6 +1219,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             )
         {
             rating = fr.forRating(rating); //ForMate Rating
+            rating = fr.forRating2(rating, org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Commpany評等判斷
             {
