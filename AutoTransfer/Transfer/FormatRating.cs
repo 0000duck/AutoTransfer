@@ -119,11 +119,17 @@ namespace AutoTransfer.Transfer
         /// </summary>
         /// <param name="rating"></param>
         /// <returns></returns>
-        public string forRating(string rating)
+        public string forRating(string rating, RatingOrg org)
         {
             if (rating.IsNullOrWhiteSpace())
                 return string.Empty;
-            string value = rating.Trim();
+            if (rating.IndexOf("N.A.") > -1)
+                return string.Empty;
+            if (rating.IndexOf("N.S.") > -1)
+                return string.Empty;
+            if (rating.IndexOf("N/A") > -1)
+                return string.Empty;
+            string value = rating.Trim();       
             if (value.IndexOf("u") > -1)
                 return value.Split('u')[0].Trim();
             if (value.IndexOf("e") > -1)
