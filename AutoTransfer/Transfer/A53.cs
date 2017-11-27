@@ -1185,7 +1185,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             List<Rating_Info> sampleData
             )
         {
-            rating = fr.forRating(rating); //ForMate Rating
+            rating = fr.forRating(rating,org); //ForMate Rating
             rating = fr.forRating2(rating,org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Sample評等判斷
@@ -1218,7 +1218,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             List<Rating_Info> commpanyData
             )
         {
-            rating = fr.forRating(rating); //ForMate Rating
+            rating = fr.forRating(rating, org); //ForMate Rating
             rating = fr.forRating2(rating, org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Commpany評等判斷
