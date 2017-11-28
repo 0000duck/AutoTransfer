@@ -111,7 +111,11 @@ T1 AS (
 		  BA_Info.Version AS Version,
 		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
-		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
+          BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
+          BA_Info.Bond_Number_Old AS Bond_Number_Old,
+          BA_Info.Lots_Old AS Lots_Old,
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
    Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
@@ -122,20 +126,53 @@ T1 AS (
    AND BA_Info.Origination_Date = oldA57.Origination_Date
    AND RA_Info.Rating_Object = oldA57.Rating_Object
    AND BA_Info.Bond_Number =
-    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
-	THEN oldA57.Bond_Number_Old
-	ELSE oldA57.Bond_Number
-	END
+   CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Bond_Number_Old
+	    THEN BA_Info.Bond_Number
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Bond_Number_Old ,否則比對Bond_Number
+		          THEN oldA57.Bond_Number_Old
+			      ELSE oldA57.Bond_Number
+	    	 END	
+   END
+   AND BA_Info.Bond_Number_Old = 
+   CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <> 'Y' 要比對Bond_Number
+        THEN BA_Info.Bond_Number_Old
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Bond_Number_Old ,否則比對Bond_Number
+		          THEN oldA57.Bond_Number_Old
+			      ELSE oldA57.Bond_Number
+	    	 END	
+   END
    AND BA_Info.Lots = 
-    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
-	THEN oldA57.Lots_Old
-	ELSE oldA57.Lots
-	END
-   AND BA_Info.Portfolio_Name = 
-    CASE WHEN oldA57.ISIN_Changed_Ind = 'Y'
-	THEN oldA57.Portfolio_Name_Old
-	ELSE oldA57.Portfolio_Name
-	END
+   CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Lots_Old
+   	    THEN BA_Info.Lots
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
+		          THEN oldA57.Lots_Old
+			      ELSE oldA57.Lots
+	    	 END	
+   END
+   AND BA_Info.Lots_Old = 
+   CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <>'Y' 要比對Lots
+   	    THEN BA_Info.Lots_Old
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
+		          THEN oldA57.Lots_Old
+			      ELSE oldA57.Lots
+	    	 END	
+   END
+      AND BA_Info.Portfolio_Name = 
+   CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Portfolio_Name_Old
+   	    THEN BA_Info.Portfolio_Name
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
+		          THEN oldA57.Portfolio_Name_Old
+			      ELSE oldA57.Portfolio_Name
+	    	 END	
+   END
+   AND BA_Info.Portfolio_Name_Old = 
+   CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <>'Y' 要比對Portfolio_Name
+   	    THEN BA_Info.Portfolio_Name_Old
+	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
+		          THEN oldA57.Portfolio_Name_Old
+			      ELSE oldA57.Portfolio_Name
+	    	 END	
+   END
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND oldA57.Rating = GMapInfo.Rating
@@ -180,7 +217,11 @@ Insert into Bond_Rating_Info
            SMF,
            ISSUER,
            Version,
-           Security_Ticker)
+           Security_Ticker,
+           ISIN_Changed_Ind,
+           Bond_Number_Old,
+           Lots_Old,
+           Portfolio_Name_Old)
 Select     Reference_Nbr,
 		   Bond_Number,
 		   Lots,
@@ -207,7 +248,11 @@ Select     Reference_Nbr,
            SMF,
            ISSUER,
            Version,
-           Security_Ticker
+           Security_Ticker,
+           ISIN_Changed_Ind,
+           Bond_Number_Old,
+           Lots_Old,
+           Portfolio_Name_Old
 		   From
 		   T1;
 WITH T0 AS (
@@ -245,7 +290,11 @@ WITH T0 AS (
 		  BA_Info.Version AS Version,
 		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
-		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
+          BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
+          BA_Info.Bond_Number_Old AS Bond_Number_Old,
+          BA_Info.Lots_Old AS Lots_Old,
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
    Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number   
@@ -294,7 +343,11 @@ Insert into Bond_Rating_Info
            SMF,
            ISSUER,
            Version,
-           Security_Ticker)
+           Security_Ticker,
+           ISIN_Changed_Ind,
+           Bond_Number_Old,
+           Lots_Old,
+           Portfolio_Name_Old)
 Select     Reference_Nbr,
 		   Bond_Number,
 		   Lots,
@@ -321,7 +374,11 @@ Select     Reference_Nbr,
            SMF,
            ISSUER,
            Version,
-           Security_Ticker
+           Security_Ticker,
+           ISIN_Changed_Ind,
+           Bond_Number_Old,
+           Lots_Old,
+           Portfolio_Name_Old
 		   From
 		   T0;
 
@@ -411,7 +468,11 @@ Insert Into Bond_Rating_Summary
               Origination_Date,
               Portfolio_Name,
               SMF,
-              ISSUER
+              ISSUER,
+              ISIN_Changed_Ind,
+              Bond_Number_Old,
+              Lots_Old,
+              Portfolio_Name_Old
 			)
 Select BR_Info.Reference_Nbr,
        BR_Info.Report_Date,
@@ -435,7 +496,11 @@ Select BR_Info.Reference_Nbr,
 	   BR_Info.Origination_Date,
 	   BR_Info.Portfolio_Name,
 	   BR_Info.SMF,
-	   BR_Info.ISSUER
+	   BR_Info.ISSUER,
+       BR_Info.ISIN_Changed_Ind,
+       BR_Info.Bond_Number_Old,
+       BR_Info.Lots_Old,
+       BR_Info.Portfolio_Name_Old
 From   Bond_Rating_Info BR_Info --A57
 LEFT JOIN  Bond_Rating_Parm BR_Parm --D60
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
@@ -459,7 +524,11 @@ GROUP BY BR_Info.Reference_Nbr,
 	     BR_Info.SMF,
 	     BR_Info.ISSUER,
 		 BR_Parm.Rating_Selection,
-		 BR_Parm.Rating_Priority ;
+		 BR_Parm.Rating_Priority,
+         BR_Info.ISIN_Changed_Ind,
+         BR_Info.Bond_Number_Old,
+         BR_Info.Lots_Old,
+         BR_Info.Portfolio_Name_Old ;
 
 --If issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
 WITH A58ISSUER AS
