@@ -384,14 +384,6 @@ and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
 
 --補充擔保者Ticker(債項、發行者及擔保者皆無信評才需採用)
 
---1.If Left(SMF, 3) = 'A11' and(Issuer = 'FREDDIE MAC' or 'FANNIE MAE' or 'GNMA') 
---then<GUARANTOR_EQY_TICKER> 固定放'3352Z US'，再用這個Ticker去串擔保者信評
-update Rating_Info_SampleInfo
-    set GUARANTOR_EQY_TICKER = '3352Z US'
-where Report_Date = {reportDateDt.dateTimeToStrSql()}
-and LEFT(SMF,3) = 'A11'
-and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
-
 --2.還有部分Issuer的 <GUARANTOR_EQY_TICKER> 是串不出來的，需指定給 <GUARANTOR_EQY_TICKER>，再去抓擔保者信評
 --ps => (Guarantor_Ticker)
 update Rating_Info_SampleInfo
@@ -400,6 +392,15 @@ update Rating_Info_SampleInfo
 from Guarantor_Ticker
 where Rating_Info_SampleInfo.ISSUER = Guarantor_Ticker.Issuer
 and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+-- 1與2 順序互換 2017/11/29 
+--1.If Left(SMF, 3) = 'A11' and(Issuer = 'FREDDIE MAC' or 'FANNIE MAE' or 'GNMA') 
+--then<GUARANTOR_EQY_TICKER> 固定放'3352Z US'，再用這個Ticker去串擔保者信評
+update Rating_Info_SampleInfo
+    set GUARANTOR_EQY_TICKER = '3352Z US'
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and LEFT(SMF,3) = 'A11'
+and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
 
 --3.此類狀況有維護一個表格，凡是表格中的Issuer，他的<GUARANTOR_NAME> 跟<GUARANTOR_EQY_TICKER> 就都給表格內容，再去串他的擔保者信評
 --ps(在A57做調整)
