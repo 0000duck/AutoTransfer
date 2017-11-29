@@ -180,7 +180,7 @@ T1 AS (
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
    -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
    Left Join Grade_Moody_Info GMooInfo2 --A51Second
-   on GMooInfo2.Rating = RA_Info.Rating
+   on GMooInfo2.Rating = oldA57.Rating
    and RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
    -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
    Left Join Rating_Info_SampleInfo RISI --A53 Sample

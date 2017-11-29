@@ -19,10 +19,13 @@ namespace AutoTransfer.Transfer
         #region 共用參數
 
         private FormatRating fr = new FormatRating();
-        
-        private Dictionary<string, commpayInfo> info =
+
+        //ISSUER_EQUITY_TICKER commpayInfo=> Bond_Numbers,Rating_Object
+        private Dictionary<string, commpayInfo> IT_info =
             new Dictionary<string, commpayInfo>();
-        //ISSUER_EQUITY_TICKER or GUARANTOR_EQY_TICKER, commpayInfo=> Bond_Numbers,Rating_Object
+        //GUARANTOR_EQY_TICKER, commpayInfo=> Bond_Numbers,Rating_Object
+        private Dictionary<string, commpayInfo> GET_info =
+            new Dictionary<string, commpayInfo>();
         private Log log = new Log();
         private string logPath = string.Empty;
         private DateTime reportDateDt = DateTime.MinValue;
@@ -223,10 +226,10 @@ namespace AutoTransfer.Transfer
             {
                 bool flag = false; //判斷是否為要讀取的資料行數
                 string line = string.Empty;
-                info = new Dictionary<string, commpayInfo>();
-
+                IT_info = new Dictionary<string, commpayInfo>();
+                GET_info =new Dictionary<string, commpayInfo>();
                 #region save Rating_Info_SampleInfo
-                
+
                 using (IFRS9Entities db = new IFRS9Entities())
                 {
                     List<Bond_Account_Info> A41s = new List<Bond_Account_Info>();
@@ -241,7 +244,7 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                         if ("END-OF-DATA".Equals(line))
                             flag = false;
                         if (flag) //找到的資料
-                        {
+                        {                           
                             var arr = line.Split('|');
                             //arr[0]  ex: US00206RDH21 (債券編號)
                             //arr[1]  ex: 0
@@ -276,7 +279,7 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                                 var A41 = A41s.First(x => x.Bond_Number == bond_Number);
                                 var SMF = A41.PRODUCT;
                                 var ISSUER = A41.ISSUER;
-                                var LSMF = SMF.IsNullOrWhiteSpace() ? string.Empty:SMF.Substring(0, 3);
+                                var LSMF = SMF.IsNullOrWhiteSpace() ? string.Empty : SMF.Substring(0, 3);
                                 var ISSUER_EQUITY_TICKER = arr[3].Trim(); //ISSUER_EQUITY_TICKER
                                 var GUARANTOR_EQY_TICKER = arr[6].Trim(); //GUARANTOR_EQY_TICKER
                                 var GUARANTOR_NAME = arr[7].Trim(); //GUARANTOR_NAME
@@ -416,10 +419,10 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                             if (!y.ISSUER_TICKER.IsNullOrWhiteSpace())
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(y.ISSUER_TICKER, out x))
+                                if (!IT_info.TryGetValue(y.ISSUER_TICKER, out x))
                                 {
                                     data.Add(y.ISSUER_TICKER);
-                                    info.Add(y.ISSUER_TICKER, new commpayInfo()
+                                    IT_info.Add(y.ISSUER_TICKER, new commpayInfo()
                                     {
                                         Bond_Number = new List<string>() { y.Bond_Number },
                                         Rating_Object = RatingObject.ISSUER.GetDescription()
@@ -433,10 +436,10 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                             if (!y.GUARANTOR_EQY_TICKER.IsNullOrWhiteSpace())
                             {
                                 commpayInfo x = new commpayInfo();
-                                if (!info.TryGetValue(y.GUARANTOR_EQY_TICKER, out x))
+                                if (!GET_info.TryGetValue(y.GUARANTOR_EQY_TICKER, out x))
                                 {
                                     data.Add(y.GUARANTOR_EQY_TICKER);
-                                    info.Add(y.GUARANTOR_EQY_TICKER, new commpayInfo()
+                                    GET_info.Add(y.GUARANTOR_EQY_TICKER, new commpayInfo()
                                     {
                                         Bond_Number = new List<string>() { y.Bond_Number },
                                         Rating_Object = RatingObject.GUARANTOR.GetDescription()
@@ -1206,14 +1209,14 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
         /// </summary>
         /// <param name="rating">評等內容</param>
         /// <param name="ratingDate">評等時間</param>
-        /// <param name="bondNumber">債券編號</param>
+        /// <param name="ticker">ISSUER_TICKER or GUARANTOR_EQY_TICKER</param>
         /// <param name="bloombergField">Bloomberg評等欄位名稱</param>
         /// <param name="org">評等機構</param>
         /// <param name="commpanyData">Commpany要新增的資料</param>
         private void validateCommpany(
             string rating,
             string ratingDate,
-            string bondNumber,
+            string ticker,
             string bloombergField,
             RatingOrg org,
             List<Rating_Info> commpanyData
@@ -1225,7 +1228,22 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                 !nullarr.Contains(rating.Trim())) //Commpany評等判斷
             {
                 commpayInfo cInfo = new commpayInfo();
-                if (info.TryGetValue(bondNumber.FormatEquity(), out cInfo))
+                if (IT_info.TryGetValue(ticker.FormatEquity(), out cInfo))
+                {
+                    cInfo.Bond_Number.ForEach(
+                        x => commpanyData.Add(
+                            saveCommpany(
+                              rating,
+                              ratingDate,
+                              x,
+                              bloombergField,
+                              cInfo.Rating_Object,
+                              org
+                            ))
+                        );
+                }
+                cInfo = new commpayInfo();
+                if (GET_info.TryGetValue(ticker.FormatEquity(), out cInfo))
                 {
                     cInfo.Bond_Number.ForEach(
                         x => commpanyData.Add(
