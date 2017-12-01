@@ -87,11 +87,15 @@ T1 AS (
 		  BA_Info.Origination_Date AS Origination_Date,
           BA_Info.Report_Date AS Report_Date,
 		  RA_Info.Rating_Date AS Rating_Date,
-		  RA_Info.Rating_Object AS Rating_Object,
+          CASE WHEN RA_Info.Rating_Object is null
+               THEN ' '
+          ELSE  RA_Info.Rating_Object
+          END AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  oldA57.Rating AS Rating,
 		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
 	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+                ELSE ' '
 	      END) AS Rating_Org_Area,
           CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
                THEN GMooInfo2.PD_Grade
@@ -105,7 +109,10 @@ T1 AS (
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
 		  BA_Info.Portfolio_Name AS Portfolio_Name,
-		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
+          CASE WHEN RA_Info.RTG_Bloomberg_Field is null
+               THEN ' '
+               ELSE  RA_Info.RTG_Bloomberg_Field
+          END AS RTG_Bloomberg_Field,
 		  BA_Info.PRODUCT AS SMF,
 		  BA_Info.ISSUER AS ISSUER,
 		  BA_Info.Version AS Version,
@@ -266,11 +273,15 @@ WITH T0 AS (
 		  BA_Info.Origination_Date AS Origination_Date,
           BA_Info.Report_Date AS Report_Date,
 		  RA_Info.Rating_Date AS Rating_Date,
-		  RA_Info.Rating_Object AS Rating_Object,
+          CASE WHEN RA_Info.Rating_Object is null
+               THEN ' '
+          ELSE  RA_Info.Rating_Object
+          END AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  RA_Info.Rating AS Rating,
 		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
 	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+                ELSE ' '
 	      END) AS Rating_Org_Area,
           CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
                THEN GMooInfo2.PD_Grade
@@ -284,7 +295,10 @@ WITH T0 AS (
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
 		  BA_Info.Portfolio_Name AS Portfolio_Name,
-		  RA_Info.RTG_Bloomberg_Field AS RTG_Bloomberg_Field,
+          CASE WHEN RA_Info.RTG_Bloomberg_Field is null
+               THEN ' '
+               ELSE  RA_Info.RTG_Bloomberg_Field
+          END AS RTG_Bloomberg_Field,
 		  BA_Info.PRODUCT AS SMF,
 		  BA_Info.ISSUER AS ISSUER,
 		  BA_Info.Version AS Version,

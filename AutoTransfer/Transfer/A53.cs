@@ -451,6 +451,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                                 }
                             }
                         });
+                        data = data.Distinct().ToList(); //去重複
                         if (new CreateCommpanyFile().create(tableType, reportDateStr, data))
                         {
                             putCommpanySFTP();
@@ -1251,7 +1252,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                               rating,
                               ratingDate,
                               x,
-                              bloombergField,
+                              "G_"+bloombergField,
                               cInfo.Rating_Object,
                               org
                             ))
