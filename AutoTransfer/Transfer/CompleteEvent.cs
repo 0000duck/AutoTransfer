@@ -41,7 +41,8 @@ namespace AutoTransfer.Transfer
                             string reportData = dt.ToString("yyyy/MM/dd");
                             string ver = version.ToString();
                             string sql = string.Empty;
-                            sql = $@"
+
+                        sql = $@"
 with temp2 as
 (
 select MAX(Report_Date) as Report_Date from Bond_Rating_Info 
@@ -58,7 +59,9 @@ select RTG_Bloomberg_Field,
 	   Lots,
 	   Portfolio_Name_Old,
 	   Portfolio_Name,
-	   Rating
+	   Rating,
+       Rating_Date,
+       Rating_Org
 from   Bond_Rating_Info A57,temp2
 where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
@@ -74,7 +77,9 @@ group by
 	   Lots,
 	   Portfolio_Name_Old,
 	   Portfolio_Name,
-	   Rating
+	   Rating,
+       Rating_Date,
+       Rating_Org
 ),
 T1 AS (
    Select BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -86,37 +91,66 @@ T1 AS (
 		  BA_Info.Lien_position AS Lien_position,
 		  BA_Info.Origination_Date AS Origination_Date,
           BA_Info.Report_Date AS Report_Date,
-		  RA_Info.Rating_Date AS Rating_Date,
-          CASE WHEN RA_Info.Rating_Object is null
+
+		  --RA_Info.Rating_Date AS Rating_Date,
+          --CASE WHEN RA_Info.Rating_Object is null
+          --     THEN ' '
+          --     ELSE RA_Info.Rating_Object
+          --END AS Rating_Object,
+          --RA_Info.Rating_Org AS Rating_Org,
+		  --oldA57.Rating AS Rating,
+		  --(CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	      --      WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+          --      ELSE ' '
+	      --END) AS Rating_Org_Area,
+          --CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+          --     THEN GMooInfo2.PD_Grade
+          --ELSE GMapInfo.PD_Grade 
+          --END AS PD_Grade,
+          --CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+          --     THEN GMooInfo2.Grade_Adjust
+          --ELSE GMooInfo.Grade_Adjust
+          --END AS Grade_Adjust,
+
+		  oldA57.Rating_Date AS Rating_Date,
+          CASE WHEN oldA57.Rating_Object is null
                THEN ' '
-          ELSE  RA_Info.Rating_Object
+               ELSE oldA57.Rating_Object
           END AS Rating_Object,
-          RA_Info.Rating_Org AS Rating_Org,
+          oldA57.Rating_Org AS Rating_Org,
 		  oldA57.Rating AS Rating,
-		  (CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
-	            WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+		  (CASE WHEN oldA57.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN oldA57.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
                 ELSE ' '
 	      END) AS Rating_Org_Area,
-          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+          CASE WHEN oldA57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
                THEN GMooInfo2.PD_Grade
           ELSE GMapInfo.PD_Grade 
           END AS PD_Grade,
-          CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+          CASE WHEN oldA57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
                THEN GMooInfo2.Grade_Adjust
           ELSE GMooInfo.Grade_Adjust
           END AS Grade_Adjust,
+
 		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
 		  BA_Info.Portfolio_Name AS Portfolio_Name,
-          CASE WHEN RA_Info.RTG_Bloomberg_Field is null
+
+          --CASE WHEN RA_Info.RTG_Bloomberg_Field is null
+          --     THEN ' '
+          --     ELSE RA_Info.RTG_Bloomberg_Field
+          --END AS RTG_Bloomberg_Field,
+
+          CASE WHEN oldA57.RTG_Bloomberg_Field is null
                THEN ' '
-               ELSE  RA_Info.RTG_Bloomberg_Field
+               ELSE oldA57.RTG_Bloomberg_Field
           END AS RTG_Bloomberg_Field,
+
 		  BA_Info.PRODUCT AS SMF,
 		  BA_Info.ISSUER AS ISSUER,
 		  BA_Info.Version AS Version,
-		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
 		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
           BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
@@ -124,14 +158,19 @@ T1 AS (
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
-   Left Join Rating_Info RA_Info --A53
-   on BA_Info.Bond_Number = RA_Info.Bond_Number   
-   AND BA_Info.Report_Date = RA_Info.Report_Date
-   AND RA_Info.Rating_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 大於等於 債券購入(認列)日期
+
+   --Left Join Rating_Info RA_Info --A53
+   --on BA_Info.Bond_Number = RA_Info.Bond_Number
+   --AND BA_Info.Report_Date = RA_Info.Report_Date
+   --AND RA_Info.Rating_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 小於等於 債券購入(認列)日期
+   --Left Join temp oldA57 --oldA57
+   --on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
+   --AND BA_Info.Origination_Date = oldA57.Origination_Date
+   --AND RA_Info.Rating_Object = oldA57.Rating_Object
+
    Left Join temp oldA57 --oldA57
-   on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
-   AND BA_Info.Origination_Date = oldA57.Origination_Date
-   AND RA_Info.Rating_Object = oldA57.Rating_Object
+   ON  oldA57.Origination_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 小於等於 債券購入(認列)日期
+   
    AND BA_Info.Bond_Number =
    CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Bond_Number_Old
 	    THEN BA_Info.Bond_Number
@@ -140,7 +179,9 @@ T1 AS (
 			      ELSE oldA57.Bond_Number
 	    	 END	
    END
-   AND BA_Info.Bond_Number_Old = 
+   AND 
+   (
+   BA_Info.Bond_Number_Old = 
    CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <> 'Y' 要比對Bond_Number
         THEN BA_Info.Bond_Number_Old
 	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Bond_Number_Old ,否則比對Bond_Number
@@ -148,6 +189,9 @@ T1 AS (
 			      ELSE oldA57.Bond_Number
 	    	 END	
    END
+   OR
+   BA_Info.Bond_Number_Old is null
+   )
    AND BA_Info.Lots = 
    CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Lots_Old
    	    THEN BA_Info.Lots
@@ -156,7 +200,9 @@ T1 AS (
 			      ELSE oldA57.Lots
 	    	 END	
    END
-   AND BA_Info.Lots_Old = 
+   AND
+   (
+   BA_Info.Lots_Old = 
    CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <>'Y' 要比對Lots
    	    THEN BA_Info.Lots_Old
 	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
@@ -164,7 +210,10 @@ T1 AS (
 			      ELSE oldA57.Lots
 	    	 END	
    END
-      AND BA_Info.Portfolio_Name = 
+   OR
+   BA_Info.Lots_Old is null
+   )
+   AND BA_Info.Portfolio_Name = 
    CASE WHEN BA_Info.ISIN_Changed_Ind = 'Y' --A41.ISIN_Changed_Ind = 'Y' 要比對Portfolio_Name_Old
    	    THEN BA_Info.Portfolio_Name
 	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
@@ -172,7 +221,9 @@ T1 AS (
 			      ELSE oldA57.Portfolio_Name
 	    	 END	
    END
-   AND BA_Info.Portfolio_Name_Old = 
+   AND 
+   (
+   BA_Info.Portfolio_Name_Old = 
    CASE WHEN BA_Info.ISIN_Changed_Ind <> 'Y' --A41.ISIN_Changed_Ind <>'Y' 要比對Portfolio_Name
    	    THEN BA_Info.Portfolio_Name_Old
 	    ELSE CASE WHEN oldA57.ISIN_Changed_Ind = 'Y' --舊的A57.ISIN_Changed_Ind  = 'Y' 要比對Lots_Old ,否則比對Lots
@@ -180,20 +231,33 @@ T1 AS (
 			      ELSE oldA57.Portfolio_Name
 	    	 END	
    END
+   OR
+   BA_Info.Portfolio_Name_Old is null
+   )
    Left Join Grade_Mapping_Info GMapInfo --A52
-   on RA_Info.Rating_Org = GMapInfo.Rating_Org
+
+   --on RA_Info.Rating_Org = GMapInfo.Rating_Org
+
+   on oldA57.Rating_Org = GMapInfo.Rating_Org
+
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
    -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
    Left Join Grade_Moody_Info GMooInfo2 --A51Second
    on GMooInfo2.Rating = oldA57.Rating
-   and RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+
+   --and RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+
+   and oldA57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+
    -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
-   Left Join Rating_Info_SampleInfo RISI --A53 Sample
+   Left Join Rating_Info_SampleInfo RISI --A53(Sample)
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
+
    -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
 )
@@ -275,7 +339,7 @@ WITH T0 AS (
 		  RA_Info.Rating_Date AS Rating_Date,
           CASE WHEN RA_Info.Rating_Object is null
                THEN ' '
-          ELSE  RA_Info.Rating_Object
+               ELSE RA_Info.Rating_Object
           END AS Rating_Object,
           RA_Info.Rating_Org AS Rating_Org,
 		  RA_Info.Rating AS Rating,
@@ -295,14 +359,14 @@ WITH T0 AS (
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
 		  BA_Info.Portfolio_Name AS Portfolio_Name,
-          CASE WHEN RA_Info.RTG_Bloomberg_Field is null
+		  CASE WHEN RA_Info.RTG_Bloomberg_Field is null
                THEN ' '
-               ELSE  RA_Info.RTG_Bloomberg_Field
+               ELSE RA_Info.RTG_Bloomberg_Field
           END AS RTG_Bloomberg_Field,
 		  BA_Info.PRODUCT AS SMF,
 		  BA_Info.ISSUER AS ISSUER,
 		  BA_Info.Version AS Version,
-		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%' 
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
 		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
 		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
           BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
@@ -311,7 +375,7 @@ WITH T0 AS (
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
    Left Join Rating_Info RA_Info --A53
-   on BA_Info.Bond_Number = RA_Info.Bond_Number   
+   on BA_Info.Bond_Number = RA_Info.Bond_Number
    AND BA_Info.Report_Date = RA_Info.Report_Date
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
@@ -462,6 +526,7 @@ and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
 and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
 
+
 Insert Into Bond_Rating_Summary
             (
 			  Reference_Nbr,
@@ -494,9 +559,9 @@ Select BR_Info.Reference_Nbr,
 	   BR_Info.Bond_Type,
 	   BR_Info.Rating_Type,
 	   BR_Info.Rating_Object,
-	   BR_Info.Rating_Org_Area,	   
+	   BR_Info.Rating_Org_Area,
 	   BR_Parm.Rating_Selection,
-	   (CASE WHEN BR_Parm.Rating_Selection = '1' 
+	   (CASE WHEN BR_Parm.Rating_Selection = '1'
 	         THEN Min(BR_Info.Grade_Adjust)
 			 WHEN BR_Parm.Rating_Selection = '2'
 			 THEN Max(BR_Info.Grade_Adjust)
@@ -515,11 +580,11 @@ Select BR_Info.Reference_Nbr,
        BR_Info.Bond_Number_Old,
        BR_Info.Lots_Old,
        BR_Info.Portfolio_Name_Old
-From   Bond_Rating_Info BR_Info --A57
-LEFT JOIN  Bond_Rating_Parm BR_Parm --D60
+From   Bond_Rating_Info BR_Info
+LEFT JOIN  Bond_Rating_Parm BR_Parm
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
 AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
---AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area --2017/11/01修改為不分國內外
+--AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area  --2017/11/01修改為不分國內外
 Where  BR_Info.Report_Date = '{reportData}'
 AND    BR_Info.Version = {ver}
 GROUP BY BR_Info.Reference_Nbr,
@@ -555,7 +620,8 @@ WITH A58ISSUER AS
    and Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
 )
 update Bond_Rating_Summary
-set Bond_Rating_Summary.Grade_Adjust = A58ISSUER.Grade_Adjust
+set Bond_Rating_Summary.Grade_Adjust = 
+A58ISSUER.Grade_Adjust
 from Bond_Rating_Summary, A58ISSUER
 where Bond_Rating_Summary.Report_Date = '{reportData}'
 and Bond_Rating_Summary.Version = {ver}
@@ -568,7 +634,9 @@ and Bond_Rating_Summary.Portfolio_Name = A58ISSUER.Portfolio_Name
 and Bond_Rating_Summary.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
 and Bond_Rating_Summary.Rating_Type = A58ISSUER.Rating_Type
 and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
-                    ";
+                        ";
+
+                        
                         db.Database.CommandTimeout = 300;
                         db.Database.ExecuteSqlCommand(sql);
                         db.Dispose();
