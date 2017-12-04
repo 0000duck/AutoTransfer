@@ -45,7 +45,11 @@ namespace AutoTransfer.Transfer
                         sql = $@"
 with temp2 as
 (
-select MAX(Report_Date) as Report_Date from Bond_Rating_Info 
+  select
+  CASE WHEN ((select TOP 1 Report_Date from Bond_Rating_Info where Report_Date = '{reportData}') != null)
+       THEN (select TOP 1 Report_Date from Bond_Rating_Info where Report_Date = '{reportData}')
+	   ELSE MAX(Report_Date) 
+  END as Report_Date from Bond_Rating_Info 
 ),
 temp as
 (
