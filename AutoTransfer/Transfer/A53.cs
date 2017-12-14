@@ -280,12 +280,12 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                                 var SMF = A41.PRODUCT;
                                 var ISSUER = A41.ISSUER;
                                 var LSMF = SMF.IsNullOrWhiteSpace() ? string.Empty : SMF.Substring(0, 3);
-                                var ISSUER_EQUITY_TICKER = arr[3].Trim(); //ISSUER_EQUITY_TICKER
-                                var GUARANTOR_EQY_TICKER = arr[6].Trim(); //GUARANTOR_EQY_TICKER
-                                var GUARANTOR_NAME = arr[7].Trim(); //GUARANTOR_NAME
+                                var ISSUER_EQUITY_TICKER = arr[3]?.Trim(); //ISSUER_EQUITY_TICKER
+                                var GUARANTOR_EQY_TICKER = arr[6]?.Trim(); //GUARANTOR_EQY_TICKER
+                                var GUARANTOR_NAME = arr[7]?.Trim(); //GUARANTOR_NAME
                                 var Security_Des = arr[18];
                                 var Bloomberg_Ticker = Security_Des.IsNullOrWhiteSpace() ? null : Security_Des.Split(' ')[0];
-                                var PARENT_TICKER_EXCHANGE = arr[19].Trim(); //PARENT_TICKER_EXCHANGE     
+                                var PARENT_TICKER_EXCHANGE = arr[19]?.Trim(); //PARENT_TICKER_EXCHANGE 
                                 if (nullarr.Contains(ISSUER_EQUITY_TICKER))
                                     ISSUER_EQUITY_TICKER = null;
                                 if (nullarr.Contains(GUARANTOR_EQY_TICKER))
@@ -315,7 +315,7 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,{SMF.stringToStrSql()}
            ,{Security_Des.stringToStrSql()}
            ,{Bloomberg_Ticker.stringToStrSql()}
-           ,{ISSUER.stringToStrSql()} ); ");
+           ,{ISSUER.stringToStrSql()}  ); ");
                             }
                         }
                         if ("START-OF-DATA".Equals(line))
@@ -895,7 +895,8 @@ INSERT INTO Rating_Info
                     "411 Gov.CENTRAL",
                     "931 CDO",
                     "A11 AGENCY MBS",
-                    "932 CLO"
+                    "932 CLO",
+                    "421 Gov.LOCAL"
                 };
                 #endregion
                 #region update A95 Security_Des & Bloomberg_Ticker AND A41 & A95 Bond_Type & Assessment_Sub_Kind

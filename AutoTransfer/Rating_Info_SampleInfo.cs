@@ -23,5 +23,7 @@ namespace AutoTransfer
         public string SMF { get; set; }
         public string Security_Des { get; set; }
         public string Bloomberg_Ticker { get; set; }
+        public string ISSUER { get; set; }
+        public string COLLAT_TYP { get; set; }
     }
 }
