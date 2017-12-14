@@ -202,21 +202,17 @@ T1 AS (
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
-   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   and GMooInfo.Effective = 'Y'  --年度 最新年度
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是最新年度
    Left Join Grade_Moody_Info GMooInfo2 --A51Second
    on GMooInfo2.Rating = oldA57.Rating
-
-   --and RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-
    and oldA57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-
-   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
+   and GMooInfo2.Effective = 'Y'  --年度 最新年度
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是最新年度
    Left Join Rating_Info_SampleInfo RISI --A53(Sample)
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-
    -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
-
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
    AND   BA_Info.ISIN_Changed_Ind is null
@@ -279,9 +275,10 @@ UNION ALL
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
+   and GMooInfo.Effective = 'Y'  --年度 最新年度
    Left Join Grade_Moody_Info GMooInfo2 --A51Second
    on GMooInfo2.Rating = oldA57.Rating
-
+   and GMooInfo2.Effective = 'Y'  --年度 最新年度
    and oldA57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
    Left Join Rating_Info_SampleInfo RISI --A53(Sample)
    on BA_Info.Bond_Number = RISI.Bond_Number
@@ -414,11 +411,13 @@ WITH T0 AS (
    AND RA_Info.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
-   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是只有一版
+   and GMooInfo.Effective = 'Y'  --年度 最新年度
+   -- and Year(BA_Info.Report_Date) = GMooInfo.Data_Year  --年度 目前作法是最新年度
    Left Join Grade_Moody_Info GMooInfo2 --A51Second
    on GMooInfo2.Rating = RA_Info.Rating
    and RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是只有一版
+   and GMooInfo2.Effective = 'Y'  --年度 最新年度
+   -- and Year(BA_Info.Report_Date) = GMooInfo2.Data_Year  --年度 目前作法是最新年度
    Left Join Rating_Info_SampleInfo RISI --A53 Sample
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
