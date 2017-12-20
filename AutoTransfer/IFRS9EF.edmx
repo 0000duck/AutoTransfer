@@ -65,6 +65,7 @@
           <Property Name="Bond_Number_Old" Type="varchar" MaxLength="40" />
           <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
           <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
+          <Property Name="Security_Name" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Bond_Category_Info">
           <Key>
@@ -703,6 +704,7 @@
           <Property Name="Bond_Number_Old" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
           <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Security_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Econ_Domestic">
           <Key>
@@ -1182,6 +1184,7 @@
           <EntitySetMapping Name="Bond_Account_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Account_Info">
               <MappingFragment StoreEntitySet="Bond_Account_Info">
+                <ScalarProperty Name="Security_Name" ColumnName="Security_Name" />
                 <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
                 <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
                 <ScalarProperty Name="Bond_Number_Old" ColumnName="Bond_Number_Old" />
