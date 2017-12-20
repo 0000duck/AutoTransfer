@@ -70,5 +70,6 @@ namespace AutoTransfer
         public string Bond_Number_Old { get; set; }
         public string Lots_Old { get; set; }
         public string Portfolio_Name_Old { get; set; }
+        public string Security_Name { get; set; }
     }
 }

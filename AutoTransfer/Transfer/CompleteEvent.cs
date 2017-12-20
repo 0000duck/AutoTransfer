@@ -54,15 +54,7 @@ with temp2 as
 temp as
 (
 select RTG_Bloomberg_Field,
-       --Origination_Date,
 	   Rating_Object,
-	   --ISIN_Changed_Ind,
-	   --Bond_Number_Old,
-	   --Bond_Number,
-	   --Lots_Old,
-	   --Lots,
-	   --Portfolio_Name_Old,
-	   --Portfolio_Name,
 	   CASE WHEN ISIN_Changed_Ind = 'Y'
 	        THEN Bond_Number_Old
 			ELSE Bond_Number
@@ -86,20 +78,6 @@ where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
 and    A57.Report_Date = temp2.Report_Date
 and    A57.Grade_Adjust is not null
---group by
---       RTG_Bloomberg_Field,
---       Origination_Date,
---	     Rating_Object,
---	     ISIN_Changed_Ind,
---	     Bond_Number_Old,
---	     Bond_Number,
---	     Lots_Old,
---	     Lots,
---	     Portfolio_Name_Old,
---	     Portfolio_Name,
---	     Rating,
---       Rating_Date,
---       Rating_Org
 ),
 T1 AS (
    Select BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -111,27 +89,6 @@ T1 AS (
 		  BA_Info.Lien_position AS Lien_position,
 		  BA_Info.Origination_Date AS Origination_Date,
           BA_Info.Report_Date AS Report_Date,
-
-		  --RA_Info.Rating_Date AS Rating_Date,
-          --CASE WHEN RA_Info.Rating_Object is null
-          --     THEN ' '
-          --     ELSE RA_Info.Rating_Object
-          --END AS Rating_Object,
-          --RA_Info.Rating_Org AS Rating_Org,
-		  --oldA57.Rating AS Rating,
-		  --(CASE WHEN RA_Info.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
-	      --      WHEN RA_Info.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
-          --      ELSE ' '
-	      --END) AS Rating_Org_Area,
-          --CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-          --     THEN GMooInfo2.PD_Grade
-          --ELSE GMapInfo.PD_Grade 
-          --END AS PD_Grade,
-          --CASE WHEN RA_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-          --     THEN GMooInfo2.Grade_Adjust
-          --ELSE GMooInfo.Grade_Adjust
-          --END AS Grade_Adjust,
-
 		  oldA57.Rating_Date AS Rating_Date,
           CASE WHEN oldA57.Rating_Object is null
                THEN ' '
@@ -151,22 +108,14 @@ T1 AS (
                THEN GMooInfo2.Grade_Adjust
           ELSE GMooInfo.Grade_Adjust
           END AS Grade_Adjust,
-
 		  CASE WHEN RISI.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.ISSUER_TICKER END AS ISSUER_TICKER,
 		  CASE WHEN RISI.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_NAME END AS GUARANTOR_NAME,
 		  CASE WHEN RISI.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else RISI.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
 		  BA_Info.Portfolio_Name AS Portfolio_Name,
-
-          --CASE WHEN RA_Info.RTG_Bloomberg_Field is null
-          --     THEN ' '
-          --     ELSE RA_Info.RTG_Bloomberg_Field
-          --END AS RTG_Bloomberg_Field,
-
           CASE WHEN oldA57.RTG_Bloomberg_Field is null
                THEN ' '
                ELSE oldA57.RTG_Bloomberg_Field
           END AS RTG_Bloomberg_Field,
-
 		  BA_Info.PRODUCT AS SMF,
 		  BA_Info.ISSUER AS ISSUER,
 		  BA_Info.Version AS Version,
@@ -178,27 +127,12 @@ T1 AS (
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
-
-   --Left Join Rating_Info RA_Info --A53
-   --on BA_Info.Bond_Number = RA_Info.Bond_Number
-   --AND BA_Info.Report_Date = RA_Info.Report_Date
-   --AND RA_Info.Rating_Date <= BA_Info.Origination_Date --2017/11/15 要符合 評等資料時點 小於等於 債券購入(認列)日期
-   --Left Join temp oldA57 --oldA57
-   --on RA_Info.RTG_Bloomberg_Field = oldA57.RTG_Bloomberg_Field
-   --AND BA_Info.Origination_Date = oldA57.Origination_Date
-   --AND RA_Info.Rating_Object = oldA57.Rating_Object
-
    Left Join temp oldA57 --oldA57
    ON  BA_Info.Bond_Number =  oldA57.Bond_Number
    AND BA_Info.Lots = oldA57.Lots
    AND BA_Info.Portfolio_Name = oldA57.Portfolio_Name
-
    Left Join Grade_Mapping_Info GMapInfo --A52
-
-   --on RA_Info.Rating_Org = GMapInfo.Rating_Org
-
    on oldA57.Rating_Org = GMapInfo.Rating_Org
-
    AND oldA57.Rating = GMapInfo.Rating
    Left Join Grade_Moody_Info GMooInfo --A51
    on GMapInfo.PD_Grade = GMooInfo.PD_Grade
@@ -264,12 +198,10 @@ UNION ALL
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
    from  Bond_Account_Info BA_Info --A41
-
    Left Join temp oldA57 --oldA57 
    ON BA_Info.Bond_Number_Old = oldA57.Bond_Number
    AND BA_Info.Lots_Old = oldA57.Lots
    AND BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name
-
    Left Join Grade_Mapping_Info GMapInfo --A52
    on oldA57.Rating_Org = GMapInfo.Rating_Org
    AND oldA57.Rating = GMapInfo.Rating
@@ -283,9 +215,7 @@ UNION ALL
    Left Join Rating_Info_SampleInfo RISI --A53(Sample)
    on BA_Info.Bond_Number = RISI.Bond_Number
    AND BA_Info.Report_Date = RISI.Report_Date 
-
    -- AND RA_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
-
    Where BA_Info.Report_Date = '{reportData}'
    And   BA_Info.Version = {ver}
    AND   BA_Info.ISIN_Changed_Ind = 'Y'
@@ -406,6 +336,7 @@ WITH T0 AS (
    Left Join Rating_Info RA_Info --A53
    on BA_Info.Bond_Number = RA_Info.Bond_Number
    AND BA_Info.Report_Date = RA_Info.Report_Date
+   AND RA_Info.RTG_Bloomberg_Field not in ('G_RTG_MDY_LOCAL_LT_BANK_DEPOSITS','RTG_MDY_LOCAL_LT_BANK_DEPOSITS') --穆迪長期本國銀行存款評等,在寫A57時不要寫進去放成空值,風控暫時不用它來判斷熟調或熟低。
    Left Join Grade_Mapping_Info GMapInfo --A52
    on RA_Info.Rating_Org = GMapInfo.Rating_Org
    AND RA_Info.Rating = GMapInfo.Rating
