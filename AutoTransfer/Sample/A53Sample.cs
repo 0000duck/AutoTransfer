@@ -111,5 +111,9 @@
         /// </summary>
         public string PARENT_TICKER_EXCHANGE { get; set; }
 
+        /// <summary>
+        /// COLLAT_TYP 新增抓Bloomberg欄位 COLLAT_TYP add in 2017/12/25 for D67 Use
+        /// </summary>
+        public string COLLAT_TYP { get; set; }
     }
 }

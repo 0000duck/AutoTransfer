@@ -273,7 +273,9 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                             //arr[18] A95 Security_Des
                             //--SMF 條件符合取代使用
                             //arr[19] PARENT_TICKER_EXCHANGE
-                            if (arr.Length >= 20)
+                            //--COLLAT_TYP
+                            //arr[20] COLLAT_TYP
+                            if (arr.Length >= 21)
                             {
                                 var bond_Number = arr[0].Trim();
                                 var A41 = A41s.First(x => x.Bond_Number == bond_Number);
@@ -286,6 +288,7 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                                 var Security_Des = arr[18];
                                 var Bloomberg_Ticker = Security_Des.IsNullOrWhiteSpace() ? null : Security_Des.Split(' ')[0];
                                 var PARENT_TICKER_EXCHANGE = arr[19]?.Trim(); //PARENT_TICKER_EXCHANGE 
+                                var COLLAT_TYP = arr[20]?.Trim();
                                 if (nullarr.Contains(ISSUER_EQUITY_TICKER))
                                     ISSUER_EQUITY_TICKER = null;
                                 if (nullarr.Contains(GUARANTOR_EQY_TICKER))
@@ -302,6 +305,7 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,[GUARANTOR_NAME]
            ,[PARENT_TICKER_EXCHANGE]
            ,[SMF]
+           ,[COLLAT_TYP]
            ,[Security_Des]
            ,[Bloomberg_Ticker]
            ,[ISSUER])
@@ -313,6 +317,7 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,{GUARANTOR_NAME.stringToStrSql()}
            ,{PARENT_TICKER_EXCHANGE.stringToStrSql()}
            ,{SMF.stringToStrSql()}
+           ,{COLLAT_TYP.stringToStrSql()}
            ,{Security_Des.stringToStrSql()}
            ,{Bloomberg_Ticker.stringToStrSql()}
            ,{ISSUER.stringToStrSql()}  ); ");
@@ -618,7 +623,9 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                         //arr[18] A95 Security_Des
                         //--SMF 條件符合取代使用
                         //arr[19] PARENT_TICKER_EXCHANGE
-                        if (arr.Length >= 20)
+                        //--COLLAT_TYP
+                        //arr[20] COLLAT_TYP
+                        if (arr.Length >= 21)
                         {
                             //S&P國外評等
                             validateSample(
