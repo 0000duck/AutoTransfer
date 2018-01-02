@@ -42,5 +42,6 @@ namespace AutoTransfer
         public virtual DbSet<Group_Product_Code_Mapping> Group_Product_Code_Mapping { get; set; }
         public virtual DbSet<Bond_Rating_Info> Bond_Rating_Info { get; set; }
         public virtual DbSet<Bond_Rating_Summary> Bond_Rating_Summary { get; set; }
+        public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
     }
 }
