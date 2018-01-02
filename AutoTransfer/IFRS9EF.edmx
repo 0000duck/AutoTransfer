@@ -531,6 +531,19 @@
           <Property Name="PD_Grade" Type="int" Nullable="false" />
           <Property Name="Rating" Type="varchar" MaxLength="10" Nullable="false" />
         </EntityType>
+        <EntityType Name="Grade_Moody_Info">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Rating" />
+          </Key>
+          <Property Name="Data_Year" Type="varchar" MaxLength="4" Nullable="false" />
+          <Property Name="Rating" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="PD_Grade" Type="int" />
+          <Property Name="Rating_Adjust" Type="varchar" MaxLength="20" />
+          <Property Name="Grade_Adjust" Type="int" />
+          <Property Name="Moodys_PD" Type="float" />
+          <Property Name="Effective" Type="varchar" MaxLength="1" />
+        </EntityType>
         <EntityType Name="Group_Product_Code_Mapping">
           <Key>
             <PropertyRef Name="Group_Product_Code" />
@@ -627,6 +640,7 @@
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="Self.Econ_F_YYYYMMDD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_Foreign" EntityType="Self.Econ_Foreign" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Grade_Mapping_Info" EntityType="Self.Grade_Mapping_Info" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Grade_Moody_Info" EntityType="Self.Grade_Moody_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="Self.Group_Product_Code_Mapping" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Loan_default_Info" EntityType="Self.Loan_default_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="Self.Moody_Quartly_PD_Info" Schema="dbo" store:Type="Tables" />
@@ -664,6 +678,7 @@
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
           <EntitySet Name="Bond_Rating_Info" EntityType="IFRS9Model.Bond_Rating_Info" />
           <EntitySet Name="Bond_Rating_Summary" EntityType="IFRS9Model.Bond_Rating_Summary" />
+          <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1277,6 +1292,19 @@
           <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="Origination_Date_Old" Type="DateTime" Precision="0" />
         </EntityType>
+        <EntityType Name="Grade_Moody_Info">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Rating" />
+          </Key>
+          <Property Name="Data_Year" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="PD_Grade" Type="Int32" />
+          <Property Name="Rating_Adjust" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Grade_Adjust" Type="Int32" />
+          <Property Name="Moodys_PD" Type="Double" />
+          <Property Name="Effective" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1873,6 +1901,19 @@
                 <ScalarProperty Name="Parm_ID" ColumnName="Parm_ID" />
                 <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
                 <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Grade_Moody_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Grade_Moody_Info">
+              <MappingFragment StoreEntitySet="Grade_Moody_Info">
+                <ScalarProperty Name="Effective" ColumnName="Effective" />
+                <ScalarProperty Name="Moodys_PD" ColumnName="Moodys_PD" />
+                <ScalarProperty Name="Grade_Adjust" ColumnName="Grade_Adjust" />
+                <ScalarProperty Name="Rating_Adjust" ColumnName="Rating_Adjust" />
+                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
+                <ScalarProperty Name="Rating" ColumnName="Rating" />
+                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
