@@ -154,6 +154,7 @@ namespace AutoTransfer.Utility
                     Create_time = start.ToString("HH:mm:ss"),
                     End_date = end.ToString("yyyyMMdd"),
                     End_time = end.ToString("HH:mm:ss"),
+                    Process = "Plan"
                 });
                 try
                 {

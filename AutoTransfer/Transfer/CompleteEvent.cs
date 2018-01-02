@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using static AutoTransfer.Enum.Ref;
 using static AutoTransfer.Transfer.A53;
 
@@ -35,14 +36,16 @@ namespace AutoTransfer.Transfer
                                  x.Version == version);
                 if (A41Data.Any() && db.Rating_Info.Any())
                 {
-                    try
+                    using (var dbContextTransaction = db.Database.BeginTransaction())
                     {
+                        try
+                        {
                             string parmID = getParmID(); //選取離今日最近的D60
                             string reportData = dt.ToString("yyyy/MM/dd");
                             string ver = version.ToString();
                             string sql = string.Empty;
-
-                        sql = $@"
+                            string sql2 = string.Empty;
+                            sql = $@"
 WITH temp2 AS
 (
   SELECT
@@ -55,29 +58,37 @@ temp AS
 (
 SELECT RTG_Bloomberg_Field,
 	   Rating_Object,
-	   CASE WHEN ISIN_Changed_Ind = 'Y'
-	        THEN Bond_Number_Old
-			ELSE Bond_Number
-			END
-	   AS Bond_Number,
-	   CASE WHEN ISIN_Changed_Ind = 'Y'
-	        THEN Lots_Old
-			ELSE Lots
-			END
-	   AS Lots,
-       CASE WHEN ISIN_Changed_Ind = 'Y'
-	        THEN Portfolio_Name_Old
-			ELSE Portfolio_Name
-		   	END
-	   AS Portfolio_Name,
+       Bond_Number AS Bond_Number,
+       Lots AS Lots,
+       Portfolio_Name AS Portfolio_Name,
 	   Rating,
        Rating_Date,
-       Rating_Org
+       Rating_Org,
+       A57.Report_Date
 FROM   Bond_Rating_Info A57,temp2
 WHERE  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 AND    A57.Version = (SELECT MAX(Version) FROM Bond_Rating_Info WHERE Report_Date = temp2.Report_Date)
 AND    A57.Report_Date = temp2.Report_Date
 AND    A57.Grade_Adjust is not null
+UNION ALL
+select RTG_Bloomberg_Field,
+       Rating_Object,
+       Bond_Number_Old AS Bond_Number,
+       Lots_Old AS Lots,
+       Portfolio_Name_Old AS Portfolio_Name,
+       Rating,
+       Rating_Date,
+       Rating_Org,
+       A57.Report_Date
+from   Bond_Rating_Info A57,temp2
+where  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
+and    A57.Version = (select MAX(Version) from Bond_Rating_Info where Report_Date = temp2.Report_Date)
+and    A57.Report_Date = temp2.Report_Date
+and    A57.Grade_Adjust is not null
+and    A57.ISIN_Changed_Ind = 'Y'
+and    A57.Bond_Number_Old is not null 
+and    A57.Lots_Old is not null 
+and    A57.Portfolio_Name_Old is not null
 ), --最後一版A57(原始投資信評)
 A52 AS (
    SELECT * FROM Grade_Mapping_Info
@@ -180,7 +191,8 @@ T1 AS (
           BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
           BA_Info.Bond_Number_Old AS Bond_Number_Old,
           BA_Info.Lots_Old AS Lots_Old,
-          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
    FROM A41a BA_Info --A41
    LEFT JOIN tempA57t oldA57 --oldA57
    ON  BA_Info.Bond_Number =  oldA57.Bond_Number
@@ -226,7 +238,8 @@ UNION ALL
           BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
           BA_Info.Bond_Number_Old AS Bond_Number_Old,
           BA_Info.Lots_Old AS Lots_Old,
-          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
    FROM  A41b BA_Info --A41
    LEFT JOIN tempA57t oldA57 --oldA57 
    ON BA_Info.Bond_Number_Old = oldA57.Bond_Number
@@ -264,7 +277,8 @@ INSERT INTO Bond_Rating_Info
            ISIN_Changed_Ind,
            Bond_Number_Old,
            Lots_Old,
-           Portfolio_Name_Old)
+           Portfolio_Name_Old,
+           Origination_Date_Old)
 SELECT     Reference_Nbr,
 		   Bond_Number,
 		   Lots,
@@ -295,7 +309,8 @@ SELECT     Reference_Nbr,
            ISIN_Changed_Ind,
            Bond_Number_Old,
            Lots_Old,
-           Portfolio_Name_Old
+           Portfolio_Name_Old,
+           Origination_Date_Old
 		   From
 		   T1;
 
@@ -389,7 +404,8 @@ T0 AS (
           BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
           BA_Info.Bond_Number_Old AS Bond_Number_Old,
           BA_Info.Lots_Old AS Lots_Old,
-          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
    FROM  A41 BA_Info --A41
    LEFT JOIN A53t RA_Info --A53
    ON BA_Info.Bond_Number = RA_Info.Bond_Number
@@ -425,7 +441,8 @@ Insert into Bond_Rating_Info
            ISIN_Changed_Ind,
            Bond_Number_Old,
            Lots_Old,
-           Portfolio_Name_Old)
+           Portfolio_Name_Old,
+           Origination_Date_Old)
 SELECT     Reference_Nbr,
 		   Bond_Number,
 		   Lots,
@@ -456,7 +473,8 @@ SELECT     Reference_Nbr,
            ISIN_Changed_Ind,
            Bond_Number_Old,
            Lots_Old,
-           Portfolio_Name_Old
+           Portfolio_Name_Old,
+           Origination_Date_Old
 		   From
 		   T0;
 
@@ -525,7 +543,9 @@ where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
 and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
+";
 
+                        sql2 = $@"
 WITH A57 AS
 (
   SELECT * FROM Bond_Rating_Info
@@ -560,7 +580,8 @@ Select BR_Info.Reference_Nbr,
        BR_Info.ISIN_Changed_Ind,
        BR_Info.Bond_Number_Old,
        BR_Info.Lots_Old,
-       BR_Info.Portfolio_Name_Old
+       BR_Info.Portfolio_Name_Old,
+       BR_Info.Origination_Date_Old
 From   A57 BR_Info
 LEFT JOIN  Bond_Rating_Parm BR_Parm
 on         BR_Info.Parm_ID = BR_Parm.Parm_ID
@@ -586,7 +607,8 @@ GROUP BY BR_Info.Reference_Nbr,
          BR_Info.ISIN_Changed_Ind,
          BR_Info.Bond_Number_Old,
          BR_Info.Lots_Old,
-         BR_Info.Portfolio_Name_Old 
+         BR_Info.Portfolio_Name_Old,
+         BR_Info.Origination_Date_Old
 )
 Insert Into Bond_Rating_Summary
             (
@@ -612,7 +634,8 @@ Insert Into Bond_Rating_Summary
               ISIN_Changed_Ind,
               Bond_Number_Old,
               Lots_Old,
-              Portfolio_Name_Old
+              Portfolio_Name_Old,
+              Origination_Date_Old
 			)
 select 
 			  Reference_Nbr,
@@ -637,97 +660,259 @@ select
               ISIN_Changed_Ind,
               Bond_Number_Old,
               Lots_Old,
-              Portfolio_Name_Old			
+              Portfolio_Name_Old,
+              Origination_Date_Old			
  from T4;
-
---If issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
-WITH A58ISSUER AS
-(
-   select *
-   from Bond_Rating_Summary
-   where Report_Date = '{reportData}'
-   and Version = {ver}
-   and ISSUER IN('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
-   and Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
-)
-update Bond_Rating_Summary
-set Bond_Rating_Summary.Grade_Adjust = 
-A58ISSUER.Grade_Adjust
-from Bond_Rating_Summary, A58ISSUER
-where Bond_Rating_Summary.Report_Date = '{reportData}'
-and Bond_Rating_Summary.Version = {ver}
-and Bond_Rating_Summary.ISSUER IN ('GOV-TW-CEN', 'GOV-Kaohsiung', 'GOV-TAIPEI')
-and Bond_Rating_Summary.ISSUER = A58ISSUER.ISSUER
-and Bond_Rating_Summary.Bond_Number = A58ISSUER.Bond_Number
-and Bond_Rating_Summary.Lots = A58ISSUER.Lots
-and Bond_Rating_Summary.Reference_Nbr = A58ISSUER.Reference_Nbr
-and Bond_Rating_Summary.Portfolio_Name = A58ISSUER.Portfolio_Name
-and Bond_Rating_Summary.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
-and Bond_Rating_Summary.Rating_Type = A58ISSUER.Rating_Type
-and Bond_Rating_Summary.Rating_Org_Area = A58ISSUER.Rating_Org_Area;
-                        ";
-
-                        
-                        db.Database.CommandTimeout = 300;
-                        db.Database.ExecuteSqlCommand(sql);
-                        db.Dispose();
-                        log.saveTransferCheck(
-                            TableType.A57.ToString(),
-                            true,
-                            dt,
-                            version,
-                            startTime,
-                            DateTime.Now);
-                        log.saveTransferCheck(
-                            TableType.A58.ToString(),
-                            true,
-                            dt,
-                            version,
-                            startTime,
-                            DateTime.Now);
-                        log.txtLog(
-                           TableType.A57.ToString(),
-                           true,
-                           startTime,
-                           A57logPath,
-                           MessageType.Success.GetDescription());
-                        log.txtLog(
-                           TableType.A58.ToString(),
-                           true,
-                           startTime,
-                           A58logPath,
-                           MessageType.Success.GetDescription());
-                    }
-                    catch (Exception ex)
-                    {
-                        log.saveTransferCheck(
-                            TableType.A57.ToString(),
-                            false,
-                            dt,
-                            version,
-                            startTime,
-                            DateTime.Now);
-                        log.saveTransferCheck(
-                            TableType.A58.ToString(),
-                            false,
-                            dt,
-                            version,
-                            startTime,
-                            DateTime.Now);
-                        log.txtLog(
-                            TableType.A57.ToString(),
-                            false,
-                            startTime,
-                            A57logPath,
-                            $"message: {ex.Message}" +
-                            $", inner message {ex.InnerException?.InnerException?.Message}");
-                        log.txtLog(
-                            TableType.A58.ToString(),
-                            false,
-                            startTime,
-                            A58logPath,
-                            $"message: {ex.Message}" +
-                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                            ";
+                            db.Database.CommandTimeout = 300;
+                            db.Database.ExecuteSqlCommand(sql);
+                            #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
+                            var ISSUERstr = RatingObject.ISSUER.GetDescription();
+                            var Bondstr = RatingObject.Bonds.GetDescription();
+                            List<string> ISSUERs = new List<string>() { "GOV-TW-CEN", "GOV-Kaohsiung", "GOV-TAIPEI" };
+                            StringBuilder sb2 = new StringBuilder();
+                            var D60 = db.Bond_Rating_Parm.AsNoTracking().ToList();
+                            var A57ISSUERs =
+                                db.Bond_Rating_Info.Where(x =>
+                                 x.Report_Date == dt &&
+                                 x.Version == version &&
+                                 x.Grade_Adjust != null &&
+                                 x.PD_Grade != null &&
+                                 ISSUERs.Contains(x.ISSUER) &&
+                                 x.Rating_Object == ISSUERstr).ToList();
+                            var A57Bonds =
+                                 db.Bond_Rating_Info.Where(x =>
+                                 x.Report_Date == dt &&
+                                 x.Version == version &&
+                                 ISSUERs.Contains(x.ISSUER) &&
+                                 x.Rating_Object == Bondstr).ToList();
+                            string Domestic = "國內";
+                            string Foreign = "國外";
+                            foreach (var A57group in A57ISSUERs.GroupBy(x => new
+                            {
+                                x.Reference_Nbr,
+                                x.Bond_Number,
+                                x.Lots,
+                                x.Portfolio,
+                                x.Segment_Name,
+                                x.Bond_Type,
+                                x.Lien_position,
+                                x.Origination_Date,
+                                x.Report_Date,
+                                x.Rating_Type,
+                                x.Rating_Org,
+                                x.Rating_Object,
+                                x.PD_Grade,
+                                x.Grade_Adjust,
+                                x.ISSUER_TICKER,
+                                x.GUARANTOR_NAME,
+                                x.GUARANTOR_EQY_TICKER,
+                                x.Parm_ID,
+                                x.Portfolio_Name,
+                                x.SMF,
+                                x.ISSUER,
+                                x.Version,
+                                x.Security_Ticker,
+                                x.ISIN_Changed_Ind,
+                                x.Bond_Number_Old,
+                                x.Lots_Old,
+                                x.Portfolio_Name_Old,
+                                x.Origination_Date_Old
+                            }))
+                            {
+                                var q = A57group;
+                                var first = A57group.First();
+                                var _D60 = D60.FirstOrDefault(z => z.Parm_ID == first.Parm_ID &&
+                                                            z.Rating_Object == first.Rating_Object);
+                                int? _PD_Grade = null;
+                                if (_D60 != null)
+                                {
+                                    if (_D60.Rating_Selection == "1")
+                                    {
+                                        _PD_Grade = A57group.Where(z => z.PD_Grade != null).Min(z => z.PD_Grade);
+                                    }
+                                    if (_D60.Rating_Selection == "2")
+                                    {
+                                        _PD_Grade = A57group.Where(z => z.PD_Grade != null).Max(z => z.PD_Grade);
+                                    }
+                                }
+                                if (_PD_Grade.HasValue)
+                                {
+                                    var _A57ISSUERcopy = A57group.First(z => z.PD_Grade == _PD_Grade.Value);
+                                    var _A57Bond = A57Bonds.FirstOrDefault(z =>
+                                                          z.Reference_Nbr == _A57ISSUERcopy.Reference_Nbr &&
+                                                          z.Rating_Type == _A57ISSUERcopy.Rating_Type &&
+                                                          z.Rating_Org == _A57ISSUERcopy.Rating_Org);
+                                    if (_A57Bond == null) //沒有債項才須新增 (有債項就保持不變)
+                                    {
+                                        var RTGFiled = string.Empty;
+                                        var RatingOrgArea = string.Empty;
+                                        switch (_A57ISSUERcopy.Rating_Org)
+                                        {
+                                            case "SP":
+                                                RTGFiled = "RTG_SP";
+                                                RatingOrgArea = Foreign;
+                                                break;
+                                            case "Moody":
+                                                RTGFiled = "RTG_MOODY";
+                                                RatingOrgArea = Foreign;
+                                                break;
+                                            case "Fitch":
+                                                RTGFiled = "RTG_FITCH";
+                                                RatingOrgArea = Foreign;
+                                                break;
+                                            case "Fitch(twn)":
+                                                RTGFiled = "RTG_FITCH_NATIONAL";
+                                                RatingOrgArea = Domestic;
+                                                break;
+                                            case "CW":
+                                                RTGFiled = "RTG_TRC";
+                                                RatingOrgArea = Domestic;
+                                                break;
+                                        }
+                                        if (!RTGFiled.IsNullOrWhiteSpace())
+                                        {
+                                            sb2.Append($@"
+INSERT INTO [Bond_Rating_Info]
+           ([Reference_Nbr]
+           ,[Bond_Number]
+           ,[Lots]
+           ,[Portfolio]
+           ,[Segment_Name]
+           ,[Bond_Type]
+           ,[Lien_position]
+           ,[Origination_Date]
+           ,[Report_Date]
+           ,[Rating_Date]
+           ,[Rating_Type]
+           ,[Rating_Object]
+           ,[Rating_Org]
+           ,[Rating]
+           ,[Rating_Org_Area]
+           ,[Fill_up_YN]
+           ,[Fill_up_Date]
+           ,[PD_Grade]
+           ,[Grade_Adjust]
+           ,[ISSUER_TICKER]
+           ,[GUARANTOR_NAME]
+           ,[GUARANTOR_EQY_TICKER]
+           ,[Parm_ID]
+           ,[Portfolio_Name]
+           ,[RTG_Bloomberg_Field]
+           ,[SMF]
+           ,[ISSUER]
+           ,[Version]
+           ,[Security_Ticker]
+           ,[ISIN_Changed_Ind]
+           ,[Bond_Number_Old]
+           ,[Lots_Old]
+           ,[Portfolio_Name_Old])
+     VALUES
+           ({_A57ISSUERcopy.Reference_Nbr.stringToStrSql()}
+           ,{_A57ISSUERcopy.Bond_Number.stringToStrSql()}
+           ,{_A57ISSUERcopy.Lots.stringToStrSql()}
+           ,{_A57ISSUERcopy.Portfolio.stringToStrSql()}
+           ,{_A57ISSUERcopy.Segment_Name.stringToStrSql()}
+           ,{_A57ISSUERcopy.Bond_Type.stringToStrSql()}
+           ,{_A57ISSUERcopy.Lien_position.stringToStrSql()}
+           ,{_A57ISSUERcopy.Origination_Date.dateTimeNToStrSql()}
+           ,{_A57ISSUERcopy.Report_Date.dateTimeToStrSql()}
+           ,{_A57ISSUERcopy.Rating_Date.dateTimeNToStrSql()}
+           ,{_A57ISSUERcopy.Rating_Type.stringToStrSql()}
+           ,{Bondstr.stringToStrSql()}
+           ,{_A57ISSUERcopy.Rating_Org.stringToStrSql()}
+           ,{_A57ISSUERcopy.Rating.stringToStrSql()}
+           ,{RatingOrgArea.stringToStrSql()}
+           ,null
+           ,null
+           ,{_A57ISSUERcopy.PD_Grade.intNToStrSql()}
+           ,{_A57ISSUERcopy.Grade_Adjust.intNToStrSql()}
+           ,{_A57ISSUERcopy.ISSUER_TICKER.stringToStrSql()}
+           ,{_A57ISSUERcopy.GUARANTOR_NAME.stringToStrSql()}
+           ,{_A57ISSUERcopy.GUARANTOR_EQY_TICKER.stringToStrSql()}
+           ,{_A57ISSUERcopy.Parm_ID.stringToStrSql()}
+           ,{_A57ISSUERcopy.Portfolio_Name.stringToStrSql()}
+           ,{RTGFiled.stringToStrSql()}
+           ,{_A57ISSUERcopy.SMF.stringToStrSql()}
+           ,{_A57ISSUERcopy.ISSUER.stringToStrSql()}
+           ,{_A57ISSUERcopy.Version.intNToStrSql()}
+           ,{_A57ISSUERcopy.Security_Ticker.stringToStrSql()}
+           ,{_A57ISSUERcopy.ISIN_Changed_Ind.stringToStrSql()}
+           ,{_A57ISSUERcopy.Bond_Number_Old.stringToStrSql()}
+           ,{_A57ISSUERcopy.Lots_Old.stringToStrSql()}
+           ,{_A57ISSUERcopy.Portfolio_Name_Old.stringToStrSql()} );
+                    ");
+                                        }
+                                    }
+                                }
+                            }
+                            if (sb2.Length > 0)
+                            {
+                                db.Database.ExecuteSqlCommand(sb2.ToString());
+                            }
+                            #endregion
+                            db.Database.ExecuteSqlCommand(sql2);
+                            dbContextTransaction.Commit();
+                            db.Dispose();
+                            log.saveTransferCheck(
+                                TableType.A57.ToString(),
+                                true,
+                                dt,
+                                version,
+                                startTime,
+                                DateTime.Now);
+                            log.saveTransferCheck(
+                                TableType.A58.ToString(),
+                                true,
+                                dt,
+                                version,
+                                startTime,
+                                DateTime.Now);
+                            log.txtLog(
+                               TableType.A57.ToString(),
+                               true,
+                               startTime,
+                               A57logPath,
+                               MessageType.Success.GetDescription());
+                            log.txtLog(
+                               TableType.A58.ToString(),
+                               true,
+                               startTime,
+                               A58logPath,
+                               MessageType.Success.GetDescription());
+                        }
+                        catch (Exception ex)
+                        {
+                            dbContextTransaction.Rollback(); //Required according to MSDN article 
+                            log.saveTransferCheck(
+                                TableType.A57.ToString(),
+                                false,
+                                dt,
+                                version,
+                                startTime,
+                                DateTime.Now);
+                            log.saveTransferCheck(
+                                TableType.A58.ToString(),
+                                false,
+                                dt,
+                                version,
+                                startTime,
+                                DateTime.Now);
+                            log.txtLog(
+                                TableType.A57.ToString(),
+                                false,
+                                startTime,
+                                A57logPath,
+                                $"message: {ex.Message}" +
+                                $", inner message {ex.InnerException?.InnerException?.Message}");
+                            log.txtLog(
+                                TableType.A58.ToString(),
+                                false,
+                                startTime,
+                                A58logPath,
+                                $"message: {ex.Message}" +
+                                $", inner message {ex.InnerException?.InnerException?.Message}");
+                        }
                     }
                 }
                 else

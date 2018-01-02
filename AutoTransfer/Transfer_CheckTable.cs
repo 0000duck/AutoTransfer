@@ -23,5 +23,6 @@ namespace AutoTransfer
         public string Create_time { get; set; }
         public string End_date { get; set; }
         public string End_time { get; set; }
+        public string Process { get; set; }
     }
 }
