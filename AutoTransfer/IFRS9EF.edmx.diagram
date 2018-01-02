@@ -21,6 +21,8 @@
         <EntityTypeShape EntityType="IFRS9Model.Bond_Ticker_Info" Width="1.5" PointX="7.375" PointY="12.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Category_Info" Width="1.5" PointX="13.375" PointY="3.75" />
         <EntityTypeShape EntityType="IFRS9Model.Group_Product_Code_Mapping" Width="1.5" PointX="15.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Bond_Rating_Info" Width="1.5" PointX="15.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Bond_Rating_Summary" Width="1.5" PointX="5.375" PointY="4.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

@@ -167,6 +167,13 @@ namespace AutoTransfer.Utility
             return par.ToString("yyyy/MM/dd").stringToStrSql();
         }
 
+        public static string intNToStrSql(this int? par)
+        {
+            if (par.HasValue)
+                return $" {par.Value} ";
+            return " null ";
+        }
+
         #region Double? To Double
 
         /// <summary>

@@ -71,5 +71,6 @@ namespace AutoTransfer
         public string Lots_Old { get; set; }
         public string Portfolio_Name_Old { get; set; }
         public string Security_Name { get; set; }
+        public Nullable<System.DateTime> Origination_Date_Old { get; set; }
     }
 }
