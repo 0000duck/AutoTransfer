@@ -33,11 +33,11 @@ namespace AutoTransfer.Transfer
         public void startTransfer(string year)
         {
             logPath = log.txtLocation(type);
-            IFRS9Entities db = new IFRS9Entities();
             DateTime dt = DateTime.Now;
             List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
             if (!year.IsNullOrWhiteSpace())
             {
+                IFRS9Entities db = new IFRS9Entities();
                 var A84datas = db.Econ_Foreign.AsNoTracking()
                     .Where(x => x.Year_Quartly.StartsWith(year));
                 if (A84datas.Any())
@@ -45,6 +45,8 @@ namespace AutoTransfer.Transfer
                     List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
                     List<string> yearQuartlys = A84datas.Select(x => x.Year_Quartly).ToList();
                     var A82Datas = db.Moody_Quartly_PD_Info.AsNoTracking().Where(x => yearQuartlys.Contains(x.Year_Quartly)).ToList();
+                    var A84pros = new Econ_Foreign().GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList();
+                    var C04pros = new Econ_F_YYYYMMDD().GetType().GetProperties().ToList();
                     A84datas.ToList().ForEach(x =>
                     {
                         Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
@@ -55,10 +57,10 @@ namespace AutoTransfer.Transfer
                             var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
                             if (A82Data != null)
                                 C04Data.PD_Quartly = A82Data.PD;
-                            x.GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList().ForEach(
+                            A84pros.ForEach(
                             y =>
                             {
-                                var p = C04Data.GetType().GetProperties().FirstOrDefault(i => i.Name == y.Name);
+                                var p = C04pros.FirstOrDefault(i => i.Name == y.Name);
                                 if (p != null)
                                 {
                                     p.SetValue(C04Data, y.GetValue(x));
@@ -73,10 +75,10 @@ namespace AutoTransfer.Transfer
                             var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
                             if (A82Data != null)
                                 C04Data.PD_Quartly = A82Data.PD;
-                            x.GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList().ForEach(
+                            A84pros.ForEach(
                                 y =>
                                 {
-                                    var p = C04Data.GetType().GetProperties().FirstOrDefault(i => i.Name == y.Name);
+                                    var p = C04pros.FirstOrDefault(i => i.Name == y.Name);
                                     if (p != null)
                                     {
                                         p.SetValue(C04Data, y.GetValue(x));
@@ -88,8 +90,7 @@ namespace AutoTransfer.Transfer
                     db.Econ_F_YYYYMMDD.AddRange(C04s);
                     try
                     {
-                        db.SaveChanges();
-                        db.Dispose();
+                        db.SaveChanges();                     
                         log.txtLog(
                             type,
                             true,
@@ -107,6 +108,9 @@ namespace AutoTransfer.Transfer
                             $"message: {ex.Message}" +
                             $", inner message {ex.InnerException?.InnerException?.Message}");
                     }
+                    finally {
+                        db.Dispose();
+                    }
                 }
                 else
                 {
@@ -116,6 +120,7 @@ namespace AutoTransfer.Transfer
                      dt,
                      logPath,
                      "找不到A84符合的資料(Econ_Foreign)");
+                    db.Dispose();
                 }
             }
         }
