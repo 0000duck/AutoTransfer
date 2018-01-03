@@ -22,7 +22,6 @@ namespace AutoTransfer.Transfer
         private SetFile setFile = null;
         private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
-        private TableType tableType = TableType.A84;
         private string type = TableType.A84.ToString();
 
         #endregion 共用參數
@@ -112,7 +111,7 @@ namespace AutoTransfer.Transfer
         }
 
         /// <summary>
-        /// SFTP Get A07檔案
+        /// SFTP Get A84檔案
         /// </summary>
         protected void getA84SFTP()
         {
@@ -159,7 +158,8 @@ namespace AutoTransfer.Transfer
             List<Econ_Foreign> A84Datas = new List<Econ_Foreign>();
             string date = startTime.ToString("yyyyMMdd");
             #region A84 Data
-
+            var A84s = db.Econ_Foreign.ToList();
+            var A84pros = new Econ_Foreign().GetType().GetProperties();
             using (StreamReader sr = new StreamReader(Path.Combine(
                 setFile.getC04FilePath(), setFile.getFileName())))
             {
@@ -194,14 +194,15 @@ namespace AutoTransfer.Transfer
                                 DateTime.Now.Date >= dt)
                             {
                                 if (index == "CNFRBAL$ Index") //貿易收支 要排除$
-                                    index = "CNFRBAL Index"; 
+                                    index = "CNFRBAL Index";
+                                index = index.Replace(" ", "_");
                                 var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
-                                var A84 = db.Econ_Foreign.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
+                                var A84 = A84s.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
                                 var A84Data = A84Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
                                 if (A84 != null)
                                 {
-                                    var A84pro = A84.GetType().GetProperties()
-                                         .Where(x => x.Name.Replace("_", " ") == index).FirstOrDefault();
+                                    var A84pro = A84pros
+                                         .Where(x => x.Name == index).FirstOrDefault();
                                     if (A84pro != null)
                                     {
                                         A84pro.SetValue(A84, d);
@@ -211,7 +212,7 @@ namespace AutoTransfer.Transfer
                                 else if (A84Data != null)
                                 {
                                     var A84pro = A84Data.GetType().GetProperties()
-                                         .Where(x => x.Name.Replace("_", " ") == index).FirstOrDefault();
+                                         .Where(x => x.Name == index).FirstOrDefault();
                                     if (A84pro != null)
                                     {
                                         A84pro.SetValue(A84Data, d);
@@ -224,7 +225,7 @@ namespace AutoTransfer.Transfer
                                     Econ_Foreign newData = new Econ_Foreign();
                                     newData.Year_Quartly = YQ;
                                     var A84pro = newData.GetType().GetProperties()
-                                        .Where(x => x.Name.Replace("_", " ") == index).FirstOrDefault();
+                                        .Where(x => x.Name == index).FirstOrDefault();
                                     if (A84pro != null)
                                     {
                                         A84pro.SetValue(newData, d);
@@ -251,7 +252,6 @@ namespace AutoTransfer.Transfer
             {
                 db.Econ_Foreign.AddRange(A84Datas);
                 db.SaveChanges();
-                db.Dispose();
                 log.txtLog(
                     type,
                     true,
@@ -268,6 +268,9 @@ namespace AutoTransfer.Transfer
                     logPath,
                     $"message: {ex.Message}" +
                     $", inner message {ex.InnerException?.InnerException?.Message}");
+            }
+            finally {
+                db.Dispose();
             }
 
             #endregion saveDb
