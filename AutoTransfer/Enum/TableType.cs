@@ -7,6 +7,12 @@ namespace AutoTransfer.Enum
         public enum TableType
         {
             /// <summary>
+            /// 國內總經變數
+            /// </summary>
+            [Description("Econ_Domestic")]
+            A07,
+
+            /// <summary>
             /// 外部信評資料檔
             /// </summary>
             [Description("Rating_Info")]
@@ -37,6 +43,12 @@ namespace AutoTransfer.Enum
             A84,
 
             /// <summary>
+            /// 主權債測試指標_Ticker
+            /// </summary>
+            [Description("Gov_Info_Ticker")]
+            A94,
+
+            /// <summary>
             /// 前瞻性國外總經資料
             /// </summary>
             [Description("Econ_F_YYYYMMDD")]
@@ -47,12 +59,6 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("Econ_D_YYYYMMDD")]
             C03Mortgage,
-
-            /// <summary>
-            /// 國內總經變數
-            /// </summary>
-            [Description("Econ_Domestic")]
-            A07,
         }
     }
 }

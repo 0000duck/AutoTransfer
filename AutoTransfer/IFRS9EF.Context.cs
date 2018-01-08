@@ -33,9 +33,7 @@ namespace AutoTransfer
         public virtual DbSet<Bond_Account_Info> Bond_Account_Info { get; set; }
         public virtual DbSet<Econ_Domestic> Econ_Domestic { get; set; }
         public virtual DbSet<Econ_D_YYYYMMDD> Econ_D_YYYYMMDD { get; set; }
-        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
         public virtual DbSet<Moody_Quartly_PD_Info> Moody_Quartly_PD_Info { get; set; }
-        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
         public virtual DbSet<Econ_F_YYYYMMDD> Econ_F_YYYYMMDD { get; set; }
         public virtual DbSet<Bond_Ticker_Info> Bond_Ticker_Info { get; set; }
         public virtual DbSet<Bond_Category_Info> Bond_Category_Info { get; set; }
@@ -43,5 +41,9 @@ namespace AutoTransfer
         public virtual DbSet<Bond_Rating_Info> Bond_Rating_Info { get; set; }
         public virtual DbSet<Bond_Rating_Summary> Bond_Rating_Summary { get; set; }
         public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
+        public virtual DbSet<Gov_Info_Ticker> Gov_Info_Ticker { get; set; }
+        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
+        public virtual DbSet<Loan_Account_Info> Loan_Account_Info { get; set; }
+        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
     }
 }
