@@ -18,6 +18,8 @@ namespace AutoTransfer.CreateFile
         private static string A07Get = ConfigurationManager.AppSettings["A07Get"];
         private static string A94Put = ConfigurationManager.AppSettings["A94Put"];
         private static string A94Get = ConfigurationManager.AppSettings["A94Get"];
+        private static string A96Put = ConfigurationManager.AppSettings["A96Put"];
+        private static string A96Get = ConfigurationManager.AppSettings["A96Get"];
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
         private static string flag = ConfigurationManager.AppSettings["PROGRAMFLAG"];
         private static string startupPath = Directory.GetCurrentDirectory();
@@ -148,6 +150,18 @@ namespace AutoTransfer.CreateFile
         {
             return A94Put.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "A94Put") : A94Put;
+        }
+
+        public string getA96FilePath()
+        {
+            return A96Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96Get") : A96Get;
+        }
+
+        public string putA96FilePath()
+        {
+            return A96Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96Put") : A96Put;
         }
     }
 }
