@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -49,6 +50,25 @@ namespace AutoTransfer.Utility
         }
 
         #endregion save txtlog
+
+        /// <summary>
+        /// 執行 txtlog & sql log
+        /// </summary>
+        /// <param name="tableName">table名</param>
+        /// <param name="flag">成功或失敗</param>
+        /// <param name="reportDate">基準日</param>
+        /// <param name="start">開始時間</param>
+        /// <param name="end">結束時間</param>
+        /// <param name="version">版本</param>
+        /// <param name="folderPath">檔案路徑</param>
+        /// <param name="detail">內容</param>
+        public void bothLog(string tableName, bool flag, DateTime reportDate, DateTime start, DateTime end, int version, string folderPath, string detail = null)
+        {
+            saveTransferCheck(tableName, flag, reportDate, version, start, end);
+            if (tableName == "C03")
+                tableName = TableType.C03Mortgage.ToString();
+            txtLog(tableName, flag, start, folderPath, detail);
+        }
 
         public string txtLocation(string fileName)
         {
@@ -125,49 +145,56 @@ namespace AutoTransfer.Utility
             DateTime start,
             DateTime end)
         {
-            IFRS9Entities db = new IFRS9Entities();
-            if (flag && db.Transfer_CheckTable.Any(x =>
-             fileName != TableType.A53.ToString() &&
-             x.ReportDate == reportDate &&
-             x.Version == version &&
-             x.File_Name == fileName &&
-             x.TransferType == "Y"))
-                return false;
-            if (EnumUtil.GetValues<TableType>()
-                .Select(x => x.ToString()).ToList().Contains(fileName))
+            List<string> resetTable = new List<string>()
             {
-                if (fileName.Equals("A53"))
-                {
-                    var A53 = db.Transfer_CheckTable
-                        .Where(x => x.File_Name == "A53" &&
-                                    x.ReportDate == reportDate).FirstOrDefault();
-                    if(A53 != null)
-                        db.Transfer_CheckTable.Remove(A53);
-                }                  
-                db.Transfer_CheckTable.Add(new Transfer_CheckTable()
-                {
-                    File_Name = fileName,
-                    ReportDate = reportDate,
-                    Version = version,
-                    TransferType = flag ? "Y" : "N",
-                    Create_date = start.ToString("yyyyMMdd"),
-                    Create_time = start.ToString("HH:mm:ss"),
-                    End_date = end.ToString("yyyyMMdd"),
-                    End_time = end.ToString("HH:mm:ss"),
-                    Process = "Plan"
-                });
-                try
-                {
-                    db.SaveChanges();                   
-                    return true;
-                }
-                catch
-                {
+                TableType.A53.ToString(),
+                TableType.A84.ToString(),
+                TableType.A07.ToString(),
+                "C03",
+                TableType.C04.ToString()
+            };
+            using (IFRS9Entities db = new IFRS9Entities())
+            {
+                if (flag && db.Transfer_CheckTable.AsNoTracking().Any(x =>
+                               !resetTable.Contains(fileName) &&
+                               x.ReportDate == reportDate &&
+                               x.Version == version &&
+                               x.File_Name == fileName &&
+                               x.TransferType == "Y"))
                     return false;
-                }
-                finally
+                if (fileName == "C03" || EnumUtil.GetValues<TableType>()
+                    .Select(x => x.ToString()).ToList().Contains(fileName))
                 {
-                    db.Dispose();
+                    if (resetTable.Contains(fileName))
+                    {
+                        var updateTable = db.Transfer_CheckTable
+                            .Where(x => x.File_Name == fileName &&
+                                        x.ReportDate == reportDate &&
+                                        x.TransferType == "Y").FirstOrDefault();
+                        if (updateTable != null)
+                            updateTable.TransferType = "R";
+                    }
+                    db.Transfer_CheckTable.Add(new Transfer_CheckTable()
+                    {
+                        File_Name = fileName,
+                        ReportDate = reportDate,
+                        Version = version,
+                        TransferType = flag ? "Y" : "N",
+                        Create_date = start.ToString("yyyyMMdd"),
+                        Create_time = start.ToString("HH:mm:ss"),
+                        End_date = end.ToString("yyyyMMdd"),
+                        End_time = end.ToString("HH:mm:ss"),
+                        Process = "Plan"
+                    });
+                    try
+                    {
+                        db.SaveChanges();
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
                 }
             }
             return false;

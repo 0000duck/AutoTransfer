@@ -58,20 +58,16 @@ namespace AutoTransfer.Transfer
                out reportDateDt))
             {
                 db.Dispose();
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
-                    logPath,
-                    MessageType.DateTime_Format_Fail.GetDescription()
-                    );
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
-                    1, //A53無版本 (default為1)
                     startTime,
-                    DateTime.Now);
+                    DateTime.Now,
+                    1,
+                    logPath,
+                    MessageType.DateTime_Format_Fail.GetDescription()
+                    );
             }
             
             var A41 = db.Bond_Account_Info.AsNoTracking()
@@ -85,22 +81,18 @@ namespace AutoTransfer.Transfer
                !check || verInt == 0)
             {
                 db.Dispose();
-                log.saveTransferCheck(
-                    type,
-                    false,
-                    reportDateDt,
-                    1, //A53只有一版 (default為1)
-                    startTime,
-                    DateTime.Now);
                 List<string> errs = new List<string>();
                 if (!A41)
                     errs.Add(MessageType.not_Find_Any.GetDescription("A41"));
                 if (!check || verInt == 0)
                     errs.Add(MessageType.transferError.GetDescription());
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     string.Join(",", errs)
                     );
@@ -128,19 +120,16 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    MessageType.Create_Sample_File_Fail.GetDescription());
+                    MessageType.Create_Sample_File_Fail.GetDescription()
+                    );
             }
         }
 
@@ -157,19 +146,16 @@ namespace AutoTransfer.Transfer
                  out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    MessageType.Put_Sample_File_Fail.GetDescription());
+                    MessageType.Put_Sample_File_Fail.GetDescription()
+                    );
             }
             else //success (wait 20 min and get data)
             {
@@ -195,19 +181,16 @@ namespace AutoTransfer.Transfer
                 out error);
             if (!error.IsNullOrWhiteSpace())
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    MessageType.Get_Sample_File_Fail.GetDescription());
+                    MessageType.Get_Sample_File_Fail.GetDescription()
+                    );
             }
             else
             {
@@ -463,37 +446,31 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                         }
                         else
                         {
-                            log.saveTransferCheck(
+                            log.bothLog(
                                 type,
                                 false,
                                 reportDateDt,
+                                startTime,
+                                DateTime.Now,
                                 1,
-                                startTime,
-                                DateTime.Now);
-                            log.txtLog(
-                                type,
-                                false,
-                                startTime,
                                 logPath,
-                                MessageType.Create_Commpany_File_Fail.GetDescription());
+                                MessageType.Create_Commpany_File_Fail.GetDescription()
+                                );
                         }
                     }
                     catch(Exception ex)
                     {
-                        log.saveTransferCheck(
+                        log.bothLog(
                             type,
                             false,
                             reportDateDt,
+                            startTime,
+                            DateTime.Now,
                             1,
-                            startTime,
-                            DateTime.Now);
-                        log.txtLog(
-                            type,
-                            false,
-                            startTime,
                             logPath,
                             $"message: {ex.Message}" +
-                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                            $", inner message {ex.InnerException?.InnerException?.Message}"
+                            );
                     }
                 }
                 #endregion
@@ -512,19 +489,16 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                 setFile.putCommpanyFileName(), out error);
             if (!error.IsNullOrWhiteSpace()) //fail
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    MessageType.Put_Commpany_File_Fail.GetDescription());
+                    MessageType.Put_Commpany_File_Fail.GetDescription()
+                    );
             }
             else //success (wait 20 min and get data)
             {
@@ -551,19 +525,16 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                  out error);
             if (!error.IsNullOrWhiteSpace())
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    MessageType.Get_Commpanye_File_Fail.GetDescription());
+                    MessageType.Get_Commpanye_File_Fail.GetDescription()
+                    );
             }
             else
             {
@@ -1107,38 +1078,32 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                             db.Database.ExecuteSqlCommand(sql.ToString());
                         }
                         dbContextTransaction.Commit();
-                        log.saveTransferCheck(
+                        log.bothLog(
                             type,
                             true,
                             reportDateDt,
+                            startTime,
+                            DateTime.Now,
                             1,
-                            startTime,
-                            DateTime.Now);
-                        log.txtLog(
-                            type,
-                            true,
-                            startTime,
                             logPath,
-                            MessageType.Success.GetDescription());
+                            MessageType.Success.GetDescription()
+                            );
                         new CompleteEvent().saveDb(reportDateDt, verInt);
                     }
                     catch (Exception ex)
                     {
                         dbContextTransaction.Rollback(); //Required according to MSDN article 
-                        log.saveTransferCheck(
+                        log.bothLog(
                             type,
                             false,
                             reportDateDt,
+                            startTime,
+                            DateTime.Now,
                             1,
-                            startTime,
-                            DateTime.Now);
-                        log.txtLog(
-                            type,
-                            false,
-                            startTime,
                             logPath,
                             $"message: {ex.Message}" +
-                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                            $", inner message {ex.InnerException?.InnerException?.Message}"
+                            );
                     }
                     finally
                     {
@@ -1148,20 +1113,17 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             }
             else
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     type,
                     false,
                     reportDateDt,
+                    startTime,
+                    DateTime.Now,
                     1,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    type,
-                    false,
-                    startTime,
                     logPath,
-                    string.Format("{0} ({1}) {2}", TableType.A53.GetDescription() ,
-                    TableType.A53.ToString(),"回傳文件沒有新增任何資料"));
+                    string.Format("{0} ({1}) {2}", TableType.A53.GetDescription(),
+                    TableType.A53.ToString(), "回傳文件沒有新增任何資料")
+                    );
             }
             #endregion saveDb
         }

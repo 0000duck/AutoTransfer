@@ -1069,125 +1069,101 @@ INSERT INTO [Bond_Rating_Info]
                             db.Database.ExecuteSqlCommand(sql2);
                             dbContextTransaction.Commit();
                             db.Dispose();
-                            log.saveTransferCheck(
+                            log.bothLog(
                                 TableType.A57.ToString(),
                                 true,
                                 dt,
-                                version,
                                 startTime,
-                                DateTime.Now);
-                            log.saveTransferCheck(
+                                DateTime.Now,
+                                version,
+                                A57logPath,
+                                MessageType.Success.GetDescription()
+                                );
+                            log.bothLog(
                                 TableType.A58.ToString(),
                                 true,
                                 dt,
-                                version,
                                 startTime,
-                                DateTime.Now);
-                            log.txtLog(
-                               TableType.A57.ToString(),
-                               true,
-                               startTime,
-                               A57logPath,
-                               MessageType.Success.GetDescription());
-                            log.txtLog(
-                               TableType.A58.ToString(),
-                               true,
-                               startTime,
-                               A58logPath,
-                               MessageType.Success.GetDescription());
+                                DateTime.Now,
+                                version,
+                                A58logPath,
+                                MessageType.Success.GetDescription()
+                                );
                         }
                         catch (Exception ex)
                         {
                             dbContextTransaction.Rollback(); //Required according to MSDN article 
-                            log.saveTransferCheck(
+                            log.bothLog(
                                 TableType.A57.ToString(),
                                 false,
                                 dt,
+                                startTime,
+                                DateTime.Now,
                                 version,
-                                startTime,
-                                DateTime.Now);
-                            log.saveTransferCheck(
-                                TableType.A58.ToString(),
-                                false,
-                                dt,
-                                version,
-                                startTime,
-                                DateTime.Now);
-                            log.txtLog(
-                                TableType.A57.ToString(),
-                                false,
-                                startTime,
                                 A57logPath,
                                 $"message: {ex.Message}" +
-                                $", inner message {ex.InnerException?.InnerException?.Message}");
-                            log.txtLog(
+                                $", inner message {ex.InnerException?.InnerException?.Message}"
+                                );
+                            log.bothLog(
                                 TableType.A58.ToString(),
                                 false,
+                                dt,
                                 startTime,
+                                DateTime.Now,
+                                version,
                                 A58logPath,
                                 $"message: {ex.Message}" +
-                                $", inner message {ex.InnerException?.InnerException?.Message}");
+                                $", inner message {ex.InnerException?.InnerException?.Message}"
+                                );
                         }
                     }
                 }
                 else
                 {
-                    log.saveTransferCheck(
+                    log.bothLog(
                         TableType.A57.ToString(),
                         false,
                         dt,
+                        startTime,
+                        DateTime.Now,
                         version,
-                        startTime,
-                        DateTime.Now);
-                    log.saveTransferCheck(
-                        TableType.A58.ToString(),
-                        false,
-                        dt,
-                        version,
-                        startTime,
-                        DateTime.Now);
-                    log.txtLog(
-                        TableType.A57.ToString(),
-                        false,
-                        startTime,
                         A57logPath,
-                        MessageType.not_Find_Any.GetDescription("A41"));
-                    log.txtLog(
+                        MessageType.not_Find_Any.GetDescription("A41")
+                        );
+                    log.bothLog(
                         TableType.A58.ToString(),
                         false,
+                        dt,
                         startTime,
+                        DateTime.Now,
+                        version,
                         A58logPath,
-                        MessageType.not_Find_Any.GetDescription("A41"));
+                        MessageType.not_Find_Any.GetDescription("A41")
+                        );
                 }
             }
             else
             {
-                log.saveTransferCheck(
+                log.bothLog(
                     TableType.A57.ToString(),
                     false,
                     dt,
+                    startTime,
+                    DateTime.Now,
                     version,
-                    startTime,
-                    DateTime.Now);
-                log.saveTransferCheck(
-                    TableType.A58.ToString(),
-                    false,
-                    dt,
-                    version,
-                    startTime,
-                    DateTime.Now);
-                log.txtLog(
-                    TableType.A57.ToString(),
-                    false,
-                    startTime,
                     A57logPath,
-                    MessageType.transferError.GetDescription());
-                log.txtLog(
+                    MessageType.transferError.GetDescription()
+                    );
+                log.bothLog(
                     TableType.A58.ToString(),
                     false,
+                    dt,
                     startTime,
+                    DateTime.Now,
+                    version,
                     A58logPath,
-                    MessageType.transferError.GetDescription());
+                    MessageType.transferError.GetDescription()
+                    );
             }
         }
 
@@ -1200,6 +1176,9 @@ INSERT INTO [Bond_Rating_Info]
         {
             string logPath = log.txtLocation(TableType.C03Mortgage.ToString());
             DateTime startTime = DateTime.Now;
+            DateTime dt = DateTime.MinValue;
+            DateTime.TryParseExact(todayDate, "yyyyMMdd", null,
+                      System.Globalization.DateTimeStyles.AllowWhiteSpaces, out dt);
 
             try
             {
@@ -1220,21 +1199,33 @@ INSERT INTO [Bond_Rating_Info]
 
                 if (!A06Data.Any())
                 {
-                    log.txtLog(
-                       TableType.C03Mortgage.ToString(),
-                       false,
-                       startTime,
-                       logPath,
-                       "Loan_default_Info 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料");
+                    #region 加入 sql transferCheck by Mark 2018/01/09
+                    log.bothLog(
+                        "C03",
+                        false,
+                        dt,
+                        startTime,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        "Loan_default_Info 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料"
+                        );
+                    #endregion
                 }
                 else if (!A07Data.Any())
                 {
-                    log.txtLog(
-                       TableType.C03Mortgage.ToString(),
-                       false,
-                       startTime,
-                       logPath,
-                       "Econ_Domestic 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料");
+                    #region 加入 sql transferCheck by Mark 2018/01/09
+                    log.bothLog(
+                        "C03",
+                        false,
+                        dt,
+                        startTime,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        "Econ_Domestic 無 " + startYearQuartly + " ~ " + endYearQuartly + " 的資料"
+                        );
+                    #endregion
                 }
                 else
                 {
@@ -1242,12 +1233,18 @@ INSERT INTO [Bond_Rating_Info]
                     Group_Product_Code_Mapping gpcm = db.Group_Product_Code_Mapping.Where(x => x.Group_Product_Code.StartsWith(productCode)).FirstOrDefault();
                     if (gpcm == null)
                     {
-                        log.txtLog(
-                           TableType.C03Mortgage.ToString(),
-                           false,
-                           startTime,
-                           logPath,
-                           "Group_Product_Code_Mapping 無房貸的 Product_Code");
+                        #region 加入 sql transferCheck by Mark 2018/01/09
+                        log.bothLog(
+                            "C03",
+                            false,
+                            dt,
+                            startTime,
+                            DateTime.Now,
+                            1,
+                            logPath,
+                            "Group_Product_Code_Mapping 無房貸的 Product_Code"
+                            );
+                        #endregion
                     }
                     else
                     {
@@ -1305,24 +1302,35 @@ INSERT INTO [Bond_Rating_Info]
 
                         db.Econ_D_YYYYMMDD.AddRange(addData);
                         db.SaveChanges();
-
-                        log.txtLog(
-                           TableType.C03Mortgage.ToString(),
-                           true,
-                           startTime,
-                           logPath,
-                           MessageType.Success.GetDescription());
+                        #region 加入 sql transferCheck by Mark 2018/01/09
+                        log.bothLog(
+                            "C03",
+                            true,
+                            dt,
+                            startTime,
+                            DateTime.Now,
+                            1,
+                            logPath,
+                            MessageType.Success.GetDescription()
+                            );
+                        #endregion
                     }
                 }
             }
             catch (Exception ex)
             {
-                log.txtLog(
-                   TableType.C03Mortgage.ToString(),
-                   false,
-                   startTime,
-                   logPath,
-                   ex.Message);
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
+                    "C03",
+                    false,
+                    dt,
+                    startTime,
+                    DateTime.Now,
+                    1,
+                    logPath,
+                    ex.Message
+                    );
+                #endregion
             }
         }
         #endregion

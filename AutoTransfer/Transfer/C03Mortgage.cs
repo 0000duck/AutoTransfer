@@ -34,13 +34,18 @@ namespace AutoTransfer.Transfer
                out reportDateDt))
             {
                 db.Dispose();
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     MessageType.DateTime_Format_Fail.GetDescription()
-                );
+                    );
+                #endregion
             }
             else
             {
