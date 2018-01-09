@@ -90,23 +90,35 @@ namespace AutoTransfer.Transfer
                     db.Econ_F_YYYYMMDD.AddRange(C04s);
                     try
                     {
-                        db.SaveChanges();                     
-                        log.txtLog(
+                        db.SaveChanges();
+                        #region 加入 sql transferCheck by Mark 2018/01/09
+                        log.bothLog(
                             type,
                             true,
                             dt,
+                            dt,
+                            DateTime.Now,
+                            1,
                             logPath,
-                            MessageType.Success.GetDescription());
+                            MessageType.Success.GetDescription()
+                            );
+                        #endregion
                     }
                     catch (DbUpdateException ex)
                     {
-                        log.txtLog(
+                        #region 加入 sql transferCheck by Mark 2018/01/09
+                        log.bothLog(
                             type,
                             false,
                             dt,
+                            dt,
+                            DateTime.Now,
+                            1,
                             logPath,
                             $"message: {ex.Message}" +
-                            $", inner message {ex.InnerException?.InnerException?.Message}");
+                            $", inner message {ex.InnerException?.InnerException?.Message}"
+                            );
+                        #endregion
                     }
                     finally {
                         db.Dispose();
@@ -114,13 +126,18 @@ namespace AutoTransfer.Transfer
                 }
                 else
                 {
-                    log.txtLog(
-                     type,
-                     false,
-                     dt,
-                     logPath,
-                     "找不到A84符合的資料(Econ_Foreign)");
-                    db.Dispose();
+                    #region 加入 sql transferCheck by Mark 2018/01/09
+                    log.bothLog(
+                        type,
+                        false,
+                        dt,
+                        dt,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        "找不到A84符合的資料(Econ_Foreign)"
+                        );
+                    #endregion
                 }
             }
         }

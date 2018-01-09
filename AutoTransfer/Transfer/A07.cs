@@ -40,13 +40,18 @@ namespace AutoTransfer.Transfer
                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
                out reportDateDt))
             {
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     MessageType.DateTime_Format_Fail.GetDescription()
                     );
+                #endregion
             }
             else
             {
@@ -70,12 +75,18 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    MessageType.Create_File_Fail.GetDescription(type));
+                    MessageType.Create_File_Fail.GetDescription(type)
+                    );
+                #endregion
             }
         }
 
@@ -94,12 +105,18 @@ namespace AutoTransfer.Transfer
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    error);
+                    error
+                    );
+                #endregion
             }
             else //success (wait 20 min and get data)
             {
@@ -131,12 +148,18 @@ namespace AutoTransfer.Transfer
 
             if (!error.IsNullOrWhiteSpace())
             {
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    error);
+                    error
+                    );
+                #endregion
             }
             else
             {
@@ -248,22 +271,34 @@ namespace AutoTransfer.Transfer
                 db.Econ_Domestic.AddRange(A07Datas);
                 db.SaveChanges();
                 db.Dispose();
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     true,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    MessageType.Success.GetDescription());
+                    MessageType.Success.GetDescription()
+                    );
+                #endregion
             }
             catch (DbUpdateException ex)
             {
-                log.txtLog(
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     $"message: {ex.Message}" +
-                    $", inner message {ex.InnerException?.InnerException?.Message}");
+                    $", inner message {ex.InnerException?.InnerException?.Message}"
+                    );
+                #endregion
             }
             #endregion saveDb
         }
