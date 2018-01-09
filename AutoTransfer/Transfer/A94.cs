@@ -21,8 +21,8 @@ namespace AutoTransfer.Transfer
         private SetFile setFile = null;
         private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
-        private TableType tableType = TableType.A07;
-        private string type = TableType.A07.ToString();
+        private TableType tableType = TableType.A94;
+        private string type = TableType.A94.ToString();
         #endregion 共用參數
 
         /// <summary>
@@ -86,11 +86,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Put(string.Empty,
-                 setFile.putA94FilePath(),
-                 setFile.putFileName(),
-                 out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //    .Put(string.Empty,
+            //     setFile.putA94FilePath(),
+            //     setFile.putFileName(),
+            //     out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -103,7 +103,7 @@ namespace AutoTransfer.Transfer
             }
             else //success (wait 20 min and get data)
             {
-                Thread.Sleep(20 * 60 * 1000);
+                //Thread.Sleep(20 * 60 * 1000);
                 getA94SFTP();
             }
         }
@@ -117,11 +117,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            .Get(string.Empty,
-                 setFile.getA94FilePath(),
-                 setFile.getGZFileName(),
-                 out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //.Get(string.Empty,
+            //     setFile.getA94FilePath(),
+            //     setFile.getGZFileName(),
+            //     out error);
 
             if (!error.IsNullOrWhiteSpace())
             {
@@ -140,122 +140,269 @@ namespace AutoTransfer.Transfer
                 setFile.getA94FilePath(), setFile.getFileName());
                 Extension.Decompress(sourceFileName, destFileName);
 
-                //DataToDb();
+                DataToDb();
             }
         }
 
         /// <summary>
         /// Db save
         /// </summary>
-        //protected void DataToDb()
-        //{
-        //    IFRS9Entities db = new IFRS9Entities();
-        //    List<Econ_Domestic> A07Datas = new List<Econ_Domestic>();
-        //    string date = startTime.ToString("yyyyMMdd");
+        protected void DataToDb()
+        {
+            IFRS9Entities db = new IFRS9Entities();
 
-        //    using (StreamReader sr = new StreamReader(Path.Combine(
-        //        setFile.getA07FilePath(), setFile.getFileName())))
-        //    {
-        //        bool flag = false; //判斷是否為要讀取的資料行數
-        //        string line = string.Empty;
-        //        while ((line = sr.ReadLine()) != null)
-        //        {
-        //            if ("END-OF-DATA".Equals(line))
-        //            {
-        //                flag = false;
-        //            }
+            List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
+            List<Gov_Info_Ticker> A94Datas = new List<Gov_Info_Ticker>();
+            Gov_Info_Ticker A94 = null;
+            using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getA94FilePath(), setFile.getFileName())))
+            {
 
-        //            if (flag) //找到的資料
-        //            {
-        //                var arr = line.Split('|');
-        //                //arr[0]  ex: TWSE Index
-        //                //arr[1]  ex: 03/31/2016
-        //                //arr[2]  ex: 8744.83
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if ("END-OF-DATA".Equals(line))
+                    {
+                        flag = false;
+                    }
 
-        //                if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
-        //                    !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
-        //                {
-        //                    Econ_Domestic ef = new Econ_Domestic();
+                    if (flag) //找到的資料
+                    {
+                        var arr = line.Split('|');
+                        //arr[0]  ex: IGS%TUR Index
+                        //arr[1]  ex: 12/30/2016
+                        //arr[2]  ex: 28.13
 
-        //                    DateTime dt = DateTime.MinValue;
-        //                    double d = 0d;
-        //                    string index = arr[0].Trim();
+                        if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        {
+                            string index = arr[0].Trim();
 
-        //                    if (arr[2] != null && double.TryParse(arr[2], out d) &&
-        //                        DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
-        //                        System.Globalization.DateTimeStyles.AllowWhiteSpaces,
-        //                        out dt) && !index.IsNullOrWhiteSpace())
-        //                    {
-        //                        var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
-        //                        var A07 = db.Econ_Domestic.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
-        //                        var A07Data = A07Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
-        //                        if (A07 != null)
-        //                        {
-        //                            var A07pro = A07.GetType().GetProperties()
-        //                                 .Where(x => x.Name.Replace("_", " ") == index.Replace("_", " ")).FirstOrDefault();
-        //                            if (A07pro != null)
-        //                            {
-        //                                A07pro.SetValue(A07, d);
-        //                                A07.Date = date;
-        //                            }
-        //                        }
-        //                        else if (A07Data != null)
-        //                        {
-        //                            var A07pro = A07Data.GetType().GetProperties()
-        //                                 .Where(x => x.Name.Replace("_", " ") == index.Replace("_", " ")).FirstOrDefault();
-        //                            if (A07pro != null)
-        //                            {
-        //                                A07pro.SetValue(A07Data, d);
-        //                                A07Data.Date = date;
-        //                            }
-        //                        }
-        //                        else
-        //                        {
-        //                            Econ_Domestic newData = new Econ_Domestic();
-        //                            newData.Year_Quartly = YQ;
-        //                            var A07pro = newData.GetType().GetProperties()
-        //                                .Where(x => x.Name.Replace("_", " ") == index.Replace("_", " ")).FirstOrDefault();
-        //                            if (A07pro != null)
-        //                            {
-        //                                A07pro.SetValue(newData, d);
-        //                                newData.Date = date;
-        //                            }
+                            if (index.IsNullOrWhiteSpace() == false)
+                            {
+                                var Country = GetCountry(index);
+                                var ColumnName = GetColumnName(index);
 
-        //                            A07Datas.Add(newData);
-        //                        }
-        //                    }
-        //                }
-        //            }
+                                if (Country != "" && ColumnName != "")
+                                {
+                                    A94 = listA94.FirstOrDefault(x => x.Country == Country);
+                                    var A94Data = A94Datas.FirstOrDefault(x => x.Country == Country);
 
-        //            if ("START-OF-DATA".Equals(line))
-        //            {
-        //                flag = true;
-        //            }
-        //        }
-        //    }
+                                    if (A94 != null)
+                                    {
+                                        var A94pro = A94.GetType().GetProperties()
+                                                     .Where(x => x.Name == ColumnName)
+                                                     .FirstOrDefault();
+                                        if (A94pro != null)
+                                        {
+                                            A94pro.SetValue(A94, arr[2]);
+                                        }
+                                    }
+                                    else if (A94Data != null)
+                                    {
+                                        var A94pro = A94Data.GetType().GetProperties()
+                                                     .Where(x => x.Name == ColumnName)
+                                                     .FirstOrDefault();
+                                        if (A94pro != null)
+                                        {
+                                            A94pro.SetValue(A94Data, arr[2]);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Gov_Info_Ticker newData = new Gov_Info_Ticker();
+                                        newData.Country = Country;
+                                        var A94pro = newData.GetType().GetProperties()
+                                                     .Where(x => x.Name == ColumnName)
+                                                     .FirstOrDefault();
+                                        if (A94pro != null)
+                                        {
+                                            A94pro.SetValue(newData, arr[2]);
+                                        }
 
-        //    try
-        //    {
-        //        db.Econ_Domestic.AddRange(A07Datas);
-        //        db.SaveChanges();
-        //        db.Dispose();
-        //        log.txtLog(
-        //            type,
-        //            true,
-        //            startTime,
-        //            logPath,
-        //            MessageType.Success.GetDescription());
-        //    }
-        //    catch (DbUpdateException ex)
-        //    {
-        //        log.txtLog(
-        //            type,
-        //            false,
-        //            startTime,
-        //            logPath,
-        //            $"message: {ex.Message}" +
-        //            $", inner message {ex.InnerException?.InnerException?.Message}");
-        //    }
-        //}
+                                        A94Datas.Add(newData);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if ("START-OF-DATA".Equals(line))
+                    {
+                        flag = true;
+                    }
+                }
+            }
+
+            try
+            {
+                db.Gov_Info_Ticker.AddRange(A94Datas);
+                db.SaveChanges();
+                db.Dispose();
+                log.txtLog(
+                    type,
+                    true,
+                    startTime,
+                    logPath,
+                    MessageType.Success.GetDescription());
+            }
+            catch (Exception ex)
+            {
+                log.txtLog(
+                    type,
+                    false,
+                    startTime,
+                    logPath,
+                    $"message: {ex.Message}" +
+                    $", inner message {ex.InnerException?.InnerException?.Message}");
+            }
+        }
+
+        private string GetCountry (string inputString)
+        {
+            string country = "";
+
+            switch (inputString)
+            {
+                case "IGS%TUR Index":
+                case "HELDTRDS Index":
+                case "TUIRCBFX Index":
+                case "EHGDTRY Index":
+                    country = "土耳其";
+                    break;
+                case "IGS%BRA Index":
+                case "HELDBRDS Index":
+                case "BZIDFCUR Index":
+                case "EHGDBRY Index":
+                    country = "巴西";
+                    break;
+                case "IGS%ISR Index":
+                case "HELDILDS Index":
+                case "ISFCBAL Index":
+                case "EHGDILY Index":
+                    country = "以色列";
+                    break;
+                case "IGS%QAT Index":
+                case "453.055 Index":
+                case "EHGDQAY Index":
+                    country = "卡達";
+                    break;
+                case "IGS%IND Index":
+                case "HELDIDDS Index":
+                case "IDGFA Index":
+                case "EHGDIDY Index":
+                    country = "印尼";
+                    break;
+                case "IGS%SAU Index":
+                case "456.055 Index":
+                case "SRGDPCYY Index":
+                    country = "沙烏地阿拉伯";
+                    break;
+                case "IGS%RUS Index":
+                case "HELDRUDS Index":
+                case "RUFGGFML Index":
+                case "EHGDRUY Index":
+                    country = "俄羅斯";
+                    break;
+                case "IGS%ZAF Index":
+                case "HELDZA59 Index":
+                case "SANOGR$ Index":
+                case "EHGDZAY Index":
+                    country = "南非";
+                    break;
+                case "IGS%MEX Index":
+                case "HELDMXS Index":
+                case "MXIRINUS Index":
+                case "EHGDMXY Index":
+                    country = "墨西哥";
+                    break;
+                case "IGS%CHL Index":
+                case "HELDCLS Index":
+                case "CHMRRSRV Index":
+                case "EHGDCLY Index":
+                    country = "智利";
+                    break;
+                case "IGS%PHL Index":
+                case "HELDPHS Index":
+                case "PHIRTTL Index":
+                case "EHGDPHY Index":
+                    country = "菲律賓";
+                    break;
+                case "IGS%USA Index":
+                case "HELDUSDS Index":
+                case "WIRAUS Index":
+                case "EHGDUSY Index":
+                    country = "美國";
+                    break;
+            }
+
+            return country;
+        }
+
+        private string GetColumnName(string inputString)
+        {
+            string columnName = "";
+
+            switch (inputString)
+            {
+                case "IGS%TUR Index":
+                case "IGS%BRA Index":
+                case "IGS%ISR Index":
+                case "IGS%QAT Index":
+                case "IGS%IND Index":
+                case "IGS%SAU Index":
+                case "IGS%RUS Index":
+                case "IGS%ZAF Index":
+                case "IGS%MEX Index":
+                case "IGS%CHL Index":
+                case "IGS%PHL Index":
+                case "IGS%USA Index":
+                    columnName = "IGS_Index_Map";
+                    break;
+                case "HELDTRDS Index":
+                case "HELDBRDS Index":
+                case "HELDILDS Index":
+                case "HELDIDDS Index":
+                case "HELDRUDS Index":
+                case "HELDZA59 Index":
+                case "HELDMXS Index":
+                case "HELDCLS Index":
+                case "HELDPHS Index":
+                case "HELDUSDS Index":
+                    columnName = "Short_term_Debt_Map";
+                    break;
+                case "TUIRCBFX Index":
+                case "BZIDFCUR Index":
+                case "ISFCBAL Index":
+                case "453.055 Index":
+                case "IDGFA Index":
+                case "456.055 Index":
+                case "RUFGGFML Index":
+                case "SANOGR$ Index":
+                case "MXIRINUS Index":
+                case "CHMRRSRV Index":
+                case "PHIRTTL Index":
+                case "WIRAUS Index":
+                    columnName = "Foreign_Exchange_Map";
+                    break;
+                case "EHGDTRY Index":
+                case "EHGDBRY Index":
+                case "EHGDILY Index":
+                case "EHGDQAY Index":
+                case "EHGDIDY Index":
+                case "SRGDPCYY Index":
+                case "EHGDRUY Index":
+                case "EHGDZAY Index":
+                case "EHGDMXY Index":
+                case "EHGDCLY Index":
+                case "EHGDPHY Index":
+                case "EHGDUSY Index":
+                    columnName = "GDP_Yearly_Map";
+                    break;
+            }
+
+            return columnName;
+        }
     }
 }

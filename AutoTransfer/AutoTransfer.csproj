@@ -76,6 +76,7 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="CreateFile\CreateA94File.cs" />
+    <Compile Include="CreateFile\CreateA96File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
     <Compile Include="Econ_Domestic.cs">
