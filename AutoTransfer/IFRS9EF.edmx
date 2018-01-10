@@ -521,6 +521,26 @@
           <Property Name="CNFREXPY_Index" Type="float" />
           <Property Name="GRFIDEBT_Index" Type="float" />
         </EntityType>
+        <EntityType Name="Gov_Info_Monthly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="date" Nullable="false" />
+          <Property Name="Country" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Foreign_Exchange" Type="float" />
+          <Property Name="Foreign_Exchange_Map" Type="varchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Quartly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="date" Nullable="false" />
+          <Property Name="Country" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="Short_term_Debt" Type="float" />
+          <Property Name="Short_term_Debt_Map" Type="varchar" MaxLength="20" />
+        </EntityType>
         <EntityType Name="Gov_Info_Ticker">
           <Key>
             <PropertyRef Name="Country" />
@@ -529,6 +549,19 @@
           <Property Name="IGS_Index_Map" Type="varchar" MaxLength="20" />
           <Property Name="Short_term_Debt_Map" Type="varchar" MaxLength="20" />
           <Property Name="Foreign_Exchange_Map" Type="varchar" MaxLength="20" />
+          <Property Name="GDP_Yearly_Map" Type="varchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Yearly">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Data_Year" Type="int" Nullable="false" />
+          <Property Name="Processing_Date" Type="date" />
+          <Property Name="Country" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="IGS_Index" Type="float" />
+          <Property Name="IGS_Index_Map" Type="varchar" MaxLength="20" />
+          <Property Name="GDP_Yearly" Type="float" />
           <Property Name="GDP_Yearly_Map" Type="varchar" MaxLength="20" />
         </EntityType>
         <EntityType Name="Grade_Mapping_Info">
@@ -689,7 +722,10 @@
           <EntitySet Name="Econ_Domestic" EntityType="Self.Econ_Domestic" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="Self.Econ_F_YYYYMMDD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_Foreign" EntityType="Self.Econ_Foreign" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Gov_Info_Monthly" EntityType="Self.Gov_Info_Monthly" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Gov_Info_Quartly" EntityType="Self.Gov_Info_Quartly" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Gov_Info_Ticker" EntityType="Self.Gov_Info_Ticker" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Gov_Info_Yearly" EntityType="Self.Gov_Info_Yearly" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Grade_Mapping_Info" EntityType="Self.Grade_Mapping_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Grade_Moody_Info" EntityType="Self.Grade_Moody_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="Self.Group_Product_Code_Mapping" Schema="dbo" store:Type="Tables" />
@@ -733,6 +769,9 @@
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_Account_Info" EntityType="IFRS9Model.Loan_Account_Info" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
+          <EntitySet Name="Gov_Info_Monthly" EntityType="IFRS9Model.Gov_Info_Monthly" />
+          <EntitySet Name="Gov_Info_Quartly" EntityType="IFRS9Model.Gov_Info_Quartly" />
+          <EntitySet Name="Gov_Info_Yearly" EntityType="IFRS9Model.Gov_Info_Yearly" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1409,6 +1448,39 @@
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
         </EntityType>
+        <EntityType Name="Gov_Info_Monthly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Foreign_Exchange" Type="Double" />
+          <Property Name="Foreign_Exchange_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Quartly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Short_term_Debt" Type="Double" />
+          <Property Name="Short_term_Debt_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Yearly">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Data_Year" Type="Int32" Nullable="false" />
+          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="IGS_Index" Type="Double" />
+          <Property Name="IGS_Index_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="GDP_Yearly" Type="Double" />
+          <Property Name="GDP_Yearly_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2068,6 +2140,39 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Monthly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Monthly">
+              <MappingFragment StoreEntitySet="Gov_Info_Monthly">
+                <ScalarProperty Name="Foreign_Exchange_Map" ColumnName="Foreign_Exchange_Map" />
+                <ScalarProperty Name="Foreign_Exchange" ColumnName="Foreign_Exchange" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Quartly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Quartly">
+              <MappingFragment StoreEntitySet="Gov_Info_Quartly">
+                <ScalarProperty Name="Short_term_Debt_Map" ColumnName="Short_term_Debt_Map" />
+                <ScalarProperty Name="Short_term_Debt" ColumnName="Short_term_Debt" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Yearly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Yearly">
+              <MappingFragment StoreEntitySet="Gov_Info_Yearly">
+                <ScalarProperty Name="GDP_Yearly_Map" ColumnName="GDP_Yearly_Map" />
+                <ScalarProperty Name="GDP_Yearly" ColumnName="GDP_Yearly" />
+                <ScalarProperty Name="IGS_Index_Map" ColumnName="IGS_Index_Map" />
+                <ScalarProperty Name="IGS_Index" ColumnName="IGS_Index" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

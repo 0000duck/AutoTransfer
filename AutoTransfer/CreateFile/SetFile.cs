@@ -16,8 +16,8 @@ namespace AutoTransfer.CreateFile
         private static string getC04Put = ConfigurationManager.AppSettings["getC04Put"];
         private static string A07Put = ConfigurationManager.AppSettings["A07Put"];
         private static string A07Get = ConfigurationManager.AppSettings["A07Get"];
-        private static string A94Put = ConfigurationManager.AppSettings["A94Put"];
-        private static string A94Get = ConfigurationManager.AppSettings["A94Get"];
+        private static string A93Put = ConfigurationManager.AppSettings["A93Put"];
+        private static string A93Get = ConfigurationManager.AppSettings["A93Get"];
         private static string A96Put = ConfigurationManager.AppSettings["A96Put"];
         private static string A96Get = ConfigurationManager.AppSettings["A96Get"];
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
@@ -140,40 +140,37 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "A07Put") : A07Put;
         }
 
-        public string getA94FilePath()
+        public string getA93FilePath()
         {
-            return A94Get.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A94Get") : A94Get;
+            return A93Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A93Get") : A93Get;
         }
 
-        public string putA94FilePath()
+        public string putA93FilePath()
         {
-            return A94Put.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A94Put") : A94Put;
+            return A93Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A93Put") : A93Put;
         }
 
-        public string getA94FileName(string yqm)
+        public string getA93FileName()
         {
-            return string.Format("Get{0}_{1}{2}.csv",
+            return string.Format("Get{0}_{1}m.csv",
                 _type.ToString(),
-                _dateTime,
-                yqm);
+                _dateTime);
         }
 
-        public string putA94FileName(string yqm)
+        public string putA93FileName()
         {
-            return string.Format("Get{0}_{1}{2}.req",
+            return string.Format("Get{0}_{1}m.req",
                 _type.ToString(),
-                _dateTime,
-                yqm);
+                _dateTime);
         }
 
-        public string getA94GZFileName(string yqm)
+        public string getA93GZFileName()
         {
-            return string.Format("Get{0}_{1}{2}.csv.gz",
+            return string.Format("Get{0}_{1}m.csv.gz",
                   _type.ToString(),
-                  _dateTime,
-                  yqm);
+                  _dateTime);
         }
 
         public string getA96FilePath()

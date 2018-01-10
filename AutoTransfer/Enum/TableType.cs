@@ -43,10 +43,10 @@ namespace AutoTransfer.Enum
             A84,
 
             /// <summary>
-            /// 主權債測試指標_Ticker
+            /// 主權債測試指標_月收集
             /// </summary>
-            [Description("Gov_Info_Ticker")]
-            A94,
+            [Description("Gov_Info_Monthly")]
+            A93,
 
             /// <summary>
             /// 信用利差資料
