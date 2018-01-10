@@ -64,10 +64,10 @@ namespace AutoTransfer.Utility
         /// <param name="detail">內容</param>
         public void bothLog(string tableName, bool flag, DateTime reportDate, DateTime start, DateTime end, int version, string folderPath, string detail = null)
         {
-            saveTransferCheck(tableName, flag, reportDate, version, start, end);
-            if (tableName == "C03")
-                tableName = TableType.C03Mortgage.ToString();
             txtLog(tableName, flag, start, folderPath, detail);
+            if (tableName == TableType.C03Mortgage.ToString())
+                tableName = "C03";
+            saveTransferCheck(tableName, flag, reportDate, version, start, end);
         }
 
         public string txtLocation(string fileName)
