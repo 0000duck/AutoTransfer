@@ -23,14 +23,17 @@ namespace AutoTransfer.Transfer
         private ThreadTask t = new ThreadTask();
         private TableType tableType = TableType.A94;
         private string type = TableType.A94.ToString();
+        private string yqm = "";
         #endregion 共用參數
 
         /// <summary>
         /// start Transfer
         /// </summary>
         /// <param name="dateTime"></param>
-        public void startTransfer(string dateTime)
+        public void startTransfer(string dateTime, string YearQuarterMonth)
         {
+            yqm = YearQuarterMonth;
+
             logPath = log.txtLocation(type);
 
             startTime = DateTime.Now;
@@ -40,10 +43,13 @@ namespace AutoTransfer.Transfer
                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
                out reportDateDt))
             {
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     MessageType.DateTime_Format_Fail.GetDescription()
                     );
@@ -61,21 +67,25 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void createA94File()
         {
-            //建立  檔案
-            // create ex:GetA94
-            if (new CreateA94File().create(reportDateStr))
+            CreateA94File createFile = new CreateA94File();
+
+            if (createFile.create(reportDateStr,"y") && createFile.create(reportDateStr, "q") && createFile.create(reportDateStr, "m"))
             {
                 //把資料送給SFTP
                 putA94SFTP();
             }
             else
             {
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    MessageType.Create_File_Fail.GetDescription(type));
+                    MessageType.Create_File_Fail.GetDescription(type)
+                );
             }
         }
 
@@ -86,32 +96,117 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
+            error = putToSFTP("y");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = putToSFTP("q");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = putToSFTP("m");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            getA94SFTP();
+        }
+
+        #region putToSFTP
+        protected string putToSFTP(string yqm)
+        {
+            string error = string.Empty;
+
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //    .Put(string.Empty,
             //     setFile.putA94FilePath(),
-            //     setFile.putFileName(),
+            //     setFile.putA94FileName(yqm),
             //     out error);
 
-            if (!error.IsNullOrWhiteSpace()) //fail
+            if (error.IsNullOrWhiteSpace() == false)
             {
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    error);
+                    error
+                 );
             }
-            else //success (wait 20 min and get data)
+            else
             {
                 //Thread.Sleep(20 * 60 * 1000);
-                getA94SFTP();
             }
+
+            return error;
         }
+        #endregion
 
         /// <summary>
         /// SFTP Get A94檔案
         /// </summary>
         protected void getA94SFTP()
+        {
+            string error = string.Empty;
+
+            error = getFromSFTP("y");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = getFromSFTP("q");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = getFromSFTP("m");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = DataToDb("y");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = DataToDb("q");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            error = DataToDb("m");
+            if (error.IsNullOrWhiteSpace() == false)
+            {
+                return;
+            }
+
+            log.bothLog(
+                type,
+                true,
+                reportDateDt,
+                startTime,
+                DateTime.Now,
+                1,
+                logPath,
+                MessageType.Success.GetDescription()
+            );
+        }
+
+        #region getFromSFTP
+        protected string getFromSFTP(string yqm)
         {
             new FileRelated().createFile(setFile.getA94FilePath());
 
@@ -120,143 +215,171 @@ namespace AutoTransfer.Transfer
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //.Get(string.Empty,
             //     setFile.getA94FilePath(),
-            //     setFile.getGZFileName(),
+            //     setFile.getA94GZFileName(yqm),
             //     out error);
 
-            if (!error.IsNullOrWhiteSpace())
+            if (error.IsNullOrWhiteSpace() == false)
             {
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
-                    error);
+                    error
+                 );
             }
-            else
-            {
-                string sourceFileName = Path.Combine(
-                setFile.getA94FilePath(), setFile.getGZFileName());
-                string destFileName = Path.Combine(
-                setFile.getA94FilePath(), setFile.getFileName());
-                Extension.Decompress(sourceFileName, destFileName);
 
-                DataToDb();
-            }
+            return error;
         }
+        #endregion
 
         /// <summary>
         /// Db save
         /// </summary>
-        protected void DataToDb()
+        protected string DataToDb(string yqm)
         {
-            IFRS9Entities db = new IFRS9Entities();
+            string error = string.Empty;
 
-            List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
-            List<Gov_Info_Ticker> A94Datas = new List<Gov_Info_Ticker>();
-            Gov_Info_Ticker A94 = null;
-            using (StreamReader sr = new StreamReader(Path.Combine(
-                setFile.getA94FilePath(), setFile.getFileName())))
+            try
             {
+                IFRS9Entities db = new IFRS9Entities();
 
-                bool flag = false; //判斷是否為要讀取的資料行數
-                string line = string.Empty;
-                while ((line = sr.ReadLine()) != null)
+                List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
+                List<Gov_Info_Ticker> A94Datas = new List<Gov_Info_Ticker>();
+                Gov_Info_Ticker A94 = null;
+                using (StreamReader sr = new StreamReader(Path.Combine(
+                    setFile.getA94FilePath(), setFile.getA94FileName(yqm))))
                 {
-                    if ("END-OF-DATA".Equals(line))
-                    {
-                        flag = false;
-                    }
 
-                    if (flag) //找到的資料
+                    bool flag = false; //判斷是否為要讀取的資料行數
+                    string line = string.Empty;
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        var arr = line.Split('|');
-                        //arr[0]  ex: IGS%TUR Index
-                        //arr[1]  ex: 12/30/2016
-                        //arr[2]  ex: 28.13
-
-                        if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
-                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        if ("END-OF-DATA".Equals(line))
                         {
-                            string index = arr[0].Trim();
+                            flag = false;
+                        }
 
-                            if (index.IsNullOrWhiteSpace() == false)
+                        if (flag) //找到的資料
+                        {
+                            string[] arr = line.Split('|');
+                            int okLength = 0;
+
+                            if (yqm == "y" || yqm == "q")
                             {
-                                var Country = GetCountry(index);
-                                var ColumnName = GetColumnName(index);
+                                //arr[0]  ex: IGS%TUR Index
+                                //arr[1]  ex: 12/30/2016
+                                //arr[2]  ex: 28.13
 
-                                if (Country != "" && ColumnName != "")
+                                arr = line.Split('|');
+                                okLength = 3;
+                            }
+                            else if (yqm == "m")
+                            {
+                                //arr[0]  ex: "TUIRCBFX Index"
+                                //arr[3]  ex: 90196.600000  
+                                //arr[4]  ex: 06/30/2017
+
+                                arr = line.Split(',');
+                                okLength = 4;
+                            }
+                            
+                            if (arr.Length >= okLength && arr[0].IsNullOrWhiteSpace() == false 
+                                && arr[0].StartsWith("START") == false && arr[0].StartsWith("END") == false)
+                            {
+                                string index = arr[0].Trim().Replace("\"","");
+                                string value = "";
+
+                                if (yqm == "y" || yqm == "q")
                                 {
-                                    A94 = listA94.FirstOrDefault(x => x.Country == Country);
-                                    var A94Data = A94Datas.FirstOrDefault(x => x.Country == Country);
+                                    value = arr[2].Trim();
+                                }
+                                else if (yqm == "m")
+                                {
+                                    value = arr[3].Trim();
+                                }
 
-                                    if (A94 != null)
-                                    {
-                                        var A94pro = A94.GetType().GetProperties()
-                                                     .Where(x => x.Name == ColumnName)
-                                                     .FirstOrDefault();
-                                        if (A94pro != null)
-                                        {
-                                            A94pro.SetValue(A94, arr[2]);
-                                        }
-                                    }
-                                    else if (A94Data != null)
-                                    {
-                                        var A94pro = A94Data.GetType().GetProperties()
-                                                     .Where(x => x.Name == ColumnName)
-                                                     .FirstOrDefault();
-                                        if (A94pro != null)
-                                        {
-                                            A94pro.SetValue(A94Data, arr[2]);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Gov_Info_Ticker newData = new Gov_Info_Ticker();
-                                        newData.Country = Country;
-                                        var A94pro = newData.GetType().GetProperties()
-                                                     .Where(x => x.Name == ColumnName)
-                                                     .FirstOrDefault();
-                                        if (A94pro != null)
-                                        {
-                                            A94pro.SetValue(newData, arr[2]);
-                                        }
+                                if (index.IsNullOrWhiteSpace() == false)
+                                {
+                                    var Country = GetCountry(index);
+                                    var ColumnName = GetColumnName(index);
 
-                                        A94Datas.Add(newData);
+                                    if (Country != "" && ColumnName != "")
+                                    {
+                                        A94 = listA94.FirstOrDefault(x => x.Country == Country);
+                                        var A94Data = A94Datas.FirstOrDefault(x => x.Country == Country);
+
+                                        if (A94 != null)
+                                        {
+                                            var A94pro = A94.GetType().GetProperties()
+                                                         .Where(x => x.Name == ColumnName)
+                                                         .FirstOrDefault();
+                                            if (A94pro != null)
+                                            {
+                                                A94pro.SetValue(A94, value);
+                                            }
+                                        }
+                                        else if (A94Data != null)
+                                        {
+                                            var A94pro = A94Data.GetType().GetProperties()
+                                                         .Where(x => x.Name == ColumnName)
+                                                         .FirstOrDefault();
+                                            if (A94pro != null)
+                                            {
+                                                A94pro.SetValue(A94Data, value);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Gov_Info_Ticker newData = new Gov_Info_Ticker();
+                                            newData.Country = Country;
+                                            var A94pro = newData.GetType().GetProperties()
+                                                         .Where(x => x.Name == ColumnName)
+                                                         .FirstOrDefault();
+                                            if (A94pro != null)
+                                            {
+                                                A94pro.SetValue(newData, value);
+                                            }
+
+                                            A94Datas.Add(newData);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if ("START-OF-DATA".Equals(line))
-                    {
-                        flag = true;
+                        if ("START-OF-DATA".Equals(line))
+                        {
+                            flag = true;
+                        }
                     }
                 }
-            }
 
-            try
-            {
                 db.Gov_Info_Ticker.AddRange(A94Datas);
                 db.SaveChanges();
                 db.Dispose();
-                log.txtLog(
-                    type,
-                    true,
-                    startTime,
-                    logPath,
-                    MessageType.Success.GetDescription());
             }
             catch (Exception ex)
             {
-                log.txtLog(
+                log.bothLog(
                     type,
                     false,
+                    reportDateDt,
                     startTime,
+                    DateTime.Now,
+                    1,
                     logPath,
                     $"message: {ex.Message}" +
-                    $", inner message {ex.InnerException?.InnerException?.Message}");
+                    $", inner message {ex.InnerException?.InnerException?.Message}"
+                );
+
+                error = ex.Message;
             }
+
+            return error;
         }
 
         private string GetCountry (string inputString)

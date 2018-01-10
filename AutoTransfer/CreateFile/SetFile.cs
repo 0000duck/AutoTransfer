@@ -152,6 +152,30 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "A94Put") : A94Put;
         }
 
+        public string getA94FileName(string yqm)
+        {
+            return string.Format("Get{0}_{1}{2}.csv",
+                _type.ToString(),
+                _dateTime,
+                yqm);
+        }
+
+        public string putA94FileName(string yqm)
+        {
+            return string.Format("Get{0}_{1}{2}.req",
+                _type.ToString(),
+                _dateTime,
+                yqm);
+        }
+
+        public string getA94GZFileName(string yqm)
+        {
+            return string.Format("Get{0}_{1}{2}.csv.gz",
+                  _type.ToString(),
+                  _dateTime,
+                  yqm);
+        }
+
         public string getA96FilePath()
         {
             return A96Get.IsNullOrWhiteSpace() ?
