@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.CreateFile
 {
     public class CreateA93File
     {
-        public bool create(string dateTime)
+        public bool create(string dateTime, List<Gov_Info_Ticker> A94)
         {
             bool flag = false;
             try
@@ -50,14 +49,10 @@ namespace AutoTransfer.CreateFile
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
 
-                IFRS9Entities db = new IFRS9Entities();
-                db.Gov_Info_Ticker.AsNoTracking()
-                  .Where(x=>x.Foreign_Exchange_Map.ToString() != "")
-                  .ToList().ForEach(x =>
-                  {
-                      data.Add(x.Foreign_Exchange_Map);
-                  });
-                db.Dispose();
+                A94.ForEach(x =>
+                            {
+                                data.Add(x.Foreign_Exchange_Map);
+                            });
 
                 data.Add("END-OF-DATA");
 

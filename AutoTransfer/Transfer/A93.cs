@@ -61,9 +61,32 @@ namespace AutoTransfer.Transfer
 
         protected void createA93File()
         {
-            CreateA93File createFile = new CreateA93File();
+            List<Gov_Info_Ticker> A94;
 
-            if (createFile.create(reportDateStr))
+            using (IFRS9Entities db = new IFRS9Entities())
+            {
+                A94 = db.Gov_Info_Ticker.AsNoTracking()
+                                        .Where(x => x.Foreign_Exchange_Map.ToString() != "")
+                                        .ToList();
+                if (A94.Any() == false)
+                {
+                    log.bothLog(
+                        type,
+                        false,
+                        reportDateDt,
+                        startTime,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        "A94-主權債測試指標_Ticker 沒有做相關設定"
+                     );
+
+                    return;
+                }
+            }
+
+            CreateA93File createFile = new CreateA93File();
+            if (createFile.create(reportDateStr, A94))
             {
                 //把資料送給SFTP
                 putA93SFTP();
@@ -197,122 +220,86 @@ namespace AutoTransfer.Transfer
 
             try
             {
-                //string date = startTime.ToString("yyyyMMdd");
+                DateTime processingDate = DateTime.Parse(startTime.ToString("yyyy/MM/dd"));
 
-                //IFRS9Entities db = new IFRS9Entities();
+                using (IFRS9Entities db = new IFRS9Entities())
+                {
+                    List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
+                    List<Gov_Info_Monthly> listA93 = db.Gov_Info_Monthly.Where(x=>x.Processing_Date == processingDate).ToList();
+                    List<Gov_Info_Monthly> A93Datas = new List<Gov_Info_Monthly>(); 
+                    using (StreamReader sr = new StreamReader(Path.Combine(
+                        setFile.getA93FilePath(), setFile.getA93FileName())))
+                    {
+                        bool flag = false; //判斷是否為要讀取的資料行數
+                        string line = string.Empty;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            if ("END-OF-DATA".Equals(line))
+                            {
+                                flag = false;
+                            }
 
-                //List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
-                //List<Gov_Info_Monthly> listA93 = db.Gov_Info_Monthly.ToList();
-                //using (StreamReader sr = new StreamReader(Path.Combine(
-                //    setFile.getA93FilePath(), setFile.getA93FileName())))
-                //{
-                //    bool flag = false; //判斷是否為要讀取的資料行數
-                //    string line = string.Empty;
-                //    while ((line = sr.ReadLine()) != null)
-                //    {
-                //        if ("END-OF-DATA".Equals(line))
-                //        {
-                //            flag = false;
-                //        }
+                            if (flag) //找到的資料
+                            {
+                                //arr[0]  ex: "TUIRCBFX Index"
+                                //arr[3]  ex: 90196.600000  
+                                //arr[4]  ex: 06/30/2017
+                                string[] arr = line.Split(',');
+                                int okLength = 4;
 
-                //        if (flag) //找到的資料
-                //        {
-                //            string[] arr = line.Split('|');
-                //            int okLength = 0;
+                                if (arr.Length >= okLength && arr[0].IsNullOrWhiteSpace() == false
+                                    && arr[0].StartsWith("START") == false && arr[0].StartsWith("END") == false)
+                                {
+                                    string index = arr[0].Trim().Replace("\"", "");
+                                    string value = arr[3].Trim();
 
-                //            if (yqm == "y" || yqm == "q")
-                //            {
-                //                //arr[0]  ex: IGS%TUR Index
-                //                //arr[1]  ex: 12/30/2016
-                //                //arr[2]  ex: 28.13
+                                    double d = 0d;
 
-                //                arr = line.Split('|');
-                //                okLength = 3;
-                //            }
-                //            else if (yqm == "m")
-                //            {
-                //                //arr[0]  ex: "TUIRCBFX Index"
-                //                //arr[3]  ex: 90196.600000  
-                //                //arr[4]  ex: 06/30/2017
+                                    if (index.IsNullOrWhiteSpace() == false && double.TryParse(value, out d) == true)
+                                    {
+                                        string Country = GetCountry(index,listA94);
 
-                //                arr = line.Split(',');
-                //                okLength = 4;
-                //            }
+                                        if (Country != "")
+                                        {
+                                            var A93DBData = listA93.FirstOrDefault(x => x.Country == Country);
+                                            var A93CSVData = A93Datas.FirstOrDefault(x => x.Processing_Date == processingDate 
+                                                                                       && x.Country == Country);
+                                            if (A93DBData != null)
+                                            {
+                                                A93DBData.Foreign_Exchange = d;
+                                                A93DBData.Foreign_Exchange_Map = index;
+                                            }
+                                            else if (A93CSVData != null)
+                                            {
+                                                A93CSVData.Foreign_Exchange = d;
+                                                A93CSVData.Foreign_Exchange_Map = index;
+                                            }
+                                            else
+                                            {
+                                                Gov_Info_Monthly newData = new Gov_Info_Monthly();
 
-                //            if (arr.Length >= okLength && arr[0].IsNullOrWhiteSpace() == false
-                //                && arr[0].StartsWith("START") == false && arr[0].StartsWith("END") == false)
-                //            {
-                //                string index = arr[0].Trim().Replace("\"", "");
-                //                string value = "";
+                                                newData.Processing_Date = processingDate;
+                                                newData.Country = Country;
+                                                newData.Foreign_Exchange = d;
+                                                newData.Foreign_Exchange_Map = index;
 
-                //                if (yqm == "y" || yqm == "q")
-                //                {
-                //                    value = arr[2].Trim();
-                //                }
-                //                else if (yqm == "m")
-                //                {
-                //                    value = arr[3].Trim();
-                //                }
+                                                A93Datas.Add(newData);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
 
-                //                if (index.IsNullOrWhiteSpace() == false)
-                //                {
-                //                    var Country = GetCountry(index);
-                //                    var ColumnName = GetColumnName(index);
+                            if ("START-OF-DATA".Equals(line))
+                            {
+                                flag = true;
+                            }
+                        }
+                    }
 
-                //                    if (Country != "" && ColumnName != "")
-                //                    {
-                //                        A94 = listA94.FirstOrDefault(x => x.Country == Country);
-                //                        var A94Data = A94Datas.FirstOrDefault(x => x.Country == Country);
-
-                //                        if (A94 != null)
-                //                        {
-                //                            var A94pro = A94.GetType().GetProperties()
-                //                                         .Where(x => x.Name == ColumnName)
-                //                                         .FirstOrDefault();
-                //                            if (A94pro != null)
-                //                            {
-                //                                A94pro.SetValue(A94, value);
-                //                            }
-                //                        }
-                //                        else if (A94Data != null)
-                //                        {
-                //                            var A94pro = A94Data.GetType().GetProperties()
-                //                                         .Where(x => x.Name == ColumnName)
-                //                                         .FirstOrDefault();
-                //                            if (A94pro != null)
-                //                            {
-                //                                A94pro.SetValue(A94Data, value);
-                //                            }
-                //                        }
-                //                        else
-                //                        {
-                //                            Gov_Info_Ticker newData = new Gov_Info_Ticker();
-                //                            newData.Country = Country;
-                //                            var A94pro = newData.GetType().GetProperties()
-                //                                         .Where(x => x.Name == ColumnName)
-                //                                         .FirstOrDefault();
-                //                            if (A94pro != null)
-                //                            {
-                //                                A94pro.SetValue(newData, value);
-                //                            }
-
-                //                            A94Datas.Add(newData);
-                //                        }
-                //                    }
-                //                }
-                //            }
-                //        }
-
-                //        if ("START-OF-DATA".Equals(line))
-                //        {
-                //            flag = true;
-                //        }
-                //    }
-                //}
-
-                //db.Gov_Info_Ticker.AddRange(A94Datas);
-                //db.SaveChanges();
-                //db.Dispose();
+                    db.Gov_Info_Monthly.AddRange(A93Datas);
+                    db.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
@@ -332,6 +319,19 @@ namespace AutoTransfer.Transfer
             }
 
             return error;
+        }
+
+        private string GetCountry(string inputString, List<Gov_Info_Ticker> listA94)
+        {
+            string country = "";
+
+            Gov_Info_Ticker A94 = listA94.Where(x => x.Foreign_Exchange_Map == inputString).FirstOrDefault();
+            if (A94 != null)
+            {
+                country = A94.Country;
+            } 
+
+            return country;
         }
     }
 }
