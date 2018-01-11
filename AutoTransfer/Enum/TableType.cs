@@ -43,6 +43,12 @@ namespace AutoTransfer.Enum
             A84,
 
             /// <summary>
+            /// 主權債測試指標_年收集
+            /// </summary>
+            [Description("Gov_Info_Yearly")]
+            A91,
+
+            /// <summary>
             /// 主權債測試指標_月收集
             /// </summary>
             [Description("Gov_Info_Monthly")]

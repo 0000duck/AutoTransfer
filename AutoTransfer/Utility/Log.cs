@@ -152,6 +152,7 @@ namespace AutoTransfer.Utility
                 TableType.A07.ToString(),
                 "C03",
                 TableType.C04.ToString(),
+                TableType.A91.ToString(),
                 TableType.A93.ToString()
             };
             using (IFRS9Entities db = new IFRS9Entities())
