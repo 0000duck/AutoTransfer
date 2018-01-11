@@ -3,11 +3,11 @@ using System;
 
 namespace AutoTransfer
 {
-    public class StartTransferA94
+    public class StartTransferA93
     {
         public void start()
         {
-            new A94().startTransfer(DateTime.Now.ToString("yyyyMMdd"));
+            new A93().startTransfer(DateTime.Now.ToString("yyyyMMdd"));
         }
     }
 }
