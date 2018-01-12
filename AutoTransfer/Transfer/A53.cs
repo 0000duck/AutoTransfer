@@ -258,7 +258,21 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                             //arr[19] PARENT_TICKER_EXCHANGE
                             //--COLLAT_TYP
                             //arr[20] COLLAT_TYP
-                            if (arr.Length >= 21)
+                            //--D63.Net_Debt
+                            //arr[21] NET_DEBT
+                            //--D63.Total_Asset & D63.BS_TOT_ASSET
+                            //arr[22] BS_TOT_ASSET
+                            //--D63.CFO
+                            //arr[23] TRAIL_12M_CASH_FROM_OPER
+                            //--D63.Total_Equity
+                            //arr[24] TOTAL_EQUITY
+                            //--D63.SHORT_AND_LONG_TERM_DEBT
+                            //arr[25] SHORT_AND_LONG_TERM_DEBT
+                            //--D63.Int_Expense (1)
+                            //arr[26] TRAIL_12M_INT_EXP
+                            //--D63.Int_Expense (2)
+                            //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                            if (arr.Length >= 28)
                             {
                                 var bond_Number = arr[0].Trim();
                                 var A41 = A41s.First(x => x.Bond_Number == bond_Number);
@@ -596,7 +610,21 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                         //arr[19] PARENT_TICKER_EXCHANGE
                         //--COLLAT_TYP
                         //arr[20] COLLAT_TYP
-                        if (arr.Length >= 21)
+                        //--D63.Net_Debt
+                        //arr[21] NET_DEBT
+                        //--D63.Total_Asset & D63.BS_TOT_ASSET
+                        //arr[22] BS_TOT_ASSET
+                        //--D63.CFO
+                        //arr[23] TRAIL_12M_CASH_FROM_OPER
+                        //--D63.Total_Equity
+                        //arr[24] TOTAL_EQUITY
+                        //--D63.SHORT_AND_LONG_TERM_DEBT
+                        //arr[25] SHORT_AND_LONG_TERM_DEBT
+                        //--D63.Int_Expense (1)
+                        //arr[26] TRAIL_12M_INT_EXP
+                        //--D63.Int_Expense (2)
+                        //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                        if (arr.Length >= 28)
                         {
                             //S&P國外評等
                             validateSample(
