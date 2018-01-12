@@ -115,5 +115,44 @@
         /// COLLAT_TYP 新增抓Bloomberg欄位 COLLAT_TYP add in 2017/12/25 for D67 Use
         /// </summary>
         public string COLLAT_TYP { get; set; }
+
+        #region D63 欄位相關 add in 2018/01/11
+
+        /// <summary>
+        /// D63.Net_Debt
+        /// </summary>
+        public string NET_DEBT { get; set; }
+
+        /// <summary>
+        /// D63.Total_Asset & D63.BS_TOT_ASSET
+        /// </summary>
+        public string BS_TOT_ASSET { get; set; }
+
+        /// <summary>
+        /// D63.CFO
+        /// </summary>
+        public string TRAIL_12M_CASH_FROM_OPER { get; set; }
+
+        /// <summary>
+        /// D63.Total_Equity
+        /// </summary>
+        public string TOTAL_EQUITY { get; set; }
+
+        /// <summary>
+        /// D63.SHORT_AND_LONG_TERM_DEBT
+        /// </summary>
+        public string SHORT_AND_LONG_TERM_DEBT { get; set; }
+
+        /// <summary>
+        /// D63.Int_Expense (1)
+        /// </summary>
+        public string TRAIL_12M_INT_EXP { get; set; }
+
+        /// <summary>
+        /// D63.Int_Expense (2)
+        /// </summary>
+        public string TRAIL_12M_ACT_CASH_PAID_FOR_INT { get; set; }
+
+        #endregion
     }
 }
