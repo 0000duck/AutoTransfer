@@ -3,7 +3,6 @@ using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -124,11 +123,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA93FilePath(),
-            //     setFile.putA93FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                     setFile.putA93FilePath(),
+                     setFile.putA93FileName(),
+                     out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -145,7 +144,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
             }
 
             return error;
@@ -187,11 +186,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA93FilePath(),
-            //     setFile.getA93FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                     setFile.getA93FilePath(),
+                     setFile.getA93FileName(),
+                     out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -226,9 +225,9 @@ namespace AutoTransfer.Transfer
                 {
                     List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
                     List<Gov_Info_Monthly> listA93 = db.Gov_Info_Monthly.Where(x=>x.Processing_Date == processingDate).ToList();
-                    List<Gov_Info_Monthly> A93Datas = new List<Gov_Info_Monthly>(); 
+                    List<Gov_Info_Monthly> A93Datas = new List<Gov_Info_Monthly>();
                     using (StreamReader sr = new StreamReader(Path.Combine(
-                        setFile.getA93FilePath(), setFile.getA93FileName())))
+                           setFile.getA93FilePath(), setFile.getA93FileName())))
                     {
                         bool flag = false; //判斷是否為要讀取的資料行數
                         string line = string.Empty;
@@ -257,12 +256,12 @@ namespace AutoTransfer.Transfer
 
                                     if (index.IsNullOrWhiteSpace() == false && double.TryParse(value, out d) == true)
                                     {
-                                        string Country = GetCountry(index,listA94);
+                                        string Country = GetCountry(index, listA94);
 
                                         if (Country != "")
                                         {
                                             var A93DBData = listA93.FirstOrDefault(x => x.Country == Country);
-                                            var A93CSVData = A93Datas.FirstOrDefault(x => x.Processing_Date == processingDate 
+                                            var A93CSVData = A93Datas.FirstOrDefault(x => x.Processing_Date == processingDate
                                                                                        && x.Country == Country);
                                             if (A93DBData != null)
                                             {
