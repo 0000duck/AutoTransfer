@@ -513,7 +513,7 @@
           <Property Name="EUCCEMU_Index" Type="float" />
           <Property Name="CPMINDX_Index" Type="float" />
           <Property Name="MPMICNMA_Index" Type="float" />
-          <Property Name="CNFRBAL$_Index" Type="float" />
+          <Property Name="CNFRBAL_Index" Type="float" />
           <Property Name="CNCPIYOY_Index" Type="float" />
           <Property Name="CHEFTYOY_Index" Type="float" />
           <Property Name="CNMS2YOY_Index" Type="float" />
@@ -637,7 +637,6 @@
         </EntityType>
         <EntityType Name="Loan_default_Info">
           <Key>
-            <PropertyRef Name="Year_Month" />
             <PropertyRef Name="Year_Quartly" />
           </Key>
           <Property Name="Year_Month" Type="varchar" MaxLength="6" Nullable="false" />
@@ -683,6 +682,13 @@
           <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="20" />
           <Property Name="ISSUER" Type="varchar" MaxLength="50" />
           <Property Name="COLLAT_TYP" Type="varchar" MaxLength="50" />
+          <Property Name="Net_Debt" Type="float" />
+          <Property Name="Total_Asset" Type="float" />
+          <Property Name="CFO" Type="float" />
+          <Property Name="Int_Expense" Type="float" />
+          <Property Name="Total_Equity" Type="float" />
+          <Property Name="BS_TOT_ASSET" Type="float" />
+          <Property Name="SHORT_AND_LONG_TERM_DEBT" Type="float" />
         </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
@@ -766,12 +772,12 @@
           <EntitySet Name="Bond_Rating_Summary" EntityType="IFRS9Model.Bond_Rating_Summary" />
           <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
           <EntitySet Name="Gov_Info_Ticker" EntityType="IFRS9Model.Gov_Info_Ticker" />
-          <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_Account_Info" EntityType="IFRS9Model.Loan_Account_Info" />
-          <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
           <EntitySet Name="Gov_Info_Monthly" EntityType="IFRS9Model.Gov_Info_Monthly" />
           <EntitySet Name="Gov_Info_Quartly" EntityType="IFRS9Model.Gov_Info_Quartly" />
           <EntitySet Name="Gov_Info_Yearly" EntityType="IFRS9Model.Gov_Info_Yearly" />
+          <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
+          <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -839,6 +845,13 @@
           <Property Name="Bloomberg_Ticker" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="ISSUER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="COLLAT_TYP" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Net_Debt" Type="Double" />
+          <Property Name="Total_Asset" Type="Double" />
+          <Property Name="CFO" Type="Double" />
+          <Property Name="Int_Expense" Type="Double" />
+          <Property Name="Total_Equity" Type="Double" />
+          <Property Name="BS_TOT_ASSET" Type="Double" />
+          <Property Name="SHORT_AND_LONG_TERM_DEBT" Type="Double" />
         </EntityType>
         <EntityType Name="Bond_Account_Info">
           <Key>
@@ -1275,6 +1288,78 @@
           <Property Name="Foreign_Exchange_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="GDP_Yearly_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Loan_Account_Info">
+          <Key>
+            <PropertyRef Name="Reference_Nbr" />
+            <PropertyRef Name="Report_Date" />
+          </Key>
+          <Property Name="Reference_Nbr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Seg_Name" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Delinquent_Days" Type="Int32" Nullable="false" />
+          <Property Name="Current_Rating_Code" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Org_Amt" Type="Double" />
+          <Property Name="Current_Int_Rate" Type="Double" />
+          <Property Name="Mtr_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Exp_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Cur_Int" Type="Double" />
+          <Property Name="Lorg_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Lexp_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Cf_Type" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Pay_Frq" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Init_Days" Type="Int32" />
+          <Property Name="Int_Type" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Obj_Impair" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Mdr_Month" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Org_Pd" Type="Double" />
+          <Property Name="Org_Efint" Type="Double" />
+          <Property Name="Currency" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Current_Lgd" Type="Double" Nullable="false" />
+          <Property Name="Unpaid_Bal" Type="Double" />
+          <Property Name="Nxt_Int_Dt" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Nxt_Int_Rt" Type="Double" />
+          <Property Name="Tot_Trms" Type="Int32" />
+          <Property Name="Left_Trms" Type="Int32" />
+          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Rating_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Restructure_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Collateral_Legal_Action_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Bad_Debt_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Collection_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Monthly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Foreign_Exchange" Type="Double" />
+          <Property Name="Foreign_Exchange_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Quartly">
+          <Key>
+            <PropertyRef Name="Processing_Date" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Short_term_Debt" Type="Double" />
+          <Property Name="Short_term_Debt_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Gov_Info_Yearly">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Country" />
+          </Key>
+          <Property Name="Data_Year" Type="Int32" Nullable="false" />
+          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="IGS_Index" Type="Double" />
+          <Property Name="IGS_Index_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="GDP_Yearly" Type="Double" />
+          <Property Name="GDP_Yearly_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+        </EntityType>
         <EntityType Name="Econ_Foreign">
           <Key>
             <PropertyRef Name="Year_Quartly" />
@@ -1391,7 +1476,7 @@
           <Property Name="EUCCEMU_Index" Type="Double" />
           <Property Name="CPMINDX_Index" Type="Double" />
           <Property Name="MPMICNMA_Index" Type="Double" />
-          <Property Name="CNFRBAL__Index" Type="Double" />
+          <Property Name="CNFRBAL_Index" Type="Double" />
           <Property Name="CNCPIYOY_Index" Type="Double" />
           <Property Name="CHEFTYOY_Index" Type="Double" />
           <Property Name="CNMS2YOY_Index" Type="Double" />
@@ -1399,87 +1484,14 @@
           <Property Name="CNFREXPY_Index" Type="Double" />
           <Property Name="GRFIDEBT_Index" Type="Double" />
         </EntityType>
-        <EntityType Name="Loan_Account_Info">
-          <Key>
-            <PropertyRef Name="Reference_Nbr" />
-            <PropertyRef Name="Report_Date" />
-          </Key>
-          <Property Name="Reference_Nbr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Seg_Name" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Delinquent_Days" Type="Int32" Nullable="false" />
-          <Property Name="Current_Rating_Code" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="Org_Amt" Type="Double" />
-          <Property Name="Current_Int_Rate" Type="Double" />
-          <Property Name="Mtr_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Exp_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Cur_Int" Type="Double" />
-          <Property Name="Lorg_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Lexp_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Cf_Type" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Pay_Frq" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Init_Days" Type="Int32" />
-          <Property Name="Int_Type" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Obj_Impair" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="Mdr_Month" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Org_Pd" Type="Double" />
-          <Property Name="Org_Efint" Type="Double" />
-          <Property Name="Currency" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Current_Lgd" Type="Double" Nullable="false" />
-          <Property Name="Unpaid_Bal" Type="Double" />
-          <Property Name="Nxt_Int_Dt" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Nxt_Int_Rt" Type="Double" />
-          <Property Name="Tot_Trms" Type="Int32" />
-          <Property Name="Left_Trms" Type="Int32" />
-          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
-          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Rating_Date" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Restructure_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="Collateral_Legal_Action_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="Bad_Debt_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-          <Property Name="Collection_Ind" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="Loan_default_Info">
           <Key>
-            <PropertyRef Name="Year_Month" />
             <PropertyRef Name="Year_Quartly" />
           </Key>
           <Property Name="Year_Month" Type="String" Nullable="false" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="PD_Quartly" Type="Double" Nullable="false" />
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
-        </EntityType>
-        <EntityType Name="Gov_Info_Monthly">
-          <Key>
-            <PropertyRef Name="Processing_Date" />
-            <PropertyRef Name="Country" />
-          </Key>
-          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Foreign_Exchange" Type="Double" />
-          <Property Name="Foreign_Exchange_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Gov_Info_Quartly">
-          <Key>
-            <PropertyRef Name="Processing_Date" />
-            <PropertyRef Name="Country" />
-          </Key>
-          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Short_term_Debt" Type="Double" />
-          <Property Name="Short_term_Debt_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Gov_Info_Yearly">
-          <Key>
-            <PropertyRef Name="Data_Year" />
-            <PropertyRef Name="Country" />
-          </Key>
-          <Property Name="Data_Year" Type="Int32" Nullable="false" />
-          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
-          <Property Name="Country" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="IGS_Index" Type="Double" />
-          <Property Name="IGS_Index_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="GDP_Yearly" Type="Double" />
-          <Property Name="GDP_Yearly_Map" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -1542,6 +1554,13 @@
           <EntitySetMapping Name="Rating_Info_SampleInfo">
             <EntityTypeMapping TypeName="IFRS9Model.Rating_Info_SampleInfo">
               <MappingFragment StoreEntitySet="Rating_Info_SampleInfo">
+                <ScalarProperty Name="SHORT_AND_LONG_TERM_DEBT" ColumnName="SHORT_AND_LONG_TERM_DEBT" />
+                <ScalarProperty Name="BS_TOT_ASSET" ColumnName="BS_TOT_ASSET" />
+                <ScalarProperty Name="Total_Equity" ColumnName="Total_Equity" />
+                <ScalarProperty Name="Int_Expense" ColumnName="Int_Expense" />
+                <ScalarProperty Name="CFO" ColumnName="CFO" />
+                <ScalarProperty Name="Total_Asset" ColumnName="Total_Asset" />
+                <ScalarProperty Name="Net_Debt" ColumnName="Net_Debt" />
                 <ScalarProperty Name="COLLAT_TYP" ColumnName="COLLAT_TYP" />
                 <ScalarProperty Name="ISSUER" ColumnName="ISSUER" />
                 <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
@@ -1969,6 +1988,78 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Loan_Account_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Loan_Account_Info">
+              <MappingFragment StoreEntitySet="Loan_Account_Info">
+                <ScalarProperty Name="Collection_Ind" ColumnName="Collection_Ind" />
+                <ScalarProperty Name="Bad_Debt_Ind" ColumnName="Bad_Debt_Ind" />
+                <ScalarProperty Name="Collateral_Legal_Action_Ind" ColumnName="Collateral_Legal_Action_Ind" />
+                <ScalarProperty Name="Restructure_Ind" ColumnName="Restructure_Ind" />
+                <ScalarProperty Name="Rating_Date" ColumnName="Rating_Date" />
+                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Left_Trms" ColumnName="Left_Trms" />
+                <ScalarProperty Name="Tot_Trms" ColumnName="Tot_Trms" />
+                <ScalarProperty Name="Nxt_Int_Rt" ColumnName="Nxt_Int_Rt" />
+                <ScalarProperty Name="Nxt_Int_Dt" ColumnName="Nxt_Int_Dt" />
+                <ScalarProperty Name="Unpaid_Bal" ColumnName="Unpaid_Bal" />
+                <ScalarProperty Name="Current_Lgd" ColumnName="Current_Lgd" />
+                <ScalarProperty Name="Currency" ColumnName="Currency" />
+                <ScalarProperty Name="Org_Efint" ColumnName="Org_Efint" />
+                <ScalarProperty Name="Org_Pd" ColumnName="Org_Pd" />
+                <ScalarProperty Name="Mdr_Month" ColumnName="Mdr_Month" />
+                <ScalarProperty Name="Obj_Impair" ColumnName="Obj_Impair" />
+                <ScalarProperty Name="Int_Type" ColumnName="Int_Type" />
+                <ScalarProperty Name="Init_Days" ColumnName="Init_Days" />
+                <ScalarProperty Name="Pay_Frq" ColumnName="Pay_Frq" />
+                <ScalarProperty Name="Cf_Type" ColumnName="Cf_Type" />
+                <ScalarProperty Name="Lexp_Date" ColumnName="Lexp_Date" />
+                <ScalarProperty Name="Lorg_Date" ColumnName="Lorg_Date" />
+                <ScalarProperty Name="Cur_Int" ColumnName="Cur_Int" />
+                <ScalarProperty Name="Exp_Date" ColumnName="Exp_Date" />
+                <ScalarProperty Name="Mtr_Date" ColumnName="Mtr_Date" />
+                <ScalarProperty Name="Current_Int_Rate" ColumnName="Current_Int_Rate" />
+                <ScalarProperty Name="Org_Amt" ColumnName="Org_Amt" />
+                <ScalarProperty Name="Current_Rating_Code" ColumnName="Current_Rating_Code" />
+                <ScalarProperty Name="Delinquent_Days" ColumnName="Delinquent_Days" />
+                <ScalarProperty Name="Seg_Name" ColumnName="Seg_Name" />
+                <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Monthly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Monthly">
+              <MappingFragment StoreEntitySet="Gov_Info_Monthly">
+                <ScalarProperty Name="Foreign_Exchange_Map" ColumnName="Foreign_Exchange_Map" />
+                <ScalarProperty Name="Foreign_Exchange" ColumnName="Foreign_Exchange" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Quartly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Quartly">
+              <MappingFragment StoreEntitySet="Gov_Info_Quartly">
+                <ScalarProperty Name="Short_term_Debt_Map" ColumnName="Short_term_Debt_Map" />
+                <ScalarProperty Name="Short_term_Debt" ColumnName="Short_term_Debt" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Gov_Info_Yearly">
+            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Yearly">
+              <MappingFragment StoreEntitySet="Gov_Info_Yearly">
+                <ScalarProperty Name="GDP_Yearly_Map" ColumnName="GDP_Yearly_Map" />
+                <ScalarProperty Name="GDP_Yearly" ColumnName="GDP_Yearly" />
+                <ScalarProperty Name="IGS_Index_Map" ColumnName="IGS_Index_Map" />
+                <ScalarProperty Name="IGS_Index" ColumnName="IGS_Index" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Econ_Foreign">
             <EntityTypeMapping TypeName="IFRS9Model.Econ_Foreign">
               <MappingFragment StoreEntitySet="Econ_Foreign">
@@ -1978,7 +2069,7 @@
                 <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
                 <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
                 <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
-                <ScalarProperty Name="CNFRBAL__Index" ColumnName="CNFRBAL$_Index" />
+                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
                 <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
                 <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
                 <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />
@@ -2094,45 +2185,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Loan_Account_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Loan_Account_Info">
-              <MappingFragment StoreEntitySet="Loan_Account_Info">
-                <ScalarProperty Name="Collection_Ind" ColumnName="Collection_Ind" />
-                <ScalarProperty Name="Bad_Debt_Ind" ColumnName="Bad_Debt_Ind" />
-                <ScalarProperty Name="Collateral_Legal_Action_Ind" ColumnName="Collateral_Legal_Action_Ind" />
-                <ScalarProperty Name="Restructure_Ind" ColumnName="Restructure_Ind" />
-                <ScalarProperty Name="Rating_Date" ColumnName="Rating_Date" />
-                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-                <ScalarProperty Name="Left_Trms" ColumnName="Left_Trms" />
-                <ScalarProperty Name="Tot_Trms" ColumnName="Tot_Trms" />
-                <ScalarProperty Name="Nxt_Int_Rt" ColumnName="Nxt_Int_Rt" />
-                <ScalarProperty Name="Nxt_Int_Dt" ColumnName="Nxt_Int_Dt" />
-                <ScalarProperty Name="Unpaid_Bal" ColumnName="Unpaid_Bal" />
-                <ScalarProperty Name="Current_Lgd" ColumnName="Current_Lgd" />
-                <ScalarProperty Name="Currency" ColumnName="Currency" />
-                <ScalarProperty Name="Org_Efint" ColumnName="Org_Efint" />
-                <ScalarProperty Name="Org_Pd" ColumnName="Org_Pd" />
-                <ScalarProperty Name="Mdr_Month" ColumnName="Mdr_Month" />
-                <ScalarProperty Name="Obj_Impair" ColumnName="Obj_Impair" />
-                <ScalarProperty Name="Int_Type" ColumnName="Int_Type" />
-                <ScalarProperty Name="Init_Days" ColumnName="Init_Days" />
-                <ScalarProperty Name="Pay_Frq" ColumnName="Pay_Frq" />
-                <ScalarProperty Name="Cf_Type" ColumnName="Cf_Type" />
-                <ScalarProperty Name="Lexp_Date" ColumnName="Lexp_Date" />
-                <ScalarProperty Name="Lorg_Date" ColumnName="Lorg_Date" />
-                <ScalarProperty Name="Cur_Int" ColumnName="Cur_Int" />
-                <ScalarProperty Name="Exp_Date" ColumnName="Exp_Date" />
-                <ScalarProperty Name="Mtr_Date" ColumnName="Mtr_Date" />
-                <ScalarProperty Name="Current_Int_Rate" ColumnName="Current_Int_Rate" />
-                <ScalarProperty Name="Org_Amt" ColumnName="Org_Amt" />
-                <ScalarProperty Name="Current_Rating_Code" ColumnName="Current_Rating_Code" />
-                <ScalarProperty Name="Delinquent_Days" ColumnName="Delinquent_Days" />
-                <ScalarProperty Name="Seg_Name" ColumnName="Seg_Name" />
-                <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Loan_default_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Loan_default_Info">
               <MappingFragment StoreEntitySet="Loan_default_Info">
@@ -2140,39 +2192,6 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Gov_Info_Monthly">
-            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Monthly">
-              <MappingFragment StoreEntitySet="Gov_Info_Monthly">
-                <ScalarProperty Name="Foreign_Exchange_Map" ColumnName="Foreign_Exchange_Map" />
-                <ScalarProperty Name="Foreign_Exchange" ColumnName="Foreign_Exchange" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Gov_Info_Quartly">
-            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Quartly">
-              <MappingFragment StoreEntitySet="Gov_Info_Quartly">
-                <ScalarProperty Name="Short_term_Debt_Map" ColumnName="Short_term_Debt_Map" />
-                <ScalarProperty Name="Short_term_Debt" ColumnName="Short_term_Debt" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Gov_Info_Yearly">
-            <EntityTypeMapping TypeName="IFRS9Model.Gov_Info_Yearly">
-              <MappingFragment StoreEntitySet="Gov_Info_Yearly">
-                <ScalarProperty Name="GDP_Yearly_Map" ColumnName="GDP_Yearly_Map" />
-                <ScalarProperty Name="GDP_Yearly" ColumnName="GDP_Yearly" />
-                <ScalarProperty Name="IGS_Index_Map" ColumnName="IGS_Index_Map" />
-                <ScalarProperty Name="IGS_Index" ColumnName="IGS_Index" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

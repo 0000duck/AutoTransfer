@@ -18,6 +18,7 @@ namespace AutoTransfer
         public IFRS9Entities()
             : base("name=IFRS9Entities")
         {
+            ((IObjectContextAdapter)this).ObjectContext.CommandTimeout = 300;
         }
     
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -42,11 +43,11 @@ namespace AutoTransfer
         public virtual DbSet<Bond_Rating_Summary> Bond_Rating_Summary { get; set; }
         public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
         public virtual DbSet<Gov_Info_Ticker> Gov_Info_Ticker { get; set; }
-        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
         public virtual DbSet<Loan_Account_Info> Loan_Account_Info { get; set; }
-        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
         public virtual DbSet<Gov_Info_Monthly> Gov_Info_Monthly { get; set; }
         public virtual DbSet<Gov_Info_Quartly> Gov_Info_Quartly { get; set; }
         public virtual DbSet<Gov_Info_Yearly> Gov_Info_Yearly { get; set; }
+        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
+        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
     }
 }

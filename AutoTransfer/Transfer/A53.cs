@@ -292,6 +292,18 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                                     GUARANTOR_EQY_TICKER = null;
                                 if (nullarr.Contains(GUARANTOR_NAME))
                                     GUARANTOR_NAME = null;
+                                var Net_Debt = arr[21];
+                                var Total_Asset = arr[22];
+                                var BS_TOT_ASSET = arr[22];
+                                var CFO = arr[23];
+                                var Total_Equity = arr[24];
+                                var SHORT_AND_LONG_TERM_DEBT = arr[25];
+                                string Int_Expense = null;
+                                double d = 0d;
+                                if (double.TryParse(arr[26], out d))
+                                    Int_Expense = d.ToString();
+                                else if(double.TryParse(arr[27], out d))
+                                    Int_Expense = d.ToString();
                                 // insert Rating_Info_SampleInfo
                                 sb.Append($@"
 INSERT INTO [Rating_Info_SampleInfo]
@@ -305,7 +317,14 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,[COLLAT_TYP]
            ,[Security_Des]
            ,[Bloomberg_Ticker]
-           ,[ISSUER])
+           ,[ISSUER]
+           ,[Net_Debt]
+           ,[Total_Asset]
+           ,[CFO]
+           ,[Int_Expense]
+           ,[Total_Equity]
+           ,[BS_TOT_ASSET]
+           ,[SHORT_AND_LONG_TERM_DEBT])
      VALUES
            ({bond_Number.stringToStrSql()}
            ,{reportDateDt.dateTimeToStrSql()}
@@ -317,7 +336,14 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,{COLLAT_TYP.stringToStrSql()}
            ,{Security_Des.stringToStrSql()}
            ,{Bloomberg_Ticker.stringToStrSql()}
-           ,{ISSUER.stringToStrSql()}  ); ");
+           ,{ISSUER.stringToStrSql()}  
+           ,{Net_Debt.stringTofloatSql()} 
+           ,{Total_Asset.stringTofloatSql()} 
+           ,{CFO.stringTofloatSql()} 
+           ,{Int_Expense.stringTofloatSql()} 
+           ,{Total_Equity.stringTofloatSql()} 
+           ,{BS_TOT_ASSET.stringTofloatSql()} 
+           ,{SHORT_AND_LONG_TERM_DEBT.stringTofloatSql()} ); ");
                             }
                         }
                         if ("START-OF-DATA".Equals(line))
