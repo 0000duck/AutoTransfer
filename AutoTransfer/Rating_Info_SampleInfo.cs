@@ -25,5 +25,12 @@ namespace AutoTransfer
         public string Bloomberg_Ticker { get; set; }
         public string ISSUER { get; set; }
         public string COLLAT_TYP { get; set; }
+        public Nullable<double> Net_Debt { get; set; }
+        public Nullable<double> Total_Asset { get; set; }
+        public Nullable<double> CFO { get; set; }
+        public Nullable<double> Int_Expense { get; set; }
+        public Nullable<double> Total_Equity { get; set; }
+        public Nullable<double> BS_TOT_ASSET { get; set; }
+        public Nullable<double> SHORT_AND_LONG_TERM_DEBT { get; set; }
     }
 }

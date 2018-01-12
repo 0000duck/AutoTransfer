@@ -513,7 +513,7 @@
           <Property Name="EUCCEMU_Index" Type="float" />
           <Property Name="CPMINDX_Index" Type="float" />
           <Property Name="MPMICNMA_Index" Type="float" />
-          <Property Name="CNFRBAL$_Index" Type="float" />
+          <Property Name="CNFRBAL_Index" Type="float" />
           <Property Name="CNCPIYOY_Index" Type="float" />
           <Property Name="CHEFTYOY_Index" Type="float" />
           <Property Name="CNMS2YOY_Index" Type="float" />
@@ -637,7 +637,6 @@
         </EntityType>
         <EntityType Name="Loan_default_Info">
           <Key>
-            <PropertyRef Name="Year_Month" />
             <PropertyRef Name="Year_Quartly" />
           </Key>
           <Property Name="Year_Month" Type="varchar" MaxLength="6" Nullable="false" />
@@ -683,6 +682,13 @@
           <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="20" />
           <Property Name="ISSUER" Type="varchar" MaxLength="50" />
           <Property Name="COLLAT_TYP" Type="varchar" MaxLength="50" />
+          <Property Name="Net_Debt" Type="float" />
+          <Property Name="Total_Asset" Type="float" />
+          <Property Name="CFO" Type="float" />
+          <Property Name="Int_Expense" Type="float" />
+          <Property Name="Total_Equity" Type="float" />
+          <Property Name="BS_TOT_ASSET" Type="float" />
+          <Property Name="SHORT_AND_LONG_TERM_DEBT" Type="float" />
         </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
@@ -839,6 +845,13 @@
           <Property Name="Bloomberg_Ticker" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="ISSUER" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="COLLAT_TYP" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Net_Debt" Type="Double" />
+          <Property Name="Total_Asset" Type="Double" />
+          <Property Name="CFO" Type="Double" />
+          <Property Name="Int_Expense" Type="Double" />
+          <Property Name="Total_Equity" Type="Double" />
+          <Property Name="BS_TOT_ASSET" Type="Double" />
+          <Property Name="SHORT_AND_LONG_TERM_DEBT" Type="Double" />
         </EntityType>
         <EntityType Name="Bond_Account_Info">
           <Key>
@@ -1398,6 +1411,7 @@
           <Property Name="CNFRIMPY_Index" Type="Double" />
           <Property Name="CNFREXPY_Index" Type="Double" />
           <Property Name="GRFIDEBT_Index" Type="Double" />
+          <Property Name="CNFRBAL_Index" Type="Double" />
         </EntityType>
         <EntityType Name="Loan_Account_Info">
           <Key>
@@ -1542,6 +1556,13 @@
           <EntitySetMapping Name="Rating_Info_SampleInfo">
             <EntityTypeMapping TypeName="IFRS9Model.Rating_Info_SampleInfo">
               <MappingFragment StoreEntitySet="Rating_Info_SampleInfo">
+                <ScalarProperty Name="SHORT_AND_LONG_TERM_DEBT" ColumnName="SHORT_AND_LONG_TERM_DEBT" />
+                <ScalarProperty Name="BS_TOT_ASSET" ColumnName="BS_TOT_ASSET" />
+                <ScalarProperty Name="Total_Equity" ColumnName="Total_Equity" />
+                <ScalarProperty Name="Int_Expense" ColumnName="Int_Expense" />
+                <ScalarProperty Name="CFO" ColumnName="CFO" />
+                <ScalarProperty Name="Total_Asset" ColumnName="Total_Asset" />
+                <ScalarProperty Name="Net_Debt" ColumnName="Net_Debt" />
                 <ScalarProperty Name="COLLAT_TYP" ColumnName="COLLAT_TYP" />
                 <ScalarProperty Name="ISSUER" ColumnName="ISSUER" />
                 <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
@@ -1972,13 +1993,13 @@
           <EntitySetMapping Name="Econ_Foreign">
             <EntityTypeMapping TypeName="IFRS9Model.Econ_Foreign">
               <MappingFragment StoreEntitySet="Econ_Foreign">
+                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
                 <ScalarProperty Name="GRFIDEBT_Index" ColumnName="GRFIDEBT_Index" />
                 <ScalarProperty Name="CNFREXPY_Index" ColumnName="CNFREXPY_Index" />
                 <ScalarProperty Name="CNFRIMPY_Index" ColumnName="CNFRIMPY_Index" />
                 <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
                 <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
                 <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
-                <ScalarProperty Name="CNFRBAL__Index" ColumnName="CNFRBAL$_Index" />
                 <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
                 <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
                 <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />

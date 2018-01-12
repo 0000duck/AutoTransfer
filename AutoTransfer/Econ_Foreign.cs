@@ -133,5 +133,6 @@ namespace AutoTransfer
         public Nullable<double> CNFRIMPY_Index { get; set; }
         public Nullable<double> CNFREXPY_Index { get; set; }
         public Nullable<double> GRFIDEBT_Index { get; set; }
+        public Nullable<double> CNFRBAL_Index { get; set; }
     }
 }

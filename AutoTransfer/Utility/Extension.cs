@@ -155,6 +155,14 @@ namespace AutoTransfer.Utility
             return " null ";
         }
 
+        public static string stringTofloatSql(this string par)
+        {
+            double d = 0d;
+            if (!par.IsNullOrWhiteSpace() && double.TryParse(par.Trim(), out d))
+                return d.ToString().stringToStrSql();
+            return " null ";
+        }
+
         public static string dateTimeNToStrSql(this DateTime? par)
         {
             if (par.HasValue)
