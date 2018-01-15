@@ -22,8 +22,10 @@ namespace AutoTransfer.CreateFile
         private static string A92Get = ConfigurationManager.AppSettings["A92Get"];
         private static string A93Put = ConfigurationManager.AppSettings["A93Put"];
         private static string A93Get = ConfigurationManager.AppSettings["A93Get"];
-        private static string A96Put = ConfigurationManager.AppSettings["A96Put"];
-        private static string A96Get = ConfigurationManager.AppSettings["A96Get"];
+        private static string A96_1Put = ConfigurationManager.AppSettings["A96_1Put"];
+        private static string A96_1Get = ConfigurationManager.AppSettings["A96_1Get"];
+        private static string A96_2Put = ConfigurationManager.AppSettings["A96_2Put"];
+        private static string A96_2Get = ConfigurationManager.AppSettings["A96_2Get"];
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
         private static string flag = ConfigurationManager.AppSettings["PROGRAMFLAG"];
         private static string startupPath = Directory.GetCurrentDirectory();
@@ -243,16 +245,56 @@ namespace AutoTransfer.CreateFile
                   _dateTime);
         }
 
-        public string getA96FilePath()
+        public string getA96_1FilePath()
         {
-            return A96Get.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96Get") : A96Get;
+            return A96_1Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_1Get") : A96_1Get;
         }
 
-        public string putA96FilePath()
+        public string putA96_1FilePath()
         {
-            return A96Put.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96Put") : A96Put;
+            return A96_1Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_1Put") : A96_1Put;
+        }
+
+        public string getA96_1FileName()
+        {
+            return string.Format("Get{0}_1_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA96_1FileName()
+        {
+            return string.Format("Get{0}_1_{1}.req",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string getA96_2FilePath()
+        {
+            return A96_2Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_2Get") : A96_2Get;
+        }
+
+        public string putA96_2FilePath()
+        {
+            return A96_2Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_2Put") : A96_2Put;
+        }
+
+        public string getA96_2FileName()
+        {
+            return string.Format("Get{0}_2_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA96_2FileName()
+        {
+            return string.Format("Get{0}_2_{1}.req",
+                _type.ToString(),
+                _dateTime);
         }
     }
 }
