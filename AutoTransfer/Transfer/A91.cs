@@ -3,7 +3,6 @@ using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -66,8 +65,8 @@ namespace AutoTransfer.Transfer
             using (IFRS9Entities db = new IFRS9Entities())
             {
                 A94 = db.Gov_Info_Ticker.AsNoTracking()
-                                        .Where(x => x.IGS_Index_Map.ToString() != "" || x.GDP_Yearly_Map.ToString() != "")
-                                        .ToList();
+                        .Where(x => x.IGS_Index_Map.ToString() != "" || x.GDP_Yearly_Map.ToString() != "")
+                        .ToList();
                 if (A94.Any() == false)
                 {
                     log.bothLog(
@@ -124,11 +123,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA91FilePath(),
-            //     setFile.putA91FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putA91FilePath(),
+                 setFile.putA91FileName(),
+                 out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -145,7 +144,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
             }
 
             return error;
@@ -187,11 +186,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA91FilePath(),
-            //     setFile.getA91FileName(),
-            //     out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getA91FilePath(),
+                 setFile.getA91GZFileName(),
+                 out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -205,6 +204,12 @@ namespace AutoTransfer.Transfer
                     logPath,
                     error
                  );
+            }
+            else
+            {
+                string sourceFileName = Path.Combine(setFile.getA91FilePath(), setFile.getA91GZFileName());
+                string destFileName = Path.Combine(setFile.getA91FilePath(), setFile.getA91FileName());
+                Extension.Decompress(sourceFileName, destFileName);
             }
 
             return error;

@@ -29,6 +29,7 @@ namespace AutoTransfer.CreateFile
                 #region Title
 
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
+                data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
                 data.Add("FILETYPE=pc");
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add($"DATERANGE={dt2.ToString("yyyy1231")}|{dateTime.Substring(0,4) + "1231"}");
