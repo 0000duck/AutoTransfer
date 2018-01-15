@@ -123,11 +123,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //         setFile.putA92FilePath(),
-            //         setFile.putA92FileName(),
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                     setFile.putA92FilePath(),
+                     setFile.putA92FileName(),
+                     out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -144,7 +144,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
             }
 
             return error;
@@ -186,11 +186,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //         setFile.getA92FilePath(),
-            //         setFile.getA92FileName(),
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                     setFile.getA92FilePath(),
+                     setFile.getA92GZFileName(),
+                     out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -204,6 +204,12 @@ namespace AutoTransfer.Transfer
                     logPath,
                     error
                  );
+            }
+            else
+            {
+                string sourceFileName = Path.Combine(setFile.getA92FilePath(), setFile.getA92GZFileName());
+                string destFileName = Path.Combine(setFile.getA92FilePath(), setFile.getA92FileName());
+                Extension.Decompress(sourceFileName, destFileName);
             }
 
             return error;

@@ -170,6 +170,13 @@ namespace AutoTransfer.CreateFile
                 _dateTime);
         }
 
+        public string getA91GZFileName()
+        {
+            return string.Format("Get{0}_{1}y.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
+
         public string getA92FilePath()
         {
             return A92Get.IsNullOrWhiteSpace() ?
@@ -194,6 +201,13 @@ namespace AutoTransfer.CreateFile
             return string.Format("Get{0}_{1}q.req",
                 _type.ToString(),
                 _dateTime);
+        }
+
+        public string getA92GZFileName()
+        {
+            return string.Format("Get{0}_{1}q.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
         }
 
         public string getA93FilePath()
