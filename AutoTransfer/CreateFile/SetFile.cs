@@ -18,6 +18,8 @@ namespace AutoTransfer.CreateFile
         private static string A07Get = ConfigurationManager.AppSettings["A07Get"];
         private static string A91Put = ConfigurationManager.AppSettings["A91Put"];
         private static string A91Get = ConfigurationManager.AppSettings["A91Get"];
+        private static string A92Put = ConfigurationManager.AppSettings["A92Put"];
+        private static string A92Get = ConfigurationManager.AppSettings["A92Get"];
         private static string A93Put = ConfigurationManager.AppSettings["A93Put"];
         private static string A93Get = ConfigurationManager.AppSettings["A93Get"];
         private static string A96Put = ConfigurationManager.AppSettings["A96Put"];
@@ -164,6 +166,32 @@ namespace AutoTransfer.CreateFile
         public string putA91FileName()
         {
             return string.Format("Get{0}_{1}y.req",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string getA92FilePath()
+        {
+            return A92Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A92Get") : A92Get;
+        }
+
+        public string putA92FilePath()
+        {
+            return A92Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A92Put") : A92Put;
+        }
+
+        public string getA92FileName()
+        {
+            return string.Format("Get{0}_{1}q.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA92FileName()
+        {
+            return string.Format("Get{0}_{1}q.req",
                 _type.ToString(),
                 _dateTime);
         }

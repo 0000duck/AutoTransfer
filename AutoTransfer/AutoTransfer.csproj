@@ -76,6 +76,7 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="CreateFile\CreateA91File.cs" />
+    <Compile Include="CreateFile\CreateA92File.cs" />
     <Compile Include="CreateFile\CreateA93File.cs" />
     <Compile Include="CreateFile\CreateA96File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
@@ -134,6 +135,7 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="StartTransferA91.cs" />
+    <Compile Include="StartTransferA92.cs" />
     <Compile Include="StartTransferA93.cs" />
     <Compile Include="StartTransferC04.cs" />
     <Compile Include="StartTransferA84.cs" />
@@ -142,6 +144,7 @@
     <Compile Include="Transfer\A07.cs" />
     <Compile Include="Transfer\A84.cs" />
     <Compile Include="Transfer\A91.cs" />
+    <Compile Include="Transfer\A92.cs" />
     <Compile Include="Transfer\A93.cs" />
     <Compile Include="Transfer\C04.cs" />
     <Compile Include="Transfer\A53.cs" />

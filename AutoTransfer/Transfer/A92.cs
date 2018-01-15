@@ -3,7 +3,6 @@ using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,7 @@ using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.Transfer
 {
-    public class A91
+    public class A92
     {
         #region 共用參數
         private Log log = new Log();
@@ -21,8 +20,8 @@ namespace AutoTransfer.Transfer
         private SetFile setFile = null;
         private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
-        private TableType tableType = TableType.A91;
-        private string type = TableType.A91.ToString();
+        private TableType tableType = TableType.A92;
+        private string type = TableType.A92.ToString();
         #endregion 共用參數
 
         /// <summary>
@@ -36,9 +35,9 @@ namespace AutoTransfer.Transfer
             startTime = DateTime.Now;
 
             if (dateTime.Length != 8 ||
-               !DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
-               System.Globalization.DateTimeStyles.AllowWhiteSpaces,
-               out reportDateDt))
+                DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
+                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+               out reportDateDt) == false)
             {
                 log.bothLog(
                     type,
@@ -49,24 +48,24 @@ namespace AutoTransfer.Transfer
                     1,
                     logPath,
                     MessageType.DateTime_Format_Fail.GetDescription()
-                    );
+                );
             }
             else
             {
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
-                createA91File();
+                createA92File();
             }
         }
 
-        protected void createA91File()
+        protected void createA92File()
         {
             List<Gov_Info_Ticker> A94;
 
             using (IFRS9Entities db = new IFRS9Entities())
             {
                 A94 = db.Gov_Info_Ticker.AsNoTracking()
-                                        .Where(x => x.IGS_Index_Map.ToString() != "" || x.GDP_Yearly_Map.ToString() != "")
+                                        .Where(x => x.Short_term_Debt_Map.ToString() != "")
                                         .ToList();
                 if (A94.Any() == false)
                 {
@@ -85,11 +84,11 @@ namespace AutoTransfer.Transfer
                 }
             }
 
-            CreateA91File createFile = new CreateA91File();
+            CreateA92File createFile = new CreateA92File();
             if (createFile.create(reportDateStr, A94))
             {
                 //把資料送給SFTP
-                putA91SFTP();
+                putA92SFTP();
             }
             else
             {
@@ -106,7 +105,7 @@ namespace AutoTransfer.Transfer
             }
         }
 
-        protected void putA91SFTP()
+        protected void putA92SFTP()
         {
             string error = string.Empty;
 
@@ -116,7 +115,7 @@ namespace AutoTransfer.Transfer
                 return;
             }
 
-            getA91SFTP();
+            getA92SFTP();
         }
 
         #region putToSFTP
@@ -126,9 +125,9 @@ namespace AutoTransfer.Transfer
 
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //    .Put(string.Empty,
-            //     setFile.putA91FilePath(),
-            //     setFile.putA91FileName(),
-            //     out error);
+            //         setFile.putA92FilePath(),
+            //         setFile.putA92FileName(),
+            //         out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -152,7 +151,7 @@ namespace AutoTransfer.Transfer
         }
         #endregion
 
-        protected void getA91SFTP()
+        protected void getA92SFTP()
         {
             string error = string.Empty;
 
@@ -183,15 +182,15 @@ namespace AutoTransfer.Transfer
         #region getFromSFTP
         protected string getFromSFTP()
         {
-            new FileRelated().createFile(setFile.getA91FilePath());
+            new FileRelated().createFile(setFile.getA92FilePath());
 
             string error = string.Empty;
 
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA91FilePath(),
-            //     setFile.getA91FileName(),
-            //     out error);
+            //    .Get(string.Empty,
+            //         setFile.getA92FilePath(),
+            //         setFile.getA92FileName(),
+            //         out error);
 
             if (error.IsNullOrWhiteSpace() == false)
             {
@@ -225,11 +224,10 @@ namespace AutoTransfer.Transfer
                 using (IFRS9Entities db = new IFRS9Entities())
                 {
                     List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
-                    List<Gov_Info_Yearly> listA91 = db.Gov_Info_Yearly.ToList();
-                    List<Gov_Info_Yearly> A91Datas = new List<Gov_Info_Yearly>();
-
+                    List<Gov_Info_Quartly> listA92 = db.Gov_Info_Quartly.Where(x => x.Processing_Date == processingDate).ToList();
+                    List<Gov_Info_Quartly> A92Datas = new List<Gov_Info_Quartly>();
                     using (StreamReader sr = new StreamReader(Path.Combine(
-                        setFile.getA91FilePath(), setFile.getA91FileName())))
+                           setFile.getA92FilePath(), setFile.getA92FileName())))
                     {
                         bool flag = false; //判斷是否為要讀取的資料行數
                         string line = string.Empty;
@@ -242,9 +240,9 @@ namespace AutoTransfer.Transfer
 
                             if (flag) //找到的資料
                             {
-                                //arr[0]  ex: IGS%TUR Index
-                                //arr[1]  ex: 12/31/2016  
-                                //arr[2]  ex: 29.1
+                                //arr[0]  ex: HELDTRDS Index
+                                //arr[1]  ex: 03/31/2016  
+                                //arr[2]  ex: 105812.729
                                 string[] arr = line.Split('|');
                                 int okLength = 3;
 
@@ -252,78 +250,39 @@ namespace AutoTransfer.Transfer
                                     && arr[0].StartsWith("START") == false && arr[0].StartsWith("END") == false)
                                 {
                                     string index = arr[0].Trim();
-                                    string dataDate = arr[1].Trim();
                                     string value = arr[2].Trim();
 
-                                    DateTime dt = DateTime.MinValue;
                                     double d = 0d;
 
-                                    if (index.IsNullOrWhiteSpace() == false
-                                        && DateTime.TryParseExact(dataDate, "MM/dd/yyyy", null,
-                                           System.Globalization.DateTimeStyles.AllowWhiteSpaces, out dt) == true
-                                        && double.TryParse(value, out d) == true)
+                                    if (index.IsNullOrWhiteSpace() == false && double.TryParse(value, out d) == true)
                                     {
-                                        string Data_Year = dataDate.Substring(6,4);
                                         string Country = GetCountry(index, listA94);
-                                        string ColumnName = GetColumnName(index, listA94);
 
-                                        if (Country != "" && ColumnName != "")
+                                        if (Country != "")
                                         {
-                                            var A91DBData = listA91.FirstOrDefault(x =>x.Data_Year.ToString() == Data_Year && x.Country == Country);
-                                            var A91CSVData = A91Datas.FirstOrDefault(x => x.Data_Year.ToString() == Data_Year && x.Country == Country);
-                                            if (A91DBData != null)
+                                            var A92DBData = listA92.FirstOrDefault(x => x.Country == Country);
+                                            var A92CSVData = A92Datas.FirstOrDefault(x => x.Processing_Date == processingDate
+                                                                                       && x.Country == Country);
+                                            if (A92DBData != null)
                                             {
-                                                A91DBData.Processing_Date = processingDate;
-
-                                                if (ColumnName == "IGS_Index")
-                                                {
-                                                    A91DBData.IGS_Index = d;
-                                                    A91DBData.IGS_Index_Map = index;
-                                                }
-
-                                                if (ColumnName == "GDP_Yearly")
-                                                {
-                                                    A91DBData.GDP_Yearly = d;
-                                                    A91DBData.GDP_Yearly_Map = index;
-                                                }
+                                                A92DBData.Short_term_Debt = d;
+                                                A92DBData.Short_term_Debt_Map = index;
                                             }
-                                            else if (A91CSVData != null)
+                                            else if (A92CSVData != null)
                                             {
-                                                A91CSVData.Processing_Date = processingDate;
-
-                                                if (ColumnName == "IGS_Index")
-                                                {
-                                                    A91CSVData.IGS_Index = d;
-                                                    A91CSVData.IGS_Index_Map = index;
-                                                }
-
-                                                if (ColumnName == "GDP_Yearly")
-                                                {
-                                                    A91CSVData.GDP_Yearly = d;
-                                                    A91CSVData.GDP_Yearly_Map = index;
-                                                }
+                                                A92CSVData.Short_term_Debt = d;
+                                                A92CSVData.Short_term_Debt_Map = index;
                                             }
                                             else
                                             {
-                                                Gov_Info_Yearly newData = new Gov_Info_Yearly();
+                                                Gov_Info_Quartly newData = new Gov_Info_Quartly();
 
-                                                newData.Data_Year = int.Parse(Data_Year);
                                                 newData.Processing_Date = processingDate;
                                                 newData.Country = Country;
+                                                newData.Short_term_Debt = d;
+                                                newData.Short_term_Debt_Map = index;
 
-                                                if (ColumnName == "IGS_Index")
-                                                {
-                                                    newData.IGS_Index = d;
-                                                    newData.IGS_Index_Map = index;
-                                                }
-
-                                                if (ColumnName == "GDP_Yearly")
-                                                {
-                                                    newData.GDP_Yearly = d;
-                                                    newData.GDP_Yearly_Map = index;
-                                                }
-
-                                                A91Datas.Add(newData);
+                                                A92Datas.Add(newData);
                                             }
                                         }
                                     }
@@ -337,7 +296,7 @@ namespace AutoTransfer.Transfer
                         }
                     }
 
-                    db.Gov_Info_Yearly.AddRange(A91Datas);
+                    db.Gov_Info_Quartly.AddRange(A92Datas);
                     db.SaveChanges();
                 }
             }
@@ -365,35 +324,13 @@ namespace AutoTransfer.Transfer
         {
             string country = "";
 
-            Gov_Info_Ticker A94 = listA94.Where(x => x.IGS_Index_Map == inputString || x.GDP_Yearly_Map == inputString)
-                                         .FirstOrDefault();
+            Gov_Info_Ticker A94 = listA94.Where(x => x.Short_term_Debt_Map == inputString).FirstOrDefault();
             if (A94 != null)
             {
                 country = A94.Country;
             }
 
             return country;
-        }
-
-        private string GetColumnName(string inputString, List<Gov_Info_Ticker> listA94)
-        {
-            string columnName = "";
-
-            Gov_Info_Ticker A94 = listA94.Where(x => x.IGS_Index_Map == inputString)
-                                         .FirstOrDefault();
-            if (A94 != null)
-            {
-                columnName = "IGS_Index";
-            }
-
-            A94 = listA94.Where(x => x.GDP_Yearly_Map == inputString)
-                         .FirstOrDefault();
-            if (A94 != null)
-            {
-                columnName = "GDP_Yearly";
-            }
-
-            return columnName;
         }
     }
 }
