@@ -23,6 +23,7 @@ namespace AutoTransfer.Transfer
         private string reportDateStr = string.Empty;
         private ThreadTask t = new ThreadTask();
         private string type = TableType.C04.ToString();
+        private DateTime reportDateDt = DateTime.MinValue;
 
         #endregion 共用參數
 
@@ -30,24 +31,54 @@ namespace AutoTransfer.Transfer
         /// start Transfer
         /// </summary>
         /// <param name="year"></param>
-        public void startTransfer(string year)
+        public void startTransfer(string dateTime)
         {
             logPath = log.txtLocation(type);
             DateTime dt = DateTime.Now;
             List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
-            if (!year.IsNullOrWhiteSpace())
+
+            if (dateTime.Length != 8 ||
+               !DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
+               System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+               out reportDateDt))
             {
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
+                    type,
+                    false,
+                    reportDateDt,
+                    dt,
+                    DateTime.Now,
+                    1,
+                    logPath,
+                   MessageType.DateTime_Format_Fail.GetDescription()
+                    );
+                #endregion
+            }
+            else
+            {
+                var _dt2 = reportDateDt.AddMonths(-18).Year;
+                var _dt = reportDateDt.Year;
+                List<string> years = new List<string>();
+                var _d = _dt - _dt2;
+                for (int i = 0; i <= _d; i++)
+                {
+                    years.Add((_dt2 + i).ToString());
+                }
                 IFRS9Entities db = new IFRS9Entities();
-                var A84datas = db.Econ_Foreign.AsNoTracking()
-                    .Where(x => x.Year_Quartly.StartsWith(year));
-                if (A84datas.Any())
+                var A84datas = new List<Econ_Foreign>();
+                foreach (var year in years)
+                {
+                    A84datas.AddRange(db.Econ_Foreign.AsNoTracking().Where(x => x.Year_Quartly.StartsWith(year)));
+                }                  
+                if (years.Any() && A84datas.Any())
                 {
                     List<Econ_F_YYYYMMDD> C04s = new List<Econ_F_YYYYMMDD>();
                     List<string> yearQuartlys = A84datas.Select(x => x.Year_Quartly).ToList();
                     var A82Datas = db.Moody_Quartly_PD_Info.AsNoTracking().Where(x => yearQuartlys.Contains(x.Year_Quartly)).ToList();
                     var A84pros = new Econ_Foreign().GetType().GetProperties().Where(z => !notParm.Contains(z.Name)).ToList();
                     var C04pros = new Econ_F_YYYYMMDD().GetType().GetProperties().ToList();
-                    A84datas.ToList().ForEach(x =>
+                    A84datas.ForEach(x =>
                     {
                         Econ_F_YYYYMMDD C04Data = new Econ_F_YYYYMMDD();
                         C04Data = db.Econ_F_YYYYMMDD.FirstOrDefault(i => i.Year_Quartly == x.Year_Quartly);
@@ -95,7 +126,7 @@ namespace AutoTransfer.Transfer
                         log.bothLog(
                             type,
                             true,
-                            dt,
+                            reportDateDt,
                             dt,
                             DateTime.Now,
                             1,
@@ -110,7 +141,7 @@ namespace AutoTransfer.Transfer
                         log.bothLog(
                             type,
                             false,
-                            dt,
+                            reportDateDt,
                             dt,
                             DateTime.Now,
                             1,
@@ -120,7 +151,8 @@ namespace AutoTransfer.Transfer
                             );
                         #endregion
                     }
-                    finally {
+                    finally
+                    {
                         db.Dispose();
                     }
                 }
@@ -130,7 +162,7 @@ namespace AutoTransfer.Transfer
                     log.bothLog(
                         type,
                         false,
-                        dt,
+                        reportDateDt,
                         dt,
                         DateTime.Now,
                         1,
@@ -138,8 +170,9 @@ namespace AutoTransfer.Transfer
                         "找不到A84符合的資料(Econ_Foreign)"
                         );
                     #endregion
-                }
+                }             
             }
+            
         }
     }
 }
