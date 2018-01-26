@@ -1146,7 +1146,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                     }
                     catch (Exception ex)
                     {
-                        dbContextTransaction.Rollback(); //Required according to MSDN article 
+                        //dbContextTransaction.Rollback(); //Required according to MSDN article 
                         log.bothLog(
                             type,
                             false,

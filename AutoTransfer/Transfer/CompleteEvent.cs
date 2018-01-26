@@ -113,25 +113,24 @@ A41 AS(
       	  _A53Sample.ISSUER_TICKER,
 		  _A53Sample.GUARANTOR_NAME,
 		  _A53Sample.GUARANTOR_EQY_TICKER
-   FROM Bond_Account_Info A41
+   FROM (Select * 
+   from Bond_Account_Info 
+   where Report_Date = '{reportData}'
+   and   Version =  {ver}) AS A41
    LEFT JOIN Rating_Info_SampleInfo _A53Sample
    ON  A41.Bond_Number = _A53Sample.Bond_Number
    AND _A53Sample.Report_Date = '{reportData}'
-   AND A41.Report_Date = '{reportData}'
-   AND A41.Version =  {ver}
-   WHERE A41.Report_Date = '{reportData}'
-   AND A41.Version =  {ver}
 ), --全部的A41
 tempA57t AS (
 SELECT _A57.*,
        _A51.Grade_Adjust,
        _A51.PD_Grade
 FROM   temp _A57
-Join   A52 _A52
+left Join   A52 _A52
 ON     _A57.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
 AND    _A57.Rating = _A52.Rating
 AND    _A57.Rating_Org = _A52.Rating_Org
-JOIN   A51 _A51
+left JOIN   A51 _A51
 ON     _A52.PD_Grade = _A51.PD_Grade
 WHERE  _A57.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
   UNION ALL
@@ -139,7 +138,7 @@ SELECT _A57.*,
        _A51_2.Grade_Adjust,
        _A51_2.PD_Grade
 FROM   temp _A57
-JOIN   A51 _A51_2
+left JOIN   A51 _A51_2
 ON     _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 AND    _A57.Rating = _A51_2.Rating
 WHERE  _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
@@ -278,11 +277,6 @@ Select BA_Info.Reference_Nbr AS Reference_Nbr ,
     BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
     BA_Info.Origination_Date_Old AS Origination_Date_Old
 from  A41 BA_Info 
-where 
- not EXISTS  
-(select top 1 Reference_Nbr 
-from T1 
-where BA_Info.Reference_Nbr = T1.Reference_Nbr)
 ),
 T1all AS(
   select * from T1
@@ -357,6 +351,21 @@ SELECT     Reference_Nbr,
 		   From
 		   T1all ; 
 
+with tempDele as
+(
+Select distinct Reference_Nbr from Bond_Rating_Info
+where  Report_Date = '{reportData}'
+and Version = {ver}
+and Rating_Type = '{Rating_Type.A.GetDescription()}'
+and Rating is not null
+) 
+delete Bond_Rating_Info
+where  Report_Date = '{reportData}'
+and Version = {ver}
+and Rating is null
+and Rating_Type = '{Rating_Type.A.GetDescription()}'
+and Reference_Nbr in (select Reference_Nbr from tempDele);
+
 --評估日
 
 WITH A52 AS (
@@ -413,11 +422,11 @@ SELECT _A53.*,
        _A51.Grade_Adjust,
        _A51.PD_Grade
 FROM   A53 _A53
-Join   A52 _A52
+left Join   A52 _A52
 ON     _A53.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
 AND    _A53.Rating_Org = _A52.Rating_Org
 AND    _A53.Rating = _A52.Rating
-JOIN   A51 _A51
+left JOIN   A51 _A51
 ON     _A52.PD_Grade = _A51.PD_Grade
 WHERE  _A53.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
   UNION ALL
@@ -425,7 +434,7 @@ SELECT _A53.*,
        _A51_2.Grade_Adjust,
        _A51_2.PD_Grade
 FROM   A53 _A53
-JOIN   A51 _A51_2
+left JOIN   A51 _A51_2
 ON     _A53.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 AND    _A53.Rating = _A51_2.Rating
 WHERE  _A53.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
@@ -1232,7 +1241,7 @@ INSERT INTO [Bond_Rating_Info]
                         }
                         catch (Exception ex)
                         {
-                            dbContextTransaction.Rollback(); //Required according to MSDN article 
+                            //dbContextTransaction.Rollback(); //Required according to MSDN article 
                             log.bothLog(
                                 TableType.A57.ToString(),
                                 false,
