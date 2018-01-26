@@ -46,6 +46,8 @@ namespace AutoTransfer.Transfer
                             string ver = version.ToString();
                             string complement = ConfigurationManager.AppSettings["complement"];
                             string sql = string.Empty;
+                            string sql1_2 = string.Empty;
+                            string sql1_3 = string.Empty;
                             string sql2 = string.Empty;
                             sql = $@"
 --原始
@@ -364,8 +366,9 @@ where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.A.GetDescription()}'
-and Reference_Nbr in (select Reference_Nbr from tempDele);
+and Reference_Nbr in (select Reference_Nbr from tempDele);" ;
 
+                            sql1_2 = $@"
 --評估日
 
 WITH A52 AS (
@@ -553,6 +556,22 @@ SELECT     Reference_Nbr,
 		   From
 		   T0;
 
+with tempDele as
+(
+Select distinct Reference_Nbr from Bond_Rating_Info
+where  Report_Date = '{reportData}'
+and Version = {ver}
+and Rating_Type = '{Rating_Type.B.GetDescription()}'
+and Rating is not null
+) 
+delete Bond_Rating_Info
+where  Report_Date = '{reportData}'
+and Version = {ver}
+and Rating is null
+and Rating_Type = '{Rating_Type.B.GetDescription()}'
+and Reference_Nbr in (select Reference_Nbr from tempDele); 
+";
+                            sql1_3 = $@"
 -- update Bond_Rating(債項信評) 的設定
 update Bond_Rating_Info   
 set Rating = 
@@ -817,6 +836,8 @@ select
                             ";
                             db.Database.CommandTimeout = 300;
                             db.Database.ExecuteSqlCommand(sql);
+                            db.Database.ExecuteSqlCommand(sql1_2);
+                            db.Database.ExecuteSqlCommand(sql1_3);
                             #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
                             var ISSUERstr = RatingObject.ISSUER.GetDescription();
                             var Bondstr = RatingObject.Bonds.GetDescription();
