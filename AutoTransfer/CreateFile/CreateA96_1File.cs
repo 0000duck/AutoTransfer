@@ -42,6 +42,8 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-FIELDS
                 data.Add("START-OF-FIELDS");
+                data.Add("BNCHMRK_TSY_ISSUE_ID");
+                data.Add("ID_CUSIP");
                 data.Add("YLD_YTM_MID");
                 data.Add("END-OF-FIELDS");
                 #endregion START-OF-FIELDS
@@ -66,7 +68,8 @@ namespace AutoTransfer.CreateFile
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            data.Add(string.Format("{0}@BVAL Corp", x));
+                            //data.Add(string.Format("{0}@BVAL Corp", x));
+                            data.Add(string.Format("{0}|ISIN", x));
                         }
                     });
                 db.Dispose();
