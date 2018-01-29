@@ -1354,7 +1354,8 @@ INSERT INTO [Bond_Rating_Info]
             {
                 string thisYear = todayDate.Substring(0, 4);
                 string lastYear = (int.Parse(thisYear) - 1).ToString();
-                string startYearQuartly = lastYear + "Q1";
+                //string startYearQuartly = lastYear + "Q1";
+                string startYearQuartly = "1995Q1";
                 string endYearQuartly = thisYear + "Q4";
 
                 IEnumerable<Loan_default_Info> A06Data = db.Loan_default_Info

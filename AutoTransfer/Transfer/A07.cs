@@ -134,12 +134,6 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //.Get(string.Empty,
-            //     setFile.getA07FilePath(),
-            //     setFile.getFileName(),
-            //     out error);
-
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             .Get(string.Empty,
                  setFile.getA07FilePath(),

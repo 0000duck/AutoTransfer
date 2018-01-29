@@ -27,7 +27,7 @@ namespace AutoTransfer.CreateFile
                 //string getFileName = f.getGZFileName();
 
                 DateTime dt = DateTime.Now;
-                DateTime dt2 = dt.AddMonths(-18);
+                //DateTime dt2 = dt.AddMonths(-18);
 
                 #region File
                 data.Add("START-OF-FILE");
@@ -37,7 +37,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FILETYPE=pc");
                 data.Add($"REPLYFILENAME={getFileName}");
-                data.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
+                data.Add($"DATERANGE=19950331|{dt.ToString("yyyy1231")}");
                 data.Add("HIST_PERIOD=q");
                 data.Add("PROGRAMNAME=gethistory");
                 #endregion Title
@@ -53,9 +53,7 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-FIELDS
                 data.Add("START-OF-FIELDS");
-                data.Add("NAME");
                 data.Add("PX_LAST");
-                data.Add("LAST_UPDATE_DT");
                 data.Add("END-OF-FIELDS");
                 #endregion START-OF-FIELDS
 
