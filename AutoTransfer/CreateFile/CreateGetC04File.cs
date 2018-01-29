@@ -51,9 +51,9 @@ namespace AutoTransfer.CreateFile
 
                 data.Add("START-OF-FIELDS");
 
-                data.Add("NAME");
+                //data.Add("NAME");
                 data.Add("PX_LAST");
-                data.Add("LAST_UPDATE_DT");
+                //data.Add("LAST_UPDATE_DT");
 
                 data.Add("END-OF-FIELDS");
 
