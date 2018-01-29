@@ -8,9 +8,7 @@ namespace AutoTransfer
     {
         public void start()
         {
-            DateTime dt = DateTime.Now;
-            new C04().startTransfer(dt.Year.ToString());
-            //new C04().startTransfer((dt.Year - 1).ToString());
+            new C04().startTransfer(DateTime.Now.ToString("yyyyMMdd"));
         }
     }
 }
