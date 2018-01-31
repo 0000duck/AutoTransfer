@@ -26,6 +26,8 @@ namespace AutoTransfer.CreateFile
         private static string A96_1Get = ConfigurationManager.AppSettings["A96_1Get"];
         private static string A96_2Put = ConfigurationManager.AppSettings["A96_2Put"];
         private static string A96_2Get = ConfigurationManager.AppSettings["A96_2Get"];
+        private static string SecurityDesPut = string.Empty;
+        private static string SecurityDesGet = string.Empty;
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
         private static string flag = ConfigurationManager.AppSettings["PROGRAMFLAG"];
         private static string startupPath = Directory.GetCurrentDirectory();
@@ -69,6 +71,18 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "C04Get") : getC04Get;
         }
 
+        public string getSecurityDesFileName()
+        {
+            return string.Format("securityDes_{0}.csv",
+                _dateTime);
+        }
+
+        public string getSecurityDesFilePath()
+        {
+            return SecurityDesGet.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "securityDesGet") : SecurityDesGet;
+        }
+
         public string getCommpanyFileName()
         {
             return string.Format("commpany{0}_{1}.csv",
@@ -106,6 +120,18 @@ namespace AutoTransfer.CreateFile
         {
             return getC04Put.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "C04Put") : getC04Put;
+        }
+
+        public string putSecurityDesFileName()
+        {
+            return string.Format("securityDes_{0}.req",
+                _dateTime);
+        }
+
+        public string putSecurityDesFilePath()
+        {
+            return SecurityDesPut.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "securityDesPut") : SecurityDesPut;
         }
 
         public string putCommpanyFileName()

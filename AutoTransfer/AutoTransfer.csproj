@@ -81,6 +81,7 @@
     <Compile Include="CreateFile\CreateA96_1File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
+    <Compile Include="CreateFile\CreateMissSecurityDesFile.cs" />
     <Compile Include="Econ_Domestic.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>

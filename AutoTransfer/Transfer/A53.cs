@@ -209,8 +209,7 @@ namespace AutoTransfer.Transfer
             {
                 bool flag = false; //判斷是否為要讀取的資料行數
                 string line = string.Empty;
-                IT_info = new Dictionary<string, commpayInfo>();
-                GET_info =new Dictionary<string, commpayInfo>();
+
                 #region save Rating_Info_SampleInfo
 
                 using (IFRS9Entities db = new IFRS9Entities())
@@ -442,45 +441,182 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                         sampleInfos = new List<Rating_Info_SampleInfo>();
                         sampleInfos = db.Rating_Info_SampleInfo.AsNoTracking()
                             .Where(x => x.Report_Date == reportDateDt).ToList();
-                        sampleInfos.ForEach(y =>
+                        var missSecurityDes = sampleInfos.Where(x => x.Security_Des == null)
+                            .Select(x => x.Bond_Number).ToList();
+                        if (missSecurityDes.Any())
                         {
-                            if (!y.ISSUER_TICKER.IsNullOrWhiteSpace())
+                            if (new CreateMissSecurityDesFile().Create(tableType, reportDateStr, missSecurityDes))
                             {
-                                commpayInfo x = new commpayInfo();
-                                if (!IT_info.TryGetValue(y.ISSUER_TICKER, out x))
-                                {
-                                    data.Add(y.ISSUER_TICKER);
-                                    IT_info.Add(y.ISSUER_TICKER, new commpayInfo()
-                                    {
-                                        Bond_Number = new List<string>() { y.Bond_Number },
-                                        Rating_Object = RatingObject.ISSUER.GetDescription()
-                                    });
-                                }
-                                else
-                                {
-                                    x.Bond_Number.Add(y.Bond_Number);
-                                }
+                                putMissSecurityDesSFTP();
                             }
-                            if (!y.GUARANTOR_EQY_TICKER.IsNullOrWhiteSpace())
+                            else
                             {
-                                commpayInfo x = new commpayInfo();
-                                if (!GET_info.TryGetValue(y.GUARANTOR_EQY_TICKER, out x))
-                                {
-                                    data.Add(y.GUARANTOR_EQY_TICKER);
-                                    GET_info.Add(y.GUARANTOR_EQY_TICKER, new commpayInfo()
-                                    {
-                                        Bond_Number = new List<string>() { y.Bond_Number },
-                                        Rating_Object = RatingObject.GUARANTOR.GetDescription()
-                                    });
-                                }
-                                else
-                                {
-                                    x.Bond_Number.Add(y.Bond_Number);
-                                }
+                                log.bothLog(
+                                    type,
+                                    false,
+                                    reportDateDt,
+                                    startTime,
+                                    DateTime.Now,
+                                    1,
+                                    logPath,
+                                    "新增SecurityDes缺漏上傳檔案失敗"
+                                    );
                             }
-                        });
-                        data = data.Distinct().ToList(); //去重複
-                        if (new CreateCommpanyFile().create(tableType, reportDateStr, data))
+                        }
+                        else
+                        {
+                            if (new CreateCommpanyFile().create(tableType, reportDateStr, setCommpanyParams(sampleInfos)))
+                            {
+                                putCommpanySFTP();
+                            }
+                            else
+                            {
+                                log.bothLog(
+                                    type,
+                                    false,
+                                    reportDateDt,
+                                    startTime,
+                                    DateTime.Now,
+                                    1,
+                                    logPath,
+                                    MessageType.Create_Commpany_File_Fail.GetDescription()
+                                    );
+                            }
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        log.bothLog(
+                            type,
+                            false,
+                            reportDateDt,
+                            startTime,
+                            DateTime.Now,
+                            1,
+                            logPath,
+                            $"message: {ex.Message}" +
+                            $", inner message {ex.InnerException?.InnerException?.Message}"
+                            );
+                    }
+                }
+                #endregion
+            }
+        }
+
+        /// <summary>
+        /// SFTP Put SecurityDes缺漏檔案
+        /// </summary>
+        protected void putMissSecurityDesSFTP()
+        {
+            string error = string.Empty;
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                setFile.putSecurityDesFilePath(),
+                setFile.putSecurityDesFileName(), out error);
+            if (!error.IsNullOrWhiteSpace())
+            {
+                log.bothLog(
+                    type,
+                    false,
+                    reportDateDt,
+                    startTime,
+                    DateTime.Now,
+                    1,
+                    logPath,
+                    "上傳SecurityDes缺漏檔案失敗"
+                    );
+            }
+            else {
+                Thread.Sleep(20 * 60 * 1000);
+                getMissSecurityDesSFTP();
+            }
+        }
+
+        /// <summary>
+        /// SFTP Get SecurityDes缺漏檔案
+        /// </summary>
+        protected void getMissSecurityDesSFTP()
+        {
+            new FileRelated().createFile(setFile.getSecurityDesFilePath());
+            string error = string.Empty;
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                    setFile.getSecurityDesFilePath(),
+                    setFile.getSecurityDesFileName(),
+                    out error);
+            if (!error.IsNullOrWhiteSpace())
+            {
+                log.bothLog(
+                    type,
+                    false,
+                    reportDateDt,
+                    startTime,
+                    DateTime.Now,
+                    1,
+                    logPath,
+                    "下載SecurityDes缺漏檔案失敗"
+                    );
+            }
+            else
+            {
+                updateSecurityDes();
+            }
+        }
+
+        /// <summary>
+        /// update Rating_Info_SampleInfo SecurityDes
+        /// </summary>
+        protected void updateSecurityDes()
+        {
+            List<string> data = new List<string>();
+            using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getSecurityDesFilePath(), setFile.getSecurityDesFileName())))
+            {
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+
+                #region save Rating_Info_SampleInfo
+
+                using (IFRS9Entities db = new IFRS9Entities())
+                {
+                    StringBuilder sb = new StringBuilder();
+
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if ("END-OF-DATA".Equals(line))
+                            flag = false;
+                        if (flag) //找到的資料
+                        {
+                            var arr = line.Split('|');
+                            //arr[0]  ex: EI994034 Corp (債券編號)
+                            //arr[1]  ex: 0
+                            //arr[2]  ex: 1
+                            //arr[3]  CHGRID 5.14 12/08/21 (Security_Des)
+
+                            if (arr.Length >= 4)
+                            {
+                                var bond_Number = arr[0].Trim().Split(' ')[0];
+                                var Security_Des = arr[3];
+                                var Bloomberg_Ticker = Security_Des.IsNullOrWhiteSpace() ? null : Security_Des.Split(' ')[0];
+                                // update Rating_Info_SampleInfo
+                                sb.Append($@"
+update Rating_Info_SampleInfo
+set Security_Des = {Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {Bloomberg_Ticker.stringToStrSql()}
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and Bond_Number = {bond_Number.stringToStrSql()}; ");
+                            }
+                        }
+                        if ("START-OF-DATA".Equals(line))
+                            flag = true;
+                    }
+                    try
+                    {
+                        db.Database.ExecuteSqlCommand(sb.ToString());
+                        sampleInfos = new List<Rating_Info_SampleInfo>();
+                        sampleInfos = db.Rating_Info_SampleInfo.AsNoTracking()
+                            .Where(x => x.Report_Date == reportDateDt).ToList();
+                        if (new CreateCommpanyFile().create(tableType, reportDateStr, setCommpanyParams(sampleInfos)))
                         {
                             putCommpanySFTP();
                         }
@@ -496,9 +632,9 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                                 logPath,
                                 MessageType.Create_Commpany_File_Fail.GetDescription()
                                 );
-                        }
+                        }                      
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         log.bothLog(
                             type,
@@ -1195,6 +1331,53 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
         }
 
         #region private function
+
+        private List<string> setCommpanyParams(List<Rating_Info_SampleInfo> sampleInfos)
+        {
+            List<string> data = new List<string>();
+            IT_info = new Dictionary<string, commpayInfo>();
+            GET_info = new Dictionary<string, commpayInfo>();
+            sampleInfos.ForEach(y =>
+            {
+                if (!y.ISSUER_TICKER.IsNullOrWhiteSpace())
+                {
+                    commpayInfo x = new commpayInfo();
+                    if (!IT_info.TryGetValue(y.ISSUER_TICKER, out x))
+                    {
+                        data.Add(y.ISSUER_TICKER);
+                        IT_info.Add(y.ISSUER_TICKER, new commpayInfo()
+                        {
+                            Bond_Number = new List<string>() { y.Bond_Number },
+                            Rating_Object = RatingObject.ISSUER.GetDescription()
+                        });
+                    }
+                    else
+                    {
+                        x.Bond_Number.Add(y.Bond_Number);
+                    }
+                }
+                if (!y.GUARANTOR_EQY_TICKER.IsNullOrWhiteSpace())
+                {
+                    commpayInfo x = new commpayInfo();
+                    if (!GET_info.TryGetValue(y.GUARANTOR_EQY_TICKER, out x))
+                    {
+                        data.Add(y.GUARANTOR_EQY_TICKER);
+                        GET_info.Add(y.GUARANTOR_EQY_TICKER, new commpayInfo()
+                        {
+                            Bond_Number = new List<string>() { y.Bond_Number },
+                            Rating_Object = RatingObject.GUARANTOR.GetDescription()
+                        });
+                    }
+                    else
+                    {
+                        x.Bond_Number.Add(y.Bond_Number);
+                    }
+                }
+            });
+            data = data.Distinct().ToList(); //去重複
+            return data;
+        }
+
 
         /// <summary>
         /// 判斷 sample 是否新增
