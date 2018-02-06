@@ -30,6 +30,9 @@ namespace AutoTransfer.CreateFile
         private static string SecurityDesGet = string.Empty;
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
         private static string flag = ConfigurationManager.AppSettings["PROGRAMFLAG"];
+        private static string userNumber = ConfigurationManager.AppSettings["USERNUMBER"];
+        private static string WS = ConfigurationManager.AppSettings["WS"];
+        private static string SN = ConfigurationManager.AppSettings["SN"];
         private static string startupPath = Directory.GetCurrentDirectory();
         private string _dateTime;
 
@@ -39,6 +42,21 @@ namespace AutoTransfer.CreateFile
         {
             _type = type;
             _dateTime = dateTime;
+        }
+
+        public string getUSERNUMBER()
+        {
+            return userNumber;
+        }
+
+        public string getWS()
+        {
+            return WS;
+        }
+
+        public string getSN()
+        {
+            return SN;
         }
 
         public string getFIRMNAME()

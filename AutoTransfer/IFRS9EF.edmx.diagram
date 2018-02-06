@@ -29,6 +29,9 @@
         <EntityTypeShape EntityType="IFRS9Model.Gov_Info_Yearly" Width="1.5" PointX="15.375" PointY="15.75" />
         <EntityTypeShape EntityType="IFRS9Model.Econ_Foreign" Width="1.5" PointX="17.375" PointY="3.75" />
         <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="9.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Bond_Rating" Width="1.5" PointX="7.375" PointY="17.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Guarantor_Rating" Width="1.5" PointX="9.375" PointY="17.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Issuer_Rating" Width="1.5" PointX="11.375" PointY="18.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

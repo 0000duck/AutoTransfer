@@ -51,6 +51,8 @@ namespace AutoTransfer.CreateFile
 
                 data.Add(string.Empty);
 
+                #region START-OF-DATA
+
                 data.Add("START-OF-DATA");
 
                 datas.ForEach(x =>
@@ -59,6 +61,10 @@ namespace AutoTransfer.CreateFile
                 });
 
                 data.Add("END-OF-DATA");
+
+                #endregion
+
+                data.Add("END-OF-FILE");
 
                 #endregion File
 
