@@ -63,6 +63,9 @@
     <Compile Include="Bond_Category_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Bond_Rating.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Bond_Rating_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -118,6 +121,12 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Group_Product_Code_Mapping.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Guarantor_Rating.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Issuer_Rating.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Loan_Account_Info.cs">

@@ -84,6 +84,18 @@
           <Property Name="Sector_Extra" Type="varchar" MaxLength="50" />
           <Property Name="Processing_Date" Type="date" Nullable="false" />
         </EntityType>
+        <EntityType Name="Bond_Rating">
+          <Key>
+            <PropertyRef Name="Bond_Number" />
+          </Key>
+          <Property Name="Bond_Rating_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Bond_Number" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="S_And_P" Type="varchar" MaxLength="50" />
+          <Property Name="Moodys" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
+          <Property Name="TRC" Type="varchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="Bond_Rating_Info">
           <Key>
             <PropertyRef Name="Reference_Nbr" />
@@ -596,6 +608,30 @@
           <Property Name="Product_Code" Type="varchar" MaxLength="64" Nullable="false" />
           <Property Name="Processing_Date" Type="date" Nullable="false" />
         </EntityType>
+        <EntityType Name="Guarantor_Rating">
+          <Key>
+            <PropertyRef Name="Issuer" />
+          </Key>
+          <Property Name="Guarantor_Rating_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Issuer" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="S_And_P" Type="varchar" MaxLength="50" />
+          <Property Name="Moodys" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
+          <Property Name="TRC" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Issuer_Rating">
+          <Key>
+            <PropertyRef Name="Issuer" />
+          </Key>
+          <Property Name="Issuer_Rating_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Issuer" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="S_And_P" Type="varchar" MaxLength="50" />
+          <Property Name="Moodys" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch" Type="varchar" MaxLength="50" />
+          <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
+          <Property Name="TRC" Type="varchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="Loan_Account_Info">
           <Key>
             <PropertyRef Name="Reference_Nbr" />
@@ -720,6 +756,7 @@
         <EntityContainer Name="IFRS9ModelStoreContainer">
           <EntitySet Name="Bond_Account_Info" EntityType="Self.Bond_Account_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Category_Info" EntityType="Self.Bond_Category_Info" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Bond_Rating" EntityType="Self.Bond_Rating" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Info" EntityType="Self.Bond_Rating_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Parm" EntityType="Self.Bond_Rating_Parm" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Summary" EntityType="Self.Bond_Rating_Summary" Schema="dbo" store:Type="Tables" />
@@ -735,6 +772,8 @@
           <EntitySet Name="Grade_Mapping_Info" EntityType="Self.Grade_Mapping_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Grade_Moody_Info" EntityType="Self.Grade_Moody_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="Self.Group_Product_Code_Mapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Guarantor_Rating" EntityType="Self.Guarantor_Rating" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Issuer_Rating" EntityType="Self.Issuer_Rating" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Loan_Account_Info" EntityType="Self.Loan_Account_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Loan_default_Info" EntityType="Self.Loan_default_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="Self.Moody_Quartly_PD_Info" Schema="dbo" store:Type="Tables" />
@@ -778,6 +817,9 @@
           <EntitySet Name="Gov_Info_Yearly" EntityType="IFRS9Model.Gov_Info_Yearly" />
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
+          <EntitySet Name="Bond_Rating" EntityType="IFRS9Model.Bond_Rating" />
+          <EntitySet Name="Guarantor_Rating" EntityType="IFRS9Model.Guarantor_Rating" />
+          <EntitySet Name="Issuer_Rating" EntityType="IFRS9Model.Issuer_Rating" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1493,6 +1535,42 @@
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
         </EntityType>
+        <EntityType Name="Bond_Rating">
+          <Key>
+            <PropertyRef Name="Bond_Number" />
+          </Key>
+          <Property Name="Bond_Rating_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Bond_Number" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="S_And_P" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Moodys" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Guarantor_Rating">
+          <Key>
+            <PropertyRef Name="Issuer" />
+          </Key>
+          <Property Name="Guarantor_Rating_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Issuer" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="S_And_P" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Moodys" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Issuer_Rating">
+          <Key>
+            <PropertyRef Name="Issuer" />
+          </Key>
+          <Property Name="Issuer_Rating_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Issuer" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="S_And_P" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Moodys" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2192,6 +2270,45 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bond_Rating">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating">
+              <MappingFragment StoreEntitySet="Bond_Rating">
+                <ScalarProperty Name="TRC" ColumnName="TRC" />
+                <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
+                <ScalarProperty Name="Fitch" ColumnName="Fitch" />
+                <ScalarProperty Name="Moodys" ColumnName="Moodys" />
+                <ScalarProperty Name="S_And_P" ColumnName="S_And_P" />
+                <ScalarProperty Name="Bond_Number" ColumnName="Bond_Number" />
+                <ScalarProperty Name="Bond_Rating_ID" ColumnName="Bond_Rating_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Guarantor_Rating">
+            <EntityTypeMapping TypeName="IFRS9Model.Guarantor_Rating">
+              <MappingFragment StoreEntitySet="Guarantor_Rating">
+                <ScalarProperty Name="TRC" ColumnName="TRC" />
+                <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
+                <ScalarProperty Name="Fitch" ColumnName="Fitch" />
+                <ScalarProperty Name="Moodys" ColumnName="Moodys" />
+                <ScalarProperty Name="S_And_P" ColumnName="S_And_P" />
+                <ScalarProperty Name="Issuer" ColumnName="Issuer" />
+                <ScalarProperty Name="Guarantor_Rating_ID" ColumnName="Guarantor_Rating_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Issuer_Rating">
+            <EntityTypeMapping TypeName="IFRS9Model.Issuer_Rating">
+              <MappingFragment StoreEntitySet="Issuer_Rating">
+                <ScalarProperty Name="TRC" ColumnName="TRC" />
+                <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
+                <ScalarProperty Name="Fitch" ColumnName="Fitch" />
+                <ScalarProperty Name="Moodys" ColumnName="Moodys" />
+                <ScalarProperty Name="S_And_P" ColumnName="S_And_P" />
+                <ScalarProperty Name="Issuer" ColumnName="Issuer" />
+                <ScalarProperty Name="Issuer_Rating_ID" ColumnName="Issuer_Rating_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
