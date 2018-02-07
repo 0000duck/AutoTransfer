@@ -118,7 +118,7 @@ namespace AutoTransfer.Transfer
                     );
                 #endregion
             }
-            else //success (wait 20 min and get data)
+            else
             {
                 Thread.Sleep(20 * 60 * 1000);
                 getA07SFTP();

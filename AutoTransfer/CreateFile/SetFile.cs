@@ -26,6 +26,8 @@ namespace AutoTransfer.CreateFile
         private static string A96_1Get = ConfigurationManager.AppSettings["A96_1Get"];
         private static string A96_2Put = ConfigurationManager.AppSettings["A96_2Put"];
         private static string A96_2Get = ConfigurationManager.AppSettings["A96_2Get"];
+        private static string A96_3Put = ConfigurationManager.AppSettings["A96_3Put"];
+        private static string A96_3Get = ConfigurationManager.AppSettings["A96_3Get"];
         private static string SecurityDesPut = string.Empty;
         private static string SecurityDesGet = string.Empty;
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
@@ -339,6 +341,32 @@ namespace AutoTransfer.CreateFile
             return string.Format("Get{0}_2_{1}.req",
                 _type.ToString(),
                 _dateTime);
+        }
+
+        public string getA96_3FilePath()
+        {
+            return A96_3Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_3Get") : A96_3Get;
+        }
+
+        public string putA96_3FilePath()
+        {
+            return A96_3Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A96_3Put") : A96_3Put;
+        }
+
+        public string getA96_3FileName()
+        {
+            return string.Format("Get{0}_3_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA96_3FileName()
+        {
+            return string.Format("Get{0}_3_{1}.req",
+                                 _type.ToString(),
+                                 _dateTime);
         }
     }
 }

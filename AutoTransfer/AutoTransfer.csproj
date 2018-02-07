@@ -75,6 +75,7 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Bond_Spread_Info\A96_Bond_Spread_Info.cs" />
     <Compile Include="Bond_Ticker_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -82,6 +83,8 @@
     <Compile Include="CreateFile\CreateA92File.cs" />
     <Compile Include="CreateFile\CreateA93File.cs" />
     <Compile Include="CreateFile\CreateA96_1File.cs" />
+    <Compile Include="CreateFile\CreateA96_2File.cs" />
+    <Compile Include="CreateFile\CreateA96_3File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
     <Compile Include="CreateFile\CreateMissSecurityDesFile.cs" />
@@ -199,6 +202,7 @@
     <Compile Include="SFTP\SFTPInfo.cs" />
     <Compile Include="Utility\ThreadTask.cs" />
     <Compile Include="Utility\Log.cs" />
+    <Compile Include="Utility\TypeTransfer.cs" />
   </ItemGroup>
   <ItemGroup>
     <EntityDeploy Include="IFRS9EF.edmx">
