@@ -1,5 +1,5 @@
 ﻿
-namespace AutoTransfer.Bond_Spread_Info
+namespace AutoTransfer.BondSpreadInfo
 {
     public class A96_Bond_Spread_Info
     {

@@ -75,7 +75,10 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
-    <Compile Include="Bond_Spread_Info\A96_Bond_Spread_Info.cs" />
+    <Compile Include="Bond_Spread_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BondSpreadInfo\A96_Bond_Spread_Info.cs" />
     <Compile Include="Bond_Ticker_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>

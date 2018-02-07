@@ -1,5 +1,5 @@
 ﻿using AutoTransfer.Abstract;
-using AutoTransfer.Bond_Spread_Info;
+using AutoTransfer.BondSpreadInfo;
 using AutoTransfer.Commpany;
 using AutoTransfer.CreateFile;
 using AutoTransfer.Sample;
@@ -92,7 +92,7 @@ namespace AutoTransfer.Transfer
                     verInt,
                     logPath,
                     string.Join(",", errs)
-                    );
+                );
             }
             else
             {
@@ -128,8 +128,7 @@ namespace AutoTransfer.Transfer
         {
             if (new CreateA96_1File().create(tableType, reportDateStr, verInt))
             {
-                //把資料送給SFTP
-                putA96_1SFTP();
+                putSFTP("1", setFile.putA96_1FilePath(), setFile.putA96_1FileName());
             }
             else
             {
@@ -146,15 +145,15 @@ namespace AutoTransfer.Transfer
             }
         }
 
-        protected void putA96_1SFTP()
+        protected void putSFTP(string fileNumber, string filePath, string replyFileName)
         {
             string error = string.Empty;
 
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //    .Put(string.Empty,
-            //     setFile.putA96_1FilePath(),
-            //     setFile.putA96_1FileName(),
-            //     out error);
+            //         filePath,
+            //         replyFileName,
+            //         out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -171,21 +170,42 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
-                getA96_1SFTP();
+                string getFilePath = "";
+                string getFileName = "";
+
+                switch (fileNumber)
+                {
+                    case "1":
+                        getFilePath = setFile.getA96_1FilePath();
+                        getFileName = setFile.getA96_1FileName();
+                        break;
+                    case "2":
+                        getFilePath = setFile.getA96_2FilePath();
+                        getFileName = setFile.getA96_2FileName();
+                        break;
+                    case "3":
+                        getFilePath = setFile.getA96_3FilePath();
+                        getFileName = setFile.getA96_3FileName();
+                        break;
+                    default:
+                        break;
+                }
+
+                getSFTP(fileNumber, getFilePath, getFileName);
             }
         }
 
-        protected void getA96_1SFTP()
+        protected void getSFTP(string fileNumber, string getFilePath, string getFileName)
         {
-            new FileRelated().createFile(setFile.getA96_1FilePath());
+            new FileRelated().createFile(getFilePath);
+
             string error = string.Empty;
 
             //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             //    .Get(string.Empty,
-            //    setFile.getA96_1FilePath(),
-            //    setFile.getA96_1FileName(),
-            //    out error);
+            //         getFilePath,
+            //         getFileName,
+            //         out error);
 
             if (!error.IsNullOrWhiteSpace())
             {
@@ -195,14 +215,27 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
-                    "下載A96_1檔案失敗"
-                    );
+                    error
+                );
             }
             else
             {
-                createA96_2File();
+                switch (fileNumber)
+                {
+                    case "1":
+                        createA96_2File();
+                        break;
+                    case "2":
+                        createA96_3File();
+                        break;
+                    case "3":
+                        //DataToDb();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -232,15 +265,21 @@ namespace AutoTransfer.Transfer
                         if (arr.Length >= 4)
                         {
                             var bondNumber = arr[0].Trim().Split(' ')[0];
+                            var BNCHMRK_TSY_ISSUE_ID = arr[3].Trim();
 
-                            A96Data.Where(x=>x.Bond_Number == bondNumber)
-                                   .ToList()
-                                   .ForEach(x =>
-                                   {
-                                       x.BNCHMRK_TSY_ISSUE_ID = arr[3].Trim();
-                                   });
+                            if (BNCHMRK_TSY_ISSUE_ID != "" 
+                                && BNCHMRK_TSY_ISSUE_ID != "N.A." 
+                                && BNCHMRK_TSY_ISSUE_ID != "Govt")
+                            {
+                                A96Data.Where(x => x.Bond_Number == bondNumber)
+                                       .ToList()
+                                       .ForEach(x =>
+                                       {
+                                           x.BNCHMRK_TSY_ISSUE_ID = BNCHMRK_TSY_ISSUE_ID;
+                                       });
 
-                            data.Add(arr[3].Trim());
+                                data.Add(BNCHMRK_TSY_ISSUE_ID);
+                            }
                         }
                     }
 
@@ -254,7 +293,7 @@ namespace AutoTransfer.Transfer
                 {
                     if (new CreateA96_2File().create(tableType, reportDateStr, data))
                     {
-                        putA96_2SFTP();
+                        putSFTP("2", setFile.putA96_2FilePath(), setFile.putA96_2FileName());
                     }
                     else
                     {
@@ -264,10 +303,10 @@ namespace AutoTransfer.Transfer
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             MessageType.Create_File_Fail.GetDescription()
-                            );
+                        );
                     }
                 }
                 catch (Exception ex)
@@ -278,72 +317,12 @@ namespace AutoTransfer.Transfer
                         reportDateDt,
                         startTime,
                         DateTime.Now,
-                        1,
+                        verInt,
                         logPath,
                         $"message: {ex.Message}" +
                         $", inner message {ex.InnerException?.InnerException?.Message}"
                         );
                 }
-            }
-        }
-
-        protected void putA96_2SFTP()
-        {
-            string error = string.Empty;
-
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA96_2FilePath(),
-            //     setFile.putA96_2FileName(),
-            //     out error);
-
-            if (!error.IsNullOrWhiteSpace()) //fail
-            {
-                log.bothLog(
-                    type,
-                    false,
-                    reportDateDt,
-                    startTime,
-                    DateTime.Now,
-                    verInt,
-                    logPath,
-                    error
-                );
-            }
-            else
-            {
-                //Thread.Sleep(20 * 60 * 1000);
-                getA96_2SFTP();
-            }
-        }
-
-        protected void getA96_2SFTP()
-        {
-            new FileRelated().createFile(setFile.getA96_2FilePath());
-            string error = string.Empty;
-
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //    setFile.getA96_2FilePath(),
-            //    setFile.getA96_2FileName(),
-            //    out error);
-
-            if (!error.IsNullOrWhiteSpace())
-            {
-                log.bothLog(
-                    type,
-                    false,
-                    reportDateDt,
-                    startTime,
-                    DateTime.Now,
-                    1,
-                    logPath,
-                    "下載A96_2檔案失敗"
-                    );
-            }
-            else
-            {
-                createA96_3File();
             }
         }
 
@@ -393,9 +372,12 @@ namespace AutoTransfer.Transfer
 
                 try
                 {
-                    if (new CreateA96_3File().create(tableType, reportDateStr, data))
+                    string minOriginationDate = A96Data.DefaultIfEmpty()
+                                                       .Max(x => x.Origination_Date.IsNullOrWhiteSpace() == true ? reportDateStr : x.Origination_Date);
+
+                    if (new CreateA96_3File().create(tableType, DateTime.Parse(minOriginationDate).ToString("yyyy/MM/dd") ,reportDateStr, data))
                     {
-                        putA96_3SFTP();
+                        putSFTP("3", setFile.putA96_3FilePath(), setFile.putA96_3FileName());
                     }
                     else
                     {
@@ -405,7 +387,7 @@ namespace AutoTransfer.Transfer
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             MessageType.Create_File_Fail.GetDescription()
                             );
@@ -419,7 +401,7 @@ namespace AutoTransfer.Transfer
                         reportDateDt,
                         startTime,
                         DateTime.Now,
-                        1,
+                        verInt,
                         logPath,
                         $"message: {ex.Message}" +
                         $", inner message {ex.InnerException?.InnerException?.Message}"
@@ -428,49 +410,74 @@ namespace AutoTransfer.Transfer
             }
         }
 
-        protected void putA96_3SFTP()
+        protected void DataToDb()
         {
-            string error = string.Empty;
+            IFRS9Entities db = new IFRS9Entities();
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //     setFile.putA96_3FilePath(),
-            //     setFile.putA96_3FileName(),
-            //     out error);
-
-            if (!error.IsNullOrWhiteSpace()) //fail
+            #region
+            using (StreamReader sr = new StreamReader(Path.Combine(
+                   setFile.getA96_3FilePath(), setFile.getA96_3FileName())))
             {
-                log.bothLog(
-                    type,
-                    false,
-                    reportDateDt,
-                    startTime,
-                    DateTime.Now,
-                    verInt,
-                    logPath,
-                    error
-                );
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if ("END-OF-DATA".Equals(line))
+                    {
+                        flag = false;
+                    }
+
+                    if (flag) //找到的資料
+                    {
+                        var arr = line.Split('|');
+                        //arr[0]  ex: 912810QS0@BGN Govt
+                        //arr[1]  ex: 03/22/2013
+                        //arr[2]  ex: 3.089
+
+                        if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        {
+                            var ID_CUSIP = arr[0].Trim().Split('@')[0];
+
+                            A96Data.Where(x => x.ID_CUSIP == ID_CUSIP)
+                                   .ToList()
+                                   .ForEach(x =>
+                                   {
+                                       x.ID_CUSIP = arr[3].Trim();
+                                   });
+                        }
+                    }
+
+                    if ("START-OF-DATA".Equals(line))
+                    {
+                        flag = true;
+                    }
+                }
             }
-            else
+            #endregion
+
+            #region saveDb
+            try
             {
-                //Thread.Sleep(20 * 60 * 1000);
-                getA96_3SFTP();
+                //db.Econ_Domestic.AddRange(A07Datas);
+                //db.SaveChanges();
+                //db.Dispose();
+                //#region 加入 sql transferCheck by Mark 2018/01/09
+                //log.bothLog(
+                //    type,
+                //    true,
+                //    reportDateDt,
+                //    startTime,
+                //    DateTime.Now,
+                //    1,
+                //    logPath,
+                //    MessageType.Success.GetDescription()
+                //    );
+                //#endregion
             }
-        }
-
-        protected void getA96_3SFTP()
-        {
-            new FileRelated().createFile(setFile.getA96_3FilePath());
-            string error = string.Empty;
-
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //    setFile.getA96_3FilePath(),
-            //    setFile.getA96_3FileName(),
-            //    out error);
-
-            if (!error.IsNullOrWhiteSpace())
+            catch (Exception ex)
             {
+                #region 加入 sql transferCheck by Mark 2018/01/09
                 log.bothLog(
                     type,
                     false,
@@ -479,13 +486,12 @@ namespace AutoTransfer.Transfer
                     DateTime.Now,
                     1,
                     logPath,
-                    "下載A96_3檔案失敗"
+                    $"message: {ex.Message}" +
+                    $", inner message {ex.InnerException?.InnerException?.Message}"
                     );
+                #endregion
             }
-            else
-            {
-                //DataToDb();
-            }
+            #endregion saveDb
         }
     }
 }
