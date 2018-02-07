@@ -33,6 +33,9 @@ namespace AutoTransfer.CreateFile
                 data.Add("START-OF-FILE");
 
                 #region Title
+                data.Add("USERNUMBER=" + f.getUSERNUMBER());
+                data.Add("WS=" + f.getWS());
+                data.Add("SN=" + f.getSN());
                 data.Add("FIRMNAME="+ f.getFIRMNAME());
                 data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FILETYPE=pc");
