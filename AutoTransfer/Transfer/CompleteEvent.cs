@@ -45,10 +45,12 @@ namespace AutoTransfer.Transfer
                             string reportData = dt.ToString("yyyy/MM/dd");
                             string ver = version.ToString();
                             string complement = ConfigurationManager.AppSettings["complement"];
-                            string sql = string.Empty;
-                            string sql1_2 = string.Empty;
-                            string sql1_3 = string.Empty;
-                            string sql2 = string.Empty;
+                            string sql = string.Empty; //原始
+                            string sql1_2 = string.Empty; //評估日
+                            StringBuilder sql_A = new StringBuilder(); //新增三張信評特殊表格
+                            string sql_D = string.Empty; //排除多餘
+                            string sql1_3 = string.Empty; //更新三張信評特殊表格
+                            string sql2 = string.Empty; //A58
                             sql = $@"
 --原始
 
@@ -351,9 +353,10 @@ SELECT     Reference_Nbr,
            Portfolio_Name_Old,
            Origination_Date_Old
 		   From
-		   T1all ; 
+		   T1all ; ";
 
-with tempDele as
+            sql_D += $@"
+with tempDeleA as
 (
 Select distinct Reference_Nbr from Bond_Rating_Info
 where  Report_Date = '{reportData}'
@@ -366,7 +369,7 @@ where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.A.GetDescription()}'
-and Reference_Nbr in (select Reference_Nbr from tempDele);" ;
+and Reference_Nbr in (select Reference_Nbr from tempDeleA) ; " ;
 
                             sql1_2 = $@"
 --評估日
@@ -554,9 +557,10 @@ SELECT     Reference_Nbr,
            Portfolio_Name_Old,
            Origination_Date_Old
 		   From
-		   T0;
+		   T0; ";
 
-with tempDele as
+           sql_D += $@"
+with tempDeleB as
 (
 Select distinct Reference_Nbr from Bond_Rating_Info
 where  Report_Date = '{reportData}'
@@ -569,7 +573,7 @@ where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.B.GetDescription()}'
-and Reference_Nbr in (select Reference_Nbr from tempDele); 
+and Reference_Nbr in (select Reference_Nbr from tempDeleB); 
 ";
                             sql1_3 = $@"
 -- update Bond_Rating(債項信評) 的設定
@@ -592,7 +596,8 @@ from Bond_Rating
 where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' ;
+and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
 set PD_Grade = 
@@ -617,7 +622,8 @@ from Bond_Rating
 where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' ;
+and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' 
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 -- update Issuer_Rating(發行者信評) 的設定
 update Bond_Rating_Info   
@@ -639,7 +645,8 @@ from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' ;
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' 
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
 set PD_Grade = 
@@ -664,7 +671,8 @@ from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' ;
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' 
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 -- update Guarantor_Rating(擔保者信評) 的設定
 update Bond_Rating_Info   
@@ -686,7 +694,8 @@ from Guarantor_Rating
 where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' 
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
 set PD_Grade = 
@@ -711,8 +720,8 @@ from Guarantor_Rating
 where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' ;
-
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' 
+and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 ";
 
                             sql2 = $@"
@@ -837,6 +846,296 @@ select
                             db.Database.CommandTimeout = 300;
                             db.Database.ExecuteSqlCommand(sql);
                             db.Database.ExecuteSqlCommand(sql1_2);
+                            #region 共用
+                            var A51s = db.Grade_Moody_Info.AsNoTracking()
+                                         .Where(x => x.Effective == "Y").ToList();
+                            var A52s = db.Grade_Mapping_Info.AsNoTracking().ToList();
+                            string Domestic = "國內";
+                            string Foreign = "國外";
+                            #endregion
+                            #region  新增3張特殊表單rating
+                            var _ratingType = Rating_Type.B.GetDescription();
+                            var _Bond_Ratings = db.Bond_Rating.AsNoTracking().ToList();                          
+                            var _Issuer_Ratings = db.Issuer_Rating.AsNoTracking().ToList();                            
+                            var _Guarantor_Ratings = db.Guarantor_Rating.AsNoTracking().ToList();                            
+                            RatingOrg _Rating_Org = RatingOrg.SP;
+                            RatingObject _Rating_Object = RatingObject.Bonds;
+                            bool _insertFlag = false;
+                            Grade_Moody_Info A51 = null;
+                            if (_Bond_Ratings.Any())
+                            {
+                                _Rating_Object = RatingObject.Bonds;
+                                var _Bonds = _Bond_Ratings.Select(x => x.Bond_Number).ToList();
+                                db.Bond_Rating_Info.AsNoTracking()
+                                  .Where(x => x.Report_Date == dt &&
+                                             x.Version == version &&
+                                             x.Rating_Type == _ratingType &&
+                                             _Bonds.Contains(x.Bond_Number)).ToList()
+                                             .GroupBy(x => new { x.Reference_Nbr, x.Bond_Number })
+                                  .ToList().ForEach(x =>
+                                  {
+                                      var _first = x.First();
+                                      var _Bond_Rating = _Bond_Ratings.First(y => y.Bond_Number == x.Key.Bond_Number);
+                                      var _Rating = string.Empty;
+                                      var _RatingOrgArea = string.Empty;
+                                      var _RTG_Bloomberg_Field = string.Empty;
+                                      _insertFlag = false;
+                                      if (!_Bond_Rating.S_And_P.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_SP"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.SP;
+                                          _Rating = _Bond_Rating.S_And_P;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_SP";
+                                      }
+                                      if (!_Bond_Rating.Moodys.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_MOODY"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Moody;
+                                          _Rating = _Bond_Rating.Moodys;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_MOODY";
+                                      }
+                                      if (!_Bond_Rating.Fitch.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Fitch;
+                                          _Rating = _Bond_Rating.Fitch;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_FITCH";
+                                      }
+                                      if (!_Bond_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_NATIONAL"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.FitchTwn;
+                                          _Rating = _Bond_Rating.Fitch_TW;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL";
+                                      }
+                                      if (!_Bond_Rating.TRC.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_TRC"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.CW;
+                                          _Rating = _Bond_Rating.TRC;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "RTG_TRC";
+                                      }
+                                      if (_insertFlag)
+                                      {
+                                          A51 = null;
+                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          {
+                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
+                                          }
+                                          else
+                                          {
+                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
+                                                                                 z.Rating == _Rating);
+                                              if (A52 != null)
+                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
+                                          }
+                                          _first.Rating_Object = _Rating_Object.GetDescription();
+                                          _first.Rating_Org_Area = _RatingOrgArea;
+                                          _first.Rating = _Rating;
+                                          _first.Rating_Org = _Rating_Org.GetDescription();
+                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
+                                          _first.Fill_up_YN = null;
+                                          _first.Fill_up_Date = null;
+                                          _first.PD_Grade = A51.PD_Grade;
+                                          _first.Grade_Adjust = A51.Grade_Adjust;
+                                          sql_A.Append(insertA57(_first));
+                                      }
+                                  });
+                            }
+                            if (_Issuer_Ratings.Any())
+                            {
+                                _Rating_Object = RatingObject.ISSUER;
+                                var _Issuers = _Issuer_Ratings.Select(x => x.Issuer).ToList();
+                                db.Bond_Rating_Info.AsNoTracking()
+                                  .Where(x => x.Report_Date == dt &&
+                                             x.Version == version &&
+                                             x.Rating_Type == _ratingType &&
+                                             _Issuers.Contains(x.ISSUER)).ToList()
+                                             .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
+                                  .ToList().ForEach(x =>
+                                  {
+                                      var _first = x.First();
+                                      var _Issuer_Rating = _Issuer_Ratings.First(y => y.Issuer == x.Key.ISSUER);
+                                      var _Rating = string.Empty;
+                                      var _RatingOrgArea = string.Empty;
+                                      var _RTG_Bloomberg_Field = string.Empty;
+                                      _insertFlag = false;
+                                      if (!_Issuer_Rating.S_And_P.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_SP_LT_FC_ISSUER_CREDIT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.SP;
+                                          _Rating = _Issuer_Rating.S_And_P;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_SP_LT_FC_ISSUER_CREDIT";
+                                      }
+                                      if (!_Issuer_Rating.Moodys.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_MDY_ISSUER"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Moody;
+                                          _Rating = _Issuer_Rating.Moodys;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_MDY_ISSUER";
+                                      }
+                                      if (!_Issuer_Rating.Fitch.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_LT_ISSUER_DEFAULT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Fitch;
+                                          _Rating = _Issuer_Rating.Fitch;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "RTG_FITCH_LT_ISSUER_DEFAULT";
+                                      }
+                                      if (!_Issuer_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_NATIONAL_LT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.FitchTwn;
+                                          _Rating = _Issuer_Rating.Fitch_TW;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL_LT";
+                                      }
+                                      if (!_Issuer_Rating.TRC.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_TRC_LONG_TERM"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.CW;
+                                          _Rating = _Issuer_Rating.TRC;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "RTG_TRC_LONG_TERM";
+                                      }
+                                      if (_insertFlag)
+                                      {
+                                          A51 = null;
+                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          {
+                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
+                                          }
+                                          else
+                                          {
+                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
+                                                                                 z.Rating == _Rating);
+                                              if (A52 != null)
+                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
+                                          }
+                                          _first.Rating_Object = _Rating_Object.GetDescription();
+                                          _first.Rating_Org_Area = _RatingOrgArea;
+                                          _first.Rating = _Rating;
+                                          _first.Rating_Org = _Rating_Org.GetDescription();
+                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
+                                          _first.Fill_up_YN = null;
+                                          _first.Fill_up_Date = null;
+                                          _first.PD_Grade = A51.PD_Grade;
+                                          _first.Grade_Adjust = A51.Grade_Adjust;
+                                          sql_A.Append(insertA57(_first));
+                                      }
+                                  });
+                            }
+                            if (_Guarantor_Ratings.Any())
+                            {
+                                _Rating_Object = RatingObject.GUARANTOR;
+                                var _Guarantors = _Guarantor_Ratings.Select(x => x.Issuer).ToList();
+                                db.Bond_Rating_Info.AsNoTracking()
+                                  .Where(x => x.Report_Date == dt &&
+                                             x.Version == version &&
+                                             x.Rating_Type == _ratingType &&
+                                             _Guarantors.Contains(x.ISSUER)).ToList()
+                                             .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
+                                  .ToList().ForEach(x =>
+                                  {
+                                      var _first = x.First();
+                                      var _Guarantor_Rating = _Guarantor_Ratings.First(y => y.Issuer == x.Key.ISSUER);
+                                      var _Rating = string.Empty;
+                                      var _RatingOrgArea = string.Empty;
+                                      var _RTG_Bloomberg_Field = string.Empty;
+                                      _insertFlag = false;
+                                      if (!_Guarantor_Rating.S_And_P.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_SP_LT_FC_ISSUER_CREDIT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.SP;
+                                          _Rating = _Guarantor_Rating.S_And_P;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "G_RTG_SP_LT_FC_ISSUER_CREDIT";
+                                      }
+                                      if (!_Guarantor_Rating.Moodys.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_MDY_ISSUER"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Moody;
+                                          _Rating = _Guarantor_Rating.Moodys;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "G_RTG_MDY_ISSUER";
+                                      }
+                                      if (!_Guarantor_Rating.Fitch.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_FITCH_LT_ISSUER_DEFAULT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.Fitch;
+                                          _Rating = _Guarantor_Rating.Fitch;
+                                          _RatingOrgArea = Foreign;
+                                          _RTG_Bloomberg_Field = "G_RTG_FITCH_LT_ISSUER_DEFAULT";
+                                      }
+                                      if (!_Guarantor_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_FITCH_NATIONAL_LT"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.FitchTwn;
+                                          _Rating = _Guarantor_Rating.Fitch_TW;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "G_RTG_FITCH_NATIONAL_LT";
+                                      }
+                                      if (!_Guarantor_Rating.TRC.IsNullOrWhiteSpace() &&
+                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_TRC_LONG_TERM"))
+                                      {
+                                          _insertFlag = true;
+                                          _Rating_Org = RatingOrg.CW;
+                                          _Rating = _Guarantor_Rating.TRC;
+                                          _RatingOrgArea = Domestic;
+                                          _RTG_Bloomberg_Field = "G_RTG_TRC_LONG_TERM";
+                                      }
+                                      if (_insertFlag)
+                                      {
+                                          A51 = null;
+                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          {
+                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
+                                          }
+                                          else
+                                          {
+                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
+                                                                                 z.Rating == _Rating);
+                                              if (A52 != null)
+                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
+                                          }
+                                          _first.Rating_Object = _Rating_Object.GetDescription();
+                                          _first.Rating_Org_Area = _RatingOrgArea;
+                                          _first.Rating = _Rating;
+                                          _first.Rating_Org = _Rating_Org.GetDescription();
+                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
+                                          _first.Fill_up_YN = null;
+                                          _first.Fill_up_Date = null;
+                                          _first.PD_Grade = A51.PD_Grade;
+                                          _first.Grade_Adjust = A51.Grade_Adjust;
+                                          sql_A.Append(insertA57(_first));
+                                      }
+                                  });
+                            }
+                            if (sql_A.Length > 0)
+                                db.Database.ExecuteSqlCommand(sql_A.ToString());
+                            #endregion
+                            db.Database.ExecuteSqlCommand(sql_D);
                             db.Database.ExecuteSqlCommand(sql1_3);
                             #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
                             var ISSUERstr = RatingObject.ISSUER.GetDescription();
@@ -858,8 +1157,6 @@ select
                                  x.Version == version &&
                                  ISSUERs.Contains(x.ISSUER) &&
                                  x.Rating_Object == Bondstr).ToList();
-                            string Domestic = "國內";
-                            string Foreign = "國外";
                             foreach (var A57group in A57ISSUERs.GroupBy(x => new
                             {
                                 x.Reference_Nbr,
@@ -944,76 +1241,12 @@ select
                                         }
                                         if (!RTGFiled.IsNullOrWhiteSpace())
                                         {
-                                            sb2.Append($@"
-INSERT INTO [Bond_Rating_Info]
-           ([Reference_Nbr]
-           ,[Bond_Number]
-           ,[Lots]
-           ,[Portfolio]
-           ,[Segment_Name]
-           ,[Bond_Type]
-           ,[Lien_position]
-           ,[Origination_Date]
-           ,[Report_Date]
-           ,[Rating_Date]
-           ,[Rating_Type]
-           ,[Rating_Object]
-           ,[Rating_Org]
-           ,[Rating]
-           ,[Rating_Org_Area]
-           ,[Fill_up_YN]
-           ,[Fill_up_Date]
-           ,[PD_Grade]
-           ,[Grade_Adjust]
-           ,[ISSUER_TICKER]
-           ,[GUARANTOR_NAME]
-           ,[GUARANTOR_EQY_TICKER]
-           ,[Parm_ID]
-           ,[Portfolio_Name]
-           ,[RTG_Bloomberg_Field]
-           ,[SMF]
-           ,[ISSUER]
-           ,[Version]
-           ,[Security_Ticker]
-           ,[ISIN_Changed_Ind]
-           ,[Bond_Number_Old]
-           ,[Lots_Old]
-           ,[Portfolio_Name_Old])
-     VALUES
-           ({_A57ISSUERcopy.Reference_Nbr.stringToStrSql()}
-           ,{_A57ISSUERcopy.Bond_Number.stringToStrSql()}
-           ,{_A57ISSUERcopy.Lots.stringToStrSql()}
-           ,{_A57ISSUERcopy.Portfolio.stringToStrSql()}
-           ,{_A57ISSUERcopy.Segment_Name.stringToStrSql()}
-           ,{_A57ISSUERcopy.Bond_Type.stringToStrSql()}
-           ,{_A57ISSUERcopy.Lien_position.stringToStrSql()}
-           ,{_A57ISSUERcopy.Origination_Date.dateTimeNToStrSql()}
-           ,{_A57ISSUERcopy.Report_Date.dateTimeToStrSql()}
-           ,{_A57ISSUERcopy.Rating_Date.dateTimeNToStrSql()}
-           ,{_A57ISSUERcopy.Rating_Type.stringToStrSql()}
-           ,{Bondstr.stringToStrSql()}
-           ,{_A57ISSUERcopy.Rating_Org.stringToStrSql()}
-           ,{_A57ISSUERcopy.Rating.stringToStrSql()}
-           ,{RatingOrgArea.stringToStrSql()}
-           ,null
-           ,null
-           ,{_A57ISSUERcopy.PD_Grade.intNToStrSql()}
-           ,{_A57ISSUERcopy.Grade_Adjust.intNToStrSql()}
-           ,{_A57ISSUERcopy.ISSUER_TICKER.stringToStrSql()}
-           ,{_A57ISSUERcopy.GUARANTOR_NAME.stringToStrSql()}
-           ,{_A57ISSUERcopy.GUARANTOR_EQY_TICKER.stringToStrSql()}
-           ,{_A57ISSUERcopy.Parm_ID.stringToStrSql()}
-           ,{_A57ISSUERcopy.Portfolio_Name.stringToStrSql()}
-           ,{RTGFiled.stringToStrSql()}
-           ,{_A57ISSUERcopy.SMF.stringToStrSql()}
-           ,{_A57ISSUERcopy.ISSUER.stringToStrSql()}
-           ,{_A57ISSUERcopy.Version.intNToStrSql()}
-           ,{_A57ISSUERcopy.Security_Ticker.stringToStrSql()}
-           ,{_A57ISSUERcopy.ISIN_Changed_Ind.stringToStrSql()}
-           ,{_A57ISSUERcopy.Bond_Number_Old.stringToStrSql()}
-           ,{_A57ISSUERcopy.Lots_Old.stringToStrSql()}
-           ,{_A57ISSUERcopy.Portfolio_Name_Old.stringToStrSql()} );
-                    ");
+                                            _A57ISSUERcopy.Rating_Object = Bondstr;
+                                            _A57ISSUERcopy.Rating_Org_Area = RatingOrgArea;
+                                            _A57ISSUERcopy.Fill_up_YN = null;
+                                            _A57ISSUERcopy.Fill_up_Date = null;
+                                            _A57ISSUERcopy.RTG_Bloomberg_Field = RTGFiled;
+                                            sb2.Append(insertA57(_A57ISSUERcopy));
                                         }
                                     }
                                 }
@@ -1036,9 +1269,6 @@ INSERT INTO [Bond_Rating_Info]
                                 var _ver = A57.Where(x => x.Version != version).Max(x => x.Version);
                                 if (_ver != null)
                                 {
-                                    var A51s = db.Grade_Moody_Info.AsNoTracking()
-                                                 .Where(x => x.Effective == "Y").ToList();
-                                    var A52s = db.Grade_Mapping_Info.AsNoTracking().ToList();
                                     var D60s = db.Bond_Rating_Parm.AsNoTracking().ToList();
                                     var A57n1 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == "Y").ToList();
                                     var A57n2 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == null).ToList();
@@ -1091,7 +1321,7 @@ INSERT INTO [Bond_Rating_Info]
                                         item.ToList().ForEach(
                                             x =>
                                             {
-                                                Grade_Moody_Info A51 = null;
+                                                A51 = null;
                                                 if (x.Rating_Org == RatingOrg.Moody.GetDescription())
                                                 {
                                                     A51 = A51s.FirstOrDefault(z => z.Rating == x.Rating);
@@ -1121,76 +1351,17 @@ INSERT INTO [Bond_Rating_Info]
                                                     //不存在新增
                                                     if (A57o == null)
                                                 {
-                                                    sb.Append(
-                                                    $@"
-                                INSERT INTO [Bond_Rating_Info]
-                                           ([Reference_Nbr]
-                                           ,[Bond_Number]
-                                           ,[Lots]
-                                           ,[Portfolio]
-                                           ,[Segment_Name]
-                                           ,[Bond_Type]
-                                           ,[Lien_position]
-                                           ,[Origination_Date]
-                                           ,[Report_Date]
-                                           ,[Rating_Date]
-                                           ,[Rating_Type]
-                                           ,[Rating_Object]
-                                           ,[Rating_Org]
-                                           ,[Rating]
-                                           ,[Rating_Org_Area]
-                                           ,[Fill_up_YN]
-                                           ,[Fill_up_Date]
-                                           ,[PD_Grade]
-                                           ,[Grade_Adjust]
-                                           ,[ISSUER_TICKER]
-                                           ,[GUARANTOR_NAME]
-                                           ,[GUARANTOR_EQY_TICKER]
-                                           ,[Parm_ID]
-                                           ,[Portfolio_Name]
-                                           ,[RTG_Bloomberg_Field]
-                                           ,[SMF]
-                                           ,[ISSUER]
-                                           ,[Version]
-                                           ,[Security_Ticker]
-                                           ,[ISIN_Changed_Ind]
-                                           ,[Bond_Number_Old]
-                                           ,[Lots_Old]
-                                           ,[Portfolio_Name_Old])
-                                     VALUES
-                                           ({A57n.Reference_Nbr.stringToStrSql()}
-                                           ,{A57n.Bond_Number.stringToStrSql()}
-                                           ,{A57n.Lots.stringToStrSql()}
-                                           ,{A57n.Portfolio.stringToStrSql()}
-                                           ,{A57n.Segment_Name.stringToStrSql()}
-                                           ,{A57n.Bond_Type.stringToStrSql()}
-                                           ,{A57n.Lien_position.stringToStrSql()}
-                                           ,{A57n.Origination_Date.dateTimeNToStrSql()}
-                                           ,{A57n.Report_Date.dateTimeToStrSql()}
-                                           ,{x.Rating_Date.dateTimeNToStrSql()}
-                                           ,{A57n.Rating_Type.stringToStrSql()}
-                                           ,{x.Rating_Object.stringToStrSql()}
-                                           ,{x.Rating_Org.stringToStrSql()}
-                                           ,{x.Rating.stringToStrSql()}
-                                           ,{x.Rating_Org_Area.stringToStrSql()}
-                                           ,'Y'
-                                           ,'{startTime.ToString("yyyy/MM/dd")}'
-                                           ,{A51.PD_Grade.intNToStrSql()}
-                                           ,{A51.Grade_Adjust.intNToStrSql()}
-                                           ,{A57n.ISSUER_TICKER.stringToStrSql()}
-                                           ,{A57n.GUARANTOR_NAME.stringToStrSql()}
-                                           ,{A57n.GUARANTOR_EQY_TICKER.stringToStrSql()}
-                                           ,{A57n.Parm_ID.stringToStrSql()}
-                                           ,{A57n.Portfolio_Name.stringToStrSql()}
-                                           ,{x.RTG_Bloomberg_Field.stringToStrSql()}
-                                           ,{A57n.SMF.stringToStrSql()}
-                                           ,{A57n.ISSUER.stringToStrSql()}
-                                           ,{A57n.Version.intNToStrSql()}
-                                           ,{A57n.Security_Ticker.stringToStrSql()}
-                                           ,{A57n.ISIN_Changed_Ind.stringToStrSql()}
-                                           ,{A57n.Bond_Number_Old.stringToStrSql()}
-                                           ,{A57n.Lots_Old.stringToStrSql()}
-                                           ,{A57n.Portfolio_Name_Old.stringToStrSql()} ); ");
+                                                    A57n.Rating_Date = x.Rating_Date;
+                                                    A57n.Rating_Object = x.Rating_Object;
+                                                    A57n.Rating_Org = x.Rating_Org;
+                                                    A57n.Rating = x.Rating;
+                                                    A57n.Rating_Org_Area = x.Rating_Org_Area;
+                                                    A57n.Fill_up_YN = "Y";
+                                                    A57n.Fill_up_Date = startTime;
+                                                    A57n.PD_Grade = A51.PD_Grade;
+                                                    A57n.Grade_Adjust = A51.Grade_Adjust;
+                                                    A57n.RTG_Bloomberg_Field = x.RTG_Bloomberg_Field;
+                                                    sb.Append(insertA57(A57n));
                                                     deleteSqlFlag = true;
                                                 }
                                                     //存在修改
@@ -1507,6 +1678,82 @@ INSERT INTO [Bond_Rating_Info]
         #endregion
 
         #region private function
+
+        private string insertA57(Bond_Rating_Info A57)
+        {
+            return $@"
+INSERT INTO [Bond_Rating_Info]
+           ([Reference_Nbr]
+           ,[Bond_Number]
+           ,[Lots]
+           ,[Portfolio]
+           ,[Segment_Name]
+           ,[Bond_Type]
+           ,[Lien_position]
+           ,[Origination_Date]
+           ,[Report_Date]
+           ,[Rating_Date]
+           ,[Rating_Type]
+           ,[Rating_Object]
+           ,[Rating_Org]
+           ,[Rating]
+           ,[Rating_Org_Area]
+           ,[Fill_up_YN]
+           ,[Fill_up_Date]
+           ,[PD_Grade]
+           ,[Grade_Adjust]
+           ,[ISSUER_TICKER]
+           ,[GUARANTOR_NAME]
+           ,[GUARANTOR_EQY_TICKER]
+           ,[Parm_ID]
+           ,[Portfolio_Name]
+           ,[RTG_Bloomberg_Field]
+           ,[SMF]
+           ,[ISSUER]
+           ,[Version]
+           ,[Security_Ticker]
+           ,[ISIN_Changed_Ind]
+           ,[Bond_Number_Old]
+           ,[Lots_Old]
+           ,[Portfolio_Name_Old]
+           ,[Origination_Date_Old])
+     VALUES
+           ({A57.Reference_Nbr.stringToStrSql()}
+           ,{A57.Bond_Number.stringToStrSql()}
+           ,{A57.Lots.stringToStrSql()}
+           ,{A57.Portfolio.stringToStrSql()}
+           ,{A57.Segment_Name.stringToStrSql()}
+           ,{A57.Bond_Type.stringToStrSql()}
+           ,{A57.Lien_position.stringToStrSql()}
+           ,{A57.Origination_Date.dateTimeNToStrSql()}
+           ,{A57.Report_Date.dateTimeToStrSql()}
+           ,{A57.Rating_Date.dateTimeNToStrSql()}
+           ,{A57.Rating_Type.stringToStrSql()}
+           ,{A57.Rating_Object.stringToStrSql()}
+           ,{A57.Rating_Org.stringToStrSql()}
+           ,{A57.Rating.stringToStrSql()}
+           ,{A57.Rating_Org_Area.stringToStrSql()}
+           ,{A57.Fill_up_YN.stringToStrSql()}
+           ,{A57.Fill_up_Date.dateTimeNToStrSql()}
+           ,{A57.PD_Grade.intNToStrSql()}
+           ,{A57.Grade_Adjust.intNToStrSql()}
+           ,{A57.ISSUER_TICKER.stringToStrSql()}
+           ,{A57.GUARANTOR_NAME.stringToStrSql()}
+           ,{A57.GUARANTOR_EQY_TICKER.stringToStrSql()}
+           ,{A57.Parm_ID.stringToStrSql()}
+           ,{A57.Portfolio_Name.stringToStrSql()}
+           ,{A57.RTG_Bloomberg_Field.stringToStrSql()}
+           ,{A57.SMF.stringToStrSql()}
+           ,{A57.ISSUER.stringToStrSql()}
+           ,{A57.Version.intNToStrSql()}
+           ,{A57.Security_Ticker.stringToStrSql()}
+           ,{A57.ISIN_Changed_Ind.stringToStrSql()}
+           ,{A57.Bond_Number_Old.stringToStrSql()}
+           ,{A57.Lots_Old.stringToStrSql()}
+           ,{A57.Portfolio_Name_Old.stringToStrSql()}
+           ,{A57.Origination_Date_Old.dateTimeNToStrSql()} ); ";
+        }
+
         /// <summary>
         /// 判斷國內外
         /// </summary>

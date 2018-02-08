@@ -18,8 +18,9 @@ namespace AutoTransfer
         public IFRS9Entities()
             : base("name=IFRS9Entities")
         {
+            ((IObjectContextAdapter)this).ObjectContext.CommandTimeout = 300;
         }
-    
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
