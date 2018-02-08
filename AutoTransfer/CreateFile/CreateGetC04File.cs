@@ -41,7 +41,8 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
                 data.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
-                data.Add("HIST_PERIOD=q");
+                //data.Add("HIST_PERIOD=q"); //,所以req檔發動時要把HIST_PERIOD=q 拿掉,
+                //但是這支抓到的資料每月都會有,所以需要判斷寫入DB時只寫3,6,9,12的資料,才是季的資料。
                 data.Add("PROGRAMNAME=gethistory");
 
                 #endregion Title
