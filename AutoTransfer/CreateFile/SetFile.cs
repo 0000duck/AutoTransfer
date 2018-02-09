@@ -368,5 +368,12 @@ namespace AutoTransfer.CreateFile
                                  _type.ToString(),
                                  _dateTime);
         }
+
+        public string getA96_3GZFileName()
+        {
+            return string.Format("Get{0}_3_{1}.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
     }
 }

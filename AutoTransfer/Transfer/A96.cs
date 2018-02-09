@@ -185,7 +185,7 @@ namespace AutoTransfer.Transfer
                         break;
                     case "3":
                         getFilePath = setFile.getA96_3FilePath();
-                        getFileName = setFile.getA96_3FileName();
+                        getFileName = setFile.getA96_3GZFileName();
                         break;
                     default:
                         break;
@@ -231,7 +231,10 @@ namespace AutoTransfer.Transfer
                         createA96_3File();
                         break;
                     case "3":
-                        //DataToDb();
+                        string sourceFileName = Path.Combine(getFilePath, getFileName);
+                        string destFileName = Path.Combine(getFilePath, setFile.getA96_3FileName());
+                        Extension.Decompress(sourceFileName, destFileName);
+                        DataToDb(setFile.getA96_3FilePath(), setFile.getA96_3FileName());
                         break;
                     default:
                         break;
@@ -243,7 +246,7 @@ namespace AutoTransfer.Transfer
         {
             List<string> data = new List<string>();
             using (StreamReader sr = new StreamReader(Path.Combine(
-                setFile.getA96_1FilePath(), setFile.getA96_1FileName())))
+                   setFile.getA96_1FilePath(), setFile.getA96_1FileName())))
             {
                 bool flag = false; //判斷是否為要讀取的資料行數
                 string line = string.Empty;
@@ -291,6 +294,8 @@ namespace AutoTransfer.Transfer
 
                 try
                 {
+                    A96Data.RemoveAll(x=>x.BNCHMRK_TSY_ISSUE_ID == null || x.BNCHMRK_TSY_ISSUE_ID == "");
+
                     if (new CreateA96_2File().create(tableType, reportDateStr, data))
                     {
                         putSFTP("2", setFile.putA96_2FilePath(), setFile.putA96_2FileName());
@@ -352,15 +357,19 @@ namespace AutoTransfer.Transfer
                         if (arr.Length >= 4)
                         {
                             var BNCHMRK_TSY_ISSUE_ID = arr[0].Trim();
+                            var ID_CUSIP = arr[3].Trim();
 
-                            A96Data.Where(x => x.BNCHMRK_TSY_ISSUE_ID == BNCHMRK_TSY_ISSUE_ID)
-                                   .ToList()
-                                   .ForEach(x =>
-                                   {
-                                       x.ID_CUSIP = arr[3].Trim();
-                                   });
+                            if (ID_CUSIP != "" && BNCHMRK_TSY_ISSUE_ID != "N.A.")
+                            {
+                                A96Data.Where(x => x.BNCHMRK_TSY_ISSUE_ID == BNCHMRK_TSY_ISSUE_ID)
+                                       .ToList()
+                                       .ForEach(x =>
+                                       {
+                                           x.ID_CUSIP = ID_CUSIP;
+                                       });
 
-                            data.Add(arr[3].Trim());
+                                data.Add(ID_CUSIP);
+                            }
                         }
                     }
 
@@ -372,10 +381,19 @@ namespace AutoTransfer.Transfer
 
                 try
                 {
-                    string minOriginationDate = A96Data.DefaultIfEmpty()
-                                                       .Max(x => x.Origination_Date.IsNullOrWhiteSpace() == true ? reportDateStr : x.Origination_Date);
+                    A96Data.RemoveAll(x => x.ID_CUSIP == null || x.ID_CUSIP == "");
 
-                    if (new CreateA96_3File().create(tableType, DateTime.Parse(minOriginationDate).ToString("yyyy/MM/dd") ,reportDateStr, data))
+                    string minOriginationDate = A96Data.DefaultIfEmpty()
+                                                       .Min(x => x.Origination_Date.IsNullOrWhiteSpace() == true ? reportDateStr : x.Origination_Date);
+                    string maxOriginationDate = A96Data.DefaultIfEmpty()
+                                                       .Max(x => x.Origination_Date.IsNullOrWhiteSpace() == true ? reportDateStr : x.Origination_Date);
+                    List<string> dateRange = new List<string>();
+                    dateRange.Add(reportDateStr);
+                    dateRange.Add(DateTime.Parse(minOriginationDate).ToString("yyyyMMdd"));
+                    dateRange.Add(DateTime.Parse(maxOriginationDate).ToString("yyyyMMdd"));
+                    dateRange.Sort();
+
+                    if (new CreateA96_3File().create(tableType, dateRange[0], dateRange[2], reportDateStr, data))
                     {
                         putSFTP("3", setFile.putA96_3FilePath(), setFile.putA96_3FileName());
                     }
@@ -390,7 +408,7 @@ namespace AutoTransfer.Transfer
                             verInt,
                             logPath,
                             MessageType.Create_File_Fail.GetDescription()
-                            );
+                        );
                     }
                 }
                 catch (Exception ex)
@@ -410,16 +428,16 @@ namespace AutoTransfer.Transfer
             }
         }
 
-        protected void DataToDb()
+        protected void DataToDb(string path1, string path2)
         {
             IFRS9Entities db = new IFRS9Entities();
 
             #region
-            using (StreamReader sr = new StreamReader(Path.Combine(
-                   setFile.getA96_3FilePath(), setFile.getA96_3FileName())))
+            using (StreamReader sr = new StreamReader(Path.Combine(path1, path2)))
             {
                 bool flag = false; //判斷是否為要讀取的資料行數
                 string line = string.Empty;
+                List<YLD_YTM_MID_Class> listYLD = new List<YLD_YTM_MID_Class>();
                 while ((line = sr.ReadLine()) != null)
                 {
                     if ("END-OF-DATA".Equals(line))
@@ -438,13 +456,15 @@ namespace AutoTransfer.Transfer
                             !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
                         {
                             var ID_CUSIP = arr[0].Trim().Split('@')[0];
+                            var dateYLD_YTM_MID = arr[1].Trim();
+                            dateYLD_YTM_MID = dateYLD_YTM_MID.Substring(6, 4) + "/" + dateYLD_YTM_MID.Substring(0, 2) + "/" + dateYLD_YTM_MID.Substring(3, 2);
+                            var YLD_YTM_MID = arr[2].Trim();
 
-                            A96Data.Where(x => x.ID_CUSIP == ID_CUSIP)
-                                   .ToList()
-                                   .ForEach(x =>
-                                   {
-                                       x.ID_CUSIP = arr[3].Trim();
-                                   });
+                            YLD_YTM_MID_Class yld = new YLD_YTM_MID_Class();
+                            yld.ID_CUSIP = ID_CUSIP;
+                            yld.DATE_YLD_YTM_MID = dateYLD_YTM_MID;
+                            yld.YLD_YTM_MID = YLD_YTM_MID;
+                            listYLD.Add(yld);
                         }
                     }
 
@@ -453,27 +473,128 @@ namespace AutoTransfer.Transfer
                         flag = true;
                     }
                 }
+
+                foreach (var item in A96Data)
+                {
+                    var YLDs = listYLD.Where(x => x.ID_CUSIP == item.ID_CUSIP
+                                                && (x.DATE_YLD_YTM_MID == item.Report_Date || x.DATE_YLD_YTM_MID == item.Origination_Date)).ToList();
+                    foreach (var oneYLD in YLDs)
+                    {
+                        item.Mid_Yield = oneYLD.YLD_YTM_MID;
+
+                        if (item.Mid_Yield != null && item.Mid_Yield != "")
+                        {
+                            if (item.Report_Date == oneYLD.DATE_YLD_YTM_MID)
+                            {
+                                item.Treasury_Current = (double.Parse(item.Mid_Yield) * 100).ToString();
+                            }
+
+                            if (item.Origination_Date == oneYLD.DATE_YLD_YTM_MID)
+                            {
+                                item.Treasury_When_Trade = (double.Parse(item.Mid_Yield) * 100).ToString();
+                            }
+
+                            if (item.Treasury_Current != null && item.Treasury_Current != "")
+                            {
+                                item.Spread_Current = (double.Parse(item.Mid_Yield) * 100 - double.Parse(item.Treasury_Current)).ToString();
+                            }
+
+                            if (item.Treasury_When_Trade != null && item.Treasury_When_Trade != "")
+                            {
+                                item.Spread_When_Trade = (double.Parse(item.EIR) - double.Parse(item.Treasury_When_Trade)).ToString();
+                            }
+
+                            if (item.Spread_Current.IsNullOrWhiteSpace() == false
+                                && item.Spread_When_Trade.IsNullOrWhiteSpace() == false
+                                && item.Treasury_Current.IsNullOrWhiteSpace() == false
+                                && item.Treasury_When_Trade.IsNullOrWhiteSpace() == false
+                               )
+                            {
+                                item.All_in_Chg = (double.Parse(item.Spread_Current)
+                                                   - double.Parse(item.Spread_When_Trade)
+                                                   + double.Parse(item.Treasury_Current)
+                                                   - double.Parse(item.Treasury_When_Trade)).ToString();
+                            }
+
+                            if (item.Spread_Current.IsNullOrWhiteSpace() == false
+                                && item.Spread_When_Trade.IsNullOrWhiteSpace() == false
+                               )
+                            {
+                                item.Chg_In_Spread = (double.Parse(item.Spread_Current) - double.Parse(item.Spread_When_Trade)).ToString();
+                            }
+
+                            if (item.Treasury_Current.IsNullOrWhiteSpace() == false
+                                && item.Treasury_When_Trade.IsNullOrWhiteSpace() == false)
+                            {
+                                item.Chg_In_Treasury = (double.Parse(item.Treasury_Current) - double.Parse(item.Treasury_When_Trade)).ToString();
+                            }
+                        }
+                    }
+                }
             }
             #endregion
 
             #region saveDb
             try
             {
-                //db.Econ_Domestic.AddRange(A07Datas);
-                //db.SaveChanges();
-                //db.Dispose();
-                //#region 加入 sql transferCheck by Mark 2018/01/09
-                //log.bothLog(
-                //    type,
-                //    true,
-                //    reportDateDt,
-                //    startTime,
-                //    DateTime.Now,
-                //    1,
-                //    logPath,
-                //    MessageType.Success.GetDescription()
-                //    );
-                //#endregion
+                A96Data.RemoveAll(x => x.Reference_Nbr.IsNullOrWhiteSpace() == true 
+                                    || x.Report_Date.IsNullOrWhiteSpace() == true
+                                    || x.Version.IsNullOrWhiteSpace() == true
+                                    || x.Bond_Number.IsNullOrWhiteSpace() == true
+                                    || x.Lots.IsNullOrWhiteSpace() == true
+                                    || x.Portfolio_Name.IsNullOrWhiteSpace() == true
+                                    || x.Origination_Date.IsNullOrWhiteSpace() == true
+                                    || x.EIR.IsNullOrWhiteSpace() == true
+                                    || x.Processing_Date.IsNullOrWhiteSpace() == true
+                                    || x.Mid_Yield.IsNullOrWhiteSpace() == true
+                                    || x.Spread_Current.IsNullOrWhiteSpace() == true
+                                    || x.Spread_When_Trade.IsNullOrWhiteSpace() == true
+                                    || x.Treasury_Current.IsNullOrWhiteSpace() == true
+                                    || x.Treasury_When_Trade.IsNullOrWhiteSpace() == true
+                                    || x.All_in_Chg.IsNullOrWhiteSpace() == true
+                                    || x.Chg_In_Spread.IsNullOrWhiteSpace() == true
+                                    || x.Chg_In_Treasury.IsNullOrWhiteSpace() == true
+                                 );
+
+                db.Bond_Spread_Info.RemoveRange(db.Bond_Spread_Info.Where(x=>x.Report_Date == reportDateDt));
+
+                db.Bond_Spread_Info.AddRange(A96Data.Select(
+                                                               x=> new Bond_Spread_Info()
+                                                                   {
+                                                                       Reference_Nbr = x.Reference_Nbr,
+                                                                       Report_Date = DateTime.Parse(x.Report_Date),
+                                                                       Version = int.Parse(x.Version),
+                                                                       Bond_Number = x.Bond_Number,
+                                                                       Lots = x.Lots,
+                                                                       Portfolio_Name = x.Portfolio_Name,
+                                                                       Origination_Date = DateTime.Parse(x.Origination_Date),
+                                                                       EIR = double.Parse(x.EIR),
+                                                                       Processing_Date = DateTime.Parse(x.Processing_Date),
+                                                                       Mid_Yield = double.Parse(x.Mid_Yield),
+                                                                       Spread_Current = double.Parse(x.Spread_Current),
+                                                                       Spread_When_Trade = double.Parse(x.Spread_When_Trade),
+                                                                       Treasury_Current = double.Parse(x.Treasury_Current),
+                                                                       Treasury_When_Trade = double.Parse(x.Treasury_When_Trade),
+                                                                       All_in_Chg = double.Parse(x.All_in_Chg),
+                                                                       Chg_In_Spread = double.Parse(x.Chg_In_Spread),
+                                                                       Chg_In_Treasury = double.Parse(x.Chg_In_Treasury)
+                                                                   }
+                                                           )
+                                            );
+                db.SaveChanges();
+                db.Dispose();
+                #region 加入 sql transferCheck by Mark 2018/01/09
+                log.bothLog(
+                    type,
+                    true,
+                    reportDateDt,
+                    startTime,
+                    DateTime.Now,
+                    verInt,
+                    logPath,
+                    MessageType.Success.GetDescription()
+                    );
+                #endregion
             }
             catch (Exception ex)
             {
@@ -484,7 +605,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     $"message: {ex.Message}" +
                     $", inner message {ex.InnerException?.InnerException?.Message}"
@@ -492,6 +613,13 @@ namespace AutoTransfer.Transfer
                 #endregion
             }
             #endregion saveDb
+        }
+
+        public class YLD_YTM_MID_Class
+        {
+            public string ID_CUSIP { get; set; }
+            public string DATE_YLD_YTM_MID { get; set; }
+            public string YLD_YTM_MID { get; set; }
         }
     }
 }

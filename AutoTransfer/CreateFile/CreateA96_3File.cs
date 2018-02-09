@@ -5,7 +5,7 @@ namespace AutoTransfer.CreateFile
 {
     public class CreateA96_3File
     {
-        public bool create(TableType type, string minOriginationDate , string dateTime, List<string> datas)
+        public bool create(TableType type, string dateRageStart, string dateRageEnd, string dateTime, List<string> datas)
         {
             bool flag = false;
             try
@@ -28,7 +28,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
                 data.Add("SECID=ISIN");
-                data.Add($"DATERANGE={minOriginationDate}|{dateTime}");
+                data.Add($"DATERANGE={dateRageStart}|{dateRageEnd}");
                 data.Add("HIST_PERIOD=d");
 
                 #endregion Title
@@ -64,6 +64,7 @@ namespace AutoTransfer.CreateFile
             {
                 flag = false;
             }
+
             return flag;
         }
     }
