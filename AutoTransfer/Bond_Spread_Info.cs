@@ -23,13 +23,15 @@ namespace AutoTransfer
         public System.DateTime Origination_Date { get; set; }
         public double EIR { get; set; }
         public System.DateTime Processing_Date { get; set; }
-        public double Mid_Yield { get; set; }
-        public double Spread_Current { get; set; }
-        public double Spread_When_Trade { get; set; }
-        public double Treasury_Current { get; set; }
-        public double Treasury_When_Trade { get; set; }
-        public double All_in_Chg { get; set; }
-        public double Chg_In_Spread { get; set; }
-        public double Chg_In_Treasury { get; set; }
+        public Nullable<double> Mid_Yield { get; set; }
+        public string BNCHMRK_TSY_ISSUE_ID { get; set; }
+        public string ID_CUSIP { get; set; }
+        public Nullable<double> Spread_Current { get; set; }
+        public Nullable<double> Spread_When_Trade { get; set; }
+        public Nullable<double> Treasury_Current { get; set; }
+        public Nullable<double> Treasury_When_Trade { get; set; }
+        public Nullable<double> All_in_Chg { get; set; }
+        public Nullable<double> Chg_In_Spread { get; set; }
+        public Nullable<double> Chg_In_Treasury { get; set; }
     }
 }

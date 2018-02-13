@@ -27,13 +27,12 @@ namespace AutoTransfer.CreateFile
                 #region Title
 
                 data.Add($"REPLYFILENAME={getFileName}");
-                data.Add("PROGRAMNAME=getdata");
+                data.Add("PROGRAMNAME=gethistory");
                 data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
-                data.Add("SECMASTER=YES");
-                data.Add("OUTPUTFORMAT=bulklist");
-                data.Add("DELIMITER=,");
-                data.Add("FUNDAMENTALS=yes");
+                data.Add("SECID=ISIN");
+                data.Add($"DATERANGE={dateTime}|{dateTime}");
+                data.Add("HIST_PERIOD=d");
 
                 #endregion Title
 
@@ -42,7 +41,7 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-FIELDS
                 data.Add("START-OF-FIELDS");
-                data.Add("BNCHMRK_TSY_ISSUE_ID");
+                data.Add("YLD_YTM_MID");
                 data.Add("END-OF-FIELDS");
                 #endregion START-OF-FIELDS
 
@@ -66,7 +65,7 @@ namespace AutoTransfer.CreateFile
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            data.Add(string.Format("{0} Corp|ISIN|", x));
+                            data.Add(string.Format("{0}@BVAL Corp", x));
                         }
                     });
                 db.Dispose();

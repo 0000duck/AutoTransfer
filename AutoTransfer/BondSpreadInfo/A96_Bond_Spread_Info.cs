@@ -12,9 +12,9 @@ namespace AutoTransfer.BondSpreadInfo
         public string Origination_Date { get; set; }
         public string EIR { get; set; }
         public string Processing_Date { get; set; }
+        public string Mid_Yield { get; set; }
         public string BNCHMRK_TSY_ISSUE_ID { get; set; }
         public string ID_CUSIP { get; set; }
-        public string Mid_Yield { get; set; }
         public string Spread_Current { get; set; }
         public string Spread_When_Trade { get; set; }
         public string Treasury_Current { get; set; }
