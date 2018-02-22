@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using static AutoTransfer.Enum.Ref;
 
@@ -99,13 +100,18 @@ namespace AutoTransfer.Transfer
         protected void putA84SFTP()
         {
             string error = string.Empty;
-
+            string error2 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
                 .Put(string.Empty,
                  setFile.putC04FilePath(),
-                 setFile.putFileName(),
+                 setFile.putFileName("1"),
                  out error);
-            if (!error.IsNullOrWhiteSpace()) //fail
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putC04FilePath(),
+                 setFile.putFileName("2"),
+                 out error2);
+            if (!error.IsNullOrWhiteSpace() || !error2.IsNullOrWhiteSpace()) //fail
             {
                 #region 加入 sql transferCheck by Mark 2018/01/09
                 log.bothLog(
@@ -135,13 +141,18 @@ namespace AutoTransfer.Transfer
             new FileRelated().createFile(setFile.getC04FilePath());
 
             string error = string.Empty;
-
+            string error2 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             .Get(string.Empty,
                  setFile.getC04FilePath(),
-                 setFile.getGZFileName(),
+                 setFile.getGZFileName("1"),
                  out error);
-            if (!error.IsNullOrWhiteSpace())
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getC04FilePath(),
+                 setFile.getGZFileName("2"),
+                 out error2);
+            if (!error.IsNullOrWhiteSpace() || !error2.IsNullOrWhiteSpace())
             {
                 #region 加入 sql transferCheck by Mark 2018/01/09
                 log.bothLog(
@@ -159,10 +170,16 @@ namespace AutoTransfer.Transfer
             else
             {
                 string sourceFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getGZFileName());
+                setFile.getC04FilePath(), setFile.getGZFileName("1"));
                 string destFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getFileName());
+                setFile.getC04FilePath(), setFile.getFileName("1"));
                 Extension.Decompress(sourceFileName, destFileName);
+
+                string _sourceFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getGZFileName("2"));
+                string _destFileName = Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("2"));
+                Extension.Decompress(_sourceFileName, _destFileName);
                 DataToDb();
             }
         }
@@ -172,138 +189,187 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void DataToDb()
         {
-            IFRS9Entities db = new IFRS9Entities();
-            List<Econ_Foreign> A84Datas = new List<Econ_Foreign>();
-            string date = startTime.ToString("yyyyMMdd");
-            #region A84 Data
-            var A84s = db.Econ_Foreign.ToList();
-            var A84pros = new Econ_Foreign().GetType().GetProperties();
-            using (StreamReader sr = new StreamReader(Path.Combine(
-                setFile.getC04FilePath(), setFile.getFileName())))
+            using (IFRS9Entities db = new IFRS9Entities())
             {
-                bool flag = false; //判斷是否為要讀取的資料行數
-                string line = string.Empty;
-                while ((line = sr.ReadLine()) != null)
+                List<Econ_Foreign> A84Datas = new List<Econ_Foreign>();
+                string date = startTime.ToString("yyyyMMdd");
+                #region A84 Data
+                var A84s = db.Econ_Foreign.ToList();
+                var A84pros = new Econ_Foreign().GetType().GetProperties();
+                #region 第一部分
+                using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("1"))))
                 {
-                    if ("END-OF-DATA".Equals(line))
+                    bool flag = false; //判斷是否為要讀取的資料行數
+                    string line = string.Empty;
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        flag = false;
-                    }
-
-                    if (flag) //找到的資料
-                    {
-                        var arr = line.Split('|');
-                        //arr[0]  ex: CPI INDX Index 
-                        //arr[1]  ex: 03/31/2016
-                        //arr[2]  ex: 8744.83
-
-                        if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
-                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        if ("END-OF-DATA".Equals(line))
                         {
-                            Econ_Foreign ef = new Econ_Foreign();
+                            flag = false;
+                        }
+                        if (flag) //找到的資料
+                        {
+                            var arr = line.Split('|');
+                            //arr[0]  ex: CPI INDX Index 
+                            //arr[1]  ex: 03/31/2016
+                            //arr[2]  ex: 8744.83
 
-                            DateTime dt = DateTime.MinValue;
-                            double d = 0d;
-                            string index = arr[0].Trim();
-                            if (arr[2] != null && double.TryParse(arr[2],out d) &&
-                                DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
-                                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
-                                out dt) && !index.IsNullOrWhiteSpace() && 
-                                DateTime.Now.Date >= dt)
+                            if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                                !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
                             {
-                                if (index == "CNFRBAL$ Index") //貿易收支 要排除$
-                                    index = "CNFRBAL Index";
-                                index = index.Replace(" ", "_");
-                                var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
-                                var A84 = A84s.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
-                                var A84Data = A84Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
-                                if (A84 != null)
+                                Econ_Foreign ef = new Econ_Foreign();
+
+                                DateTime dt = DateTime.MinValue;
+                                double d = 0d;
+                                string index = arr[0].Trim();
+                                if (arr[2] != null && double.TryParse(arr[2], out d) &&
+                                    DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
+                                    System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+                                    out dt) && !index.IsNullOrWhiteSpace() &&
+                                    DateTime.Now.Date >= dt)
                                 {
-                                    var A84pro = A84pros
-                                         .Where(x => x.Name == index).FirstOrDefault();
-                                    if (A84pro != null)
+                                    if (index == "CNFRBAL$ Index") //貿易收支 要排除$
+                                        index = "CNFRBAL Index";
+                                    index = index.Replace(" ", "_");
+                                    var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
+                                    var A84 = A84s.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
+                                    var A84Data = A84Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
+                                    if (A84 != null)
                                     {
-                                        A84pro.SetValue(A84, d);
-                                        A84.Date = date;
-                                    }                                        
-                                }
-                                else if (A84Data != null)
-                                {
-                                    var A84pro = A84Data.GetType().GetProperties()
-                                         .Where(x => x.Name == index).FirstOrDefault();
-                                    if (A84pro != null)
-                                    {
-                                        A84pro.SetValue(A84Data, d);
-                                        A84Data.Date = date;
+                                        setData(A84pros, A84, index, d, date);
                                     }
-                                        
-                                }
-                                else
-                                {
-                                    Econ_Foreign newData = new Econ_Foreign();
-                                    newData.Year_Quartly = YQ;
-                                    var A84pro = newData.GetType().GetProperties()
-                                        .Where(x => x.Name == index).FirstOrDefault();
-                                    if (A84pro != null)
+                                    else if (A84Data != null)
                                     {
-                                        A84pro.SetValue(newData, d);
-                                        newData.Date = date;
-                                    }                                      
-                                    A84Datas.Add(newData);
+                                        setData(A84pros, A84Data, index, d, date);
+                                    }
+                                    else
+                                    {
+                                        Econ_Foreign newData = new Econ_Foreign();
+                                        newData.Year_Quartly = YQ;
+                                        setData(A84pros, newData,index,d,date);
+                                        A84Datas.Add(newData);
+                                    }
                                 }
                             }
                         }
-                    }
-
-                    if ("START-OF-DATA".Equals(line))
-                    {
-                        flag = true;
+                        if ("START-OF-DATA".Equals(line))
+                        {
+                            flag = true;
+                        }
                     }
                 }
-            }
-
-            #endregion A84 Data
-
-            #region saveDb
-
-            try
-            {
-                db.Econ_Foreign.AddRange(A84Datas);
-                db.SaveChanges();
-                #region 加入 sql transferCheck by Mark 2018/01/09
-                log.bothLog(
-                    type,
-                    true,
-                    reportDateDt,
-                    startTime,
-                    DateTime.Now,
-                    1,
-                    logPath,
-                    MessageType.Success.GetDescription()
-                    );
                 #endregion
-            }
-            catch (DbUpdateException ex)
-            {
-                #region 加入 sql transferCheck by Mark 2018/01/09
-                log.bothLog(
-                    type,
-                    false,
-                    reportDateDt,
-                    startTime,
-                    DateTime.Now,
-                    1,
-                    logPath,
-                    $"message: {ex.Message}" +
-                    $", inner message {ex.InnerException?.InnerException?.Message}"
-                    );
-                #endregion
-            }
-            finally {
-                db.Dispose();
-            }
+                #region 第二部分
+                using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("2"))))
+                {
+                    bool flag = false; //判斷是否為要讀取的資料行數
+                    string line = string.Empty;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if ("END-OF-DATA".Equals(line))
+                        {
+                            flag = false;
+                        }
+                        if (flag) //找到的資料
+                        {
+                            var arr = line.Split('|');
+                            //arr[0]  ex: CPI INDX Index 
+                            //arr[1]  ex: 03/31/2016
+                            //arr[2]  ex: 8744.83
 
+                            if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                                !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                            {
+                                Econ_Foreign ef = new Econ_Foreign();
+
+                                DateTime dt = DateTime.MinValue;
+                                double d = 0d;
+                                string index = arr[0].Trim();
+                                if (arr[2] != null && double.TryParse(arr[2], out d) &&
+                                    DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
+                                    System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+                                    out dt) && !index.IsNullOrWhiteSpace() &&
+                                    DateTime.Now.Date >= dt)
+                                {
+                                    index = index.Replace(" ", "_");
+                                    var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
+                                    var A84 = A84s.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
+                                    var A84Data = A84Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
+                                    if (A84 != null)
+                                    {
+                                        setData(A84pros, A84, index, d, date);
+                                    }
+                                    else if (A84Data != null)
+                                    {
+                                        setData(A84pros, A84Data, index, d, date);
+                                    }
+                                    else
+                                    {
+                                        Econ_Foreign newData = new Econ_Foreign();
+                                        newData.Year_Quartly = YQ;
+                                        setData(A84pros, newData, index, d, date);
+                                        A84Datas.Add(newData);
+                                    }
+                                }
+                            }
+                        }
+                        if ("START-OF-DATA".Equals(line))
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+                #endregion
+                #endregion A84 Data
+
+                #region saveDb
+                try
+                {
+                    db.Econ_Foreign.AddRange(A84Datas);
+                    db.SaveChanges();
+                    #region 加入 sql transferCheck by Mark 2018/01/09
+                    log.bothLog(
+                        type,
+                        true,
+                        reportDateDt,
+                        startTime,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        MessageType.Success.GetDescription()
+                        );
+                    #endregion
+                }
+                catch (DbUpdateException ex)
+                {
+                    #region 加入 sql transferCheck by Mark 2018/01/09
+                    log.bothLog(
+                        type,
+                        false,
+                        reportDateDt,
+                        startTime,
+                        DateTime.Now,
+                        1,
+                        logPath,
+                        $"message: {ex.Message}" +
+                        $", inner message {ex.InnerException?.InnerException?.Message}"
+                        );
+                    #endregion
+                }
+            }
             #endregion saveDb
+        }
+
+        private void setData(PropertyInfo[] A84pros, Econ_Foreign data, string index,double d,string date)
+        {
+            var A84pro = A84pros.Where(x => x.Name == index).FirstOrDefault();
+            if (A84pro != null)
+            {
+                A84pro.SetValue(data, d);
+                data.Date = date;
+            }
         }
     }
 }

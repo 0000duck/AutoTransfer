@@ -22,8 +22,8 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(TableType.C04, dateTime);
 
-                //ex: GetC04_20170803.csv
-                string getFileName = f.getFileName();
+                //ex: GetC04_20170803_1.csv
+                string getFileName = f.getFileName("1");
 
                 DateTime dt = DateTime.Now;
                 DateTime dt2 = dt.AddMonths(-18);
@@ -41,7 +41,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
                 data.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
-                //data.Add("HIST_PERIOD=q"); //,所以req檔發動時要把HIST_PERIOD=q 拿掉,
+                data.Add("HIST_PERIOD=q"); 
                 //但是這支抓到的資料每月都會有,所以需要判斷寫入DB時只寫3,6,9,12的資料,才是季的資料。
                 data.Add("PROGRAMNAME=gethistory");
 
@@ -76,7 +76,7 @@ namespace AutoTransfer.CreateFile
                         {
                             data.Add(x.Name.Replace("_", "$ "));
                         }
-                        else
+                        else if(x.Name != "NEUENTTR_Index")
                         {
                             data.Add(x.Name.Replace("_", " "));
                         }
@@ -93,8 +93,72 @@ namespace AutoTransfer.CreateFile
                 //建立 req 檔案
                 flag = new CreatePutFile().create(
                     f.putC04FilePath(),
-                    f.putFileName(),
+                    f.putFileName("1"),
                     data);
+
+                if (!flag)
+                    return flag;
+                #region 抓季的 不要加Q 
+                List<string> data2 = new List<string>();
+
+                //ex: GetC04_20170803_2.csv
+                string _getFileName = f.getFileName("2");
+
+                #region File
+
+                data2.Add("START-OF-FILE");
+
+                #region Title
+                data2.Add("USERNUMBER=" + f.getUSERNUMBER());
+                data2.Add("WS=" + f.getWS());
+                data2.Add("SN=" + f.getSN());
+                data2.Add($"REPLYFILENAME={_getFileName}");
+                data2.Add("FILETYPE=pc");
+                data2.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
+                data2.Add("FIRMNAME=" + f.getFIRMNAME());
+                data2.Add($"DATERANGE={dt2.ToString("yyyyMMdd")}|{dt.ToString("yyyyMMdd")}");
+                //data.Add("HIST_PERIOD=q"); //,所以req檔發動時要把HIST_PERIOD=q 拿掉,
+                //但是這支抓到的資料每月都會有,所以需要判斷寫入DB時只寫3,6,9,12的資料,才是季的資料。
+                data2.Add("PROGRAMNAME=gethistory");
+
+                #endregion Title
+
+                //空一行
+                data2.Add(string.Empty);
+
+                #region START-OF-FIELDS
+
+                data2.Add("START-OF-FIELDS");
+
+                data2.Add("PX_LAST");
+
+                data2.Add("END-OF-FIELDS");
+
+                #endregion START-OF-FIELDS
+
+                //空一行
+                data2.Add(string.Empty);
+
+                #region START-OF-DATA
+
+                data2.Add("START-OF-DATA");
+
+                data2.Add("NEUENTTR Index");
+
+                data2.Add("END-OF-DATA");
+
+                #endregion START-OF-DATA
+
+                data2.Add("END-OF-FILE");
+
+                #endregion File
+
+                //建立 req 檔案
+                flag = new CreatePutFile().create(
+                    f.putC04FilePath(),
+                    f.putFileName("2"),
+                    data2);
+                #endregion
             }
             catch
             {
