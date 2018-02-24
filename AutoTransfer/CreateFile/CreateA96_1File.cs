@@ -65,7 +65,7 @@ namespace AutoTransfer.CreateFile
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            data.Add(string.Format("{0}@BVAL Corp", x));
+                            data.Add(string.Format("{0}@BGN Govt|ISIN", x));
                         }
                     });
                 db.Dispose();

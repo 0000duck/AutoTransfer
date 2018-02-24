@@ -256,10 +256,10 @@ namespace AutoTransfer.Transfer
                         createA96_5File();
                         break;
                     case "5":
-                        //sourceFileName = Path.Combine(getFilePath, getFileName);
-                        //destFileName = Path.Combine(getFilePath, setFile.getA96_5FileName());
-                        //Extension.Decompress(sourceFileName, destFileName);
-                        //DataToA96(setFile.getA96_5FilePath(), setFile.getA96_5FileName());
+                        sourceFileName = Path.Combine(getFilePath, getFileName);
+                        destFileName = Path.Combine(getFilePath, setFile.getA96_5FileName());
+                        Extension.Decompress(sourceFileName, destFileName);
+                        DataToA96(setFile.getA96_5FilePath(), setFile.getA96_5FileName());
                         DataToDb();
                         break;
                     default:
@@ -291,113 +291,53 @@ namespace AutoTransfer.Transfer
 
         protected void DataMidYieldToA96(string path1, string path2)
         {
-            //IFRS9Entities db = new IFRS9Entities();
+            IFRS9Entities db = new IFRS9Entities();
 
-            //#region
-            //using (StreamReader sr = new StreamReader(Path.Combine(path1, path2)))
-            //{
-            //    bool flag = false; //判斷是否為要讀取的資料行數
-            //    string line = string.Empty;
-            //    List<YLD_YTM_MID_Class> listYLD = new List<YLD_YTM_MID_Class>();
-            //    while ((line = sr.ReadLine()) != null)
-            //    {
-            //        if ("END-OF-DATA".Equals(line))
-            //        {
-            //            flag = false;
-            //        }
+            #region
+            using (StreamReader sr = new StreamReader(Path.Combine(path1, path2)))
+            {
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+                List<YLD_YTM_MID_Class> listYLD = new List<YLD_YTM_MID_Class>();
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if ("END-OF-DATA".Equals(line))
+                    {
+                        flag = false;
+                    }
 
-            //        if (flag) //找到的資料
-            //        {
-            //            var arr = line.Split('|');
-            //            //arr[0]  ex: 912810QS0@BGN Govt
-            //            //arr[1]  ex: 03/22/2013
-            //            //arr[2]  ex: 3.089
+                    if (flag) //找到的資料
+                    {
+                        var arr = line.Split('|');
+                        //arr[0]  ex: US035242AN64@BGN Govt
+                        //arr[1]  ex: 01/31/2018
+                        //arr[2]  ex: 4.097
 
-            //            if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
-            //                !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
-            //            {
-            //                var ID_CUSIP = arr[0].Trim().Split('@')[0];
-            //                var dateYLD_YTM_MID = arr[1].Trim();
-            //                dateYLD_YTM_MID = dateYLD_YTM_MID.Substring(6, 4) + "/" + dateYLD_YTM_MID.Substring(0, 2) + "/" + dateYLD_YTM_MID.Substring(3, 2);
-            //                var YLD_YTM_MID = arr[2].Trim();
+                        if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        {
+                            double YLD_YTM_MID;
+                            if (double.TryParse(arr[2].Trim(), out YLD_YTM_MID) == true)
+                            {
+                                var Bond_Number = arr[0].Trim().Split('@')[0];
 
-            //                YLD_YTM_MID_Class yld = new YLD_YTM_MID_Class();
-            //                yld.ID_CUSIP = ID_CUSIP;
-            //                yld.DATE_YLD_YTM_MID = dateYLD_YTM_MID;
-            //                yld.YLD_YTM_MID = YLD_YTM_MID;
-            //                listYLD.Add(yld);
-            //            }
-            //        }
+                                A96Data.Where(x => x.Bond_Number == Bond_Number)
+                                       .ToList()
+                                       .ForEach(x =>
+                                       {
+                                           x.Mid_Yield = YLD_YTM_MID.ToString();
+                                       });
+                            }
+                        }
+                    }
 
-            //        if ("START-OF-DATA".Equals(line))
-            //        {
-            //            flag = true;
-            //        }
-            //    }
-
-            //    listYLD = listYLD.GroupBy(o => new { o.ID_CUSIP, o.DATE_YLD_YTM_MID, o.YLD_YTM_MID })
-            //                     .Select(o => o.FirstOrDefault()).ToList();
-
-            //    foreach (var item in A96Data)
-            //    {
-            //        var YLDs = listYLD.Where(x => x.ID_CUSIP == item.ID_CUSIP
-            //                                    && (x.DATE_YLD_YTM_MID == item.Report_Date || x.DATE_YLD_YTM_MID == item.Origination_Date)).ToList();
-
-            //        foreach (var oneYLD in YLDs)
-            //        {
-            //            item.Mid_Yield = oneYLD.YLD_YTM_MID;
-
-            //            if (item.Mid_Yield != null && item.Mid_Yield != "")
-            //            {
-            //                if (item.Report_Date == oneYLD.DATE_YLD_YTM_MID)
-            //                {
-            //                    item.Treasury_Current = (double.Parse(item.Mid_Yield) * 100).ToString();
-            //                }
-
-            //                if (item.Origination_Date == oneYLD.DATE_YLD_YTM_MID)
-            //                {
-            //                    item.Treasury_When_Trade = (double.Parse(item.Mid_Yield) * 100).ToString();
-            //                }
-
-            //                if (item.Treasury_Current != null && item.Treasury_Current != "")
-            //                {
-            //                    item.Spread_Current = (double.Parse(item.Mid_Yield) * 100 - double.Parse(item.Treasury_Current)).ToString();
-            //                }
-
-            //                if (item.Treasury_When_Trade != null && item.Treasury_When_Trade != "")
-            //                {
-            //                    item.Spread_When_Trade = (double.Parse(item.EIR) - double.Parse(item.Treasury_When_Trade)).ToString();
-            //                }
-
-            //                if (item.Spread_Current.IsNullOrWhiteSpace() == false
-            //                    && item.Spread_When_Trade.IsNullOrWhiteSpace() == false
-            //                    && item.Treasury_Current.IsNullOrWhiteSpace() == false
-            //                    && item.Treasury_When_Trade.IsNullOrWhiteSpace() == false
-            //                   )
-            //                {
-            //                    item.All_in_Chg = (double.Parse(item.Spread_Current)
-            //                                       - double.Parse(item.Spread_When_Trade)
-            //                                       + double.Parse(item.Treasury_Current)
-            //                                       - double.Parse(item.Treasury_When_Trade)).ToString();
-            //                }
-
-            //                if (item.Spread_Current.IsNullOrWhiteSpace() == false
-            //                    && item.Spread_When_Trade.IsNullOrWhiteSpace() == false
-            //                   )
-            //                {
-            //                    item.Chg_In_Spread = (double.Parse(item.Spread_Current) - double.Parse(item.Spread_When_Trade)).ToString();
-            //                }
-
-            //                if (item.Treasury_Current.IsNullOrWhiteSpace() == false
-            //                    && item.Treasury_When_Trade.IsNullOrWhiteSpace() == false)
-            //                {
-            //                    item.Chg_In_Treasury = (double.Parse(item.Treasury_Current) - double.Parse(item.Treasury_When_Trade)).ToString();
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //#endregion
+                    if ("START-OF-DATA".Equals(line))
+                    {
+                        flag = true;
+                    }
+                }
+            }
+            #endregion
         }
 
         protected void createA96_3File()
@@ -450,8 +390,6 @@ namespace AutoTransfer.Transfer
                             flag = true;
                         }
                     }
-
-                    //A96Data.RemoveAll(x => x.BNCHMRK_TSY_ISSUE_ID == null || x.BNCHMRK_TSY_ISSUE_ID == "");
 
                     if (new CreateA96_3File().create(tableType, reportDateStr, data))
                     {
@@ -537,8 +475,6 @@ namespace AutoTransfer.Transfer
                         }
                     }
 
-                    //A96Data.RemoveAll(x => x.ID_CUSIP == null || x.ID_CUSIP == "");
-
                     if (new CreateA96_4File().create(tableType, reportDateStr, data))
                     {
                         putSFTP("4", setFile.putA96_4FilePath(), setFile.putA96_4FileName());
@@ -622,8 +558,6 @@ namespace AutoTransfer.Transfer
                             flag = true;
                         }
                     }
-
-                    //A96Data.RemoveAll(x => x.ID_CUSIP == null || x.ID_CUSIP == "");
 
                     string minOriginationDate = A96Data.DefaultIfEmpty()
                                                        .Min(x => x.Origination_Date.IsNullOrWhiteSpace() == true ? reportDateStr : x.Origination_Date);
@@ -725,21 +659,19 @@ namespace AutoTransfer.Transfer
 
                     foreach (var oneYLD in YLDs)
                     {
-                        item.Mid_Yield = oneYLD.YLD_YTM_MID;
-
-                        if (item.Mid_Yield != null && item.Mid_Yield != "")
+                        if (oneYLD.YLD_YTM_MID != null && oneYLD.YLD_YTM_MID != "")
                         {
                             if (item.Report_Date == oneYLD.DATE_YLD_YTM_MID)
                             {
-                                item.Treasury_Current = (double.Parse(item.Mid_Yield) * 100).ToString();
+                                item.Treasury_Current = (double.Parse(oneYLD.YLD_YTM_MID) * 100).ToString();
                             }
 
                             if (item.Origination_Date == oneYLD.DATE_YLD_YTM_MID)
                             {
-                                item.Treasury_When_Trade = (double.Parse(item.Mid_Yield) * 100).ToString();
+                                item.Treasury_When_Trade = (double.Parse(oneYLD.YLD_YTM_MID) * 100).ToString();
                             }
 
-                            if (item.Treasury_Current != null && item.Treasury_Current != "")
+                            if (item.Mid_Yield != null && item.Mid_Yield != "")
                             {
                                 item.Spread_Current = (double.Parse(item.Mid_Yield) * 100 - double.Parse(item.Treasury_Current)).ToString();
                             }
@@ -787,25 +719,6 @@ namespace AutoTransfer.Transfer
             #region saveDb
             try
             {
-                //A96Data.RemoveAll(x => x.Reference_Nbr.IsNullOrWhiteSpace() == true
-                //                    || x.Report_Date.IsNullOrWhiteSpace() == true
-                //                    || x.Version.IsNullOrWhiteSpace() == true
-                //                    || x.Bond_Number.IsNullOrWhiteSpace() == true
-                //                    || x.Lots.IsNullOrWhiteSpace() == true
-                //                    || x.Portfolio_Name.IsNullOrWhiteSpace() == true
-                //                    || x.Origination_Date.IsNullOrWhiteSpace() == true
-                //                    || x.EIR.IsNullOrWhiteSpace() == true
-                //                    || x.Processing_Date.IsNullOrWhiteSpace() == true
-                //                    || x.Mid_Yield.IsNullOrWhiteSpace() == true
-                //                    || x.Spread_Current.IsNullOrWhiteSpace() == true
-                //                    || x.Spread_When_Trade.IsNullOrWhiteSpace() == true
-                //                    || x.Treasury_Current.IsNullOrWhiteSpace() == true
-                //                    || x.Treasury_When_Trade.IsNullOrWhiteSpace() == true
-                //                    || x.All_in_Chg.IsNullOrWhiteSpace() == true
-                //                    || x.Chg_In_Spread.IsNullOrWhiteSpace() == true
-                //                    || x.Chg_In_Treasury.IsNullOrWhiteSpace() == true
-                //                 );
-
                 db.Bond_Spread_Info.RemoveRange(db.Bond_Spread_Info.Where(x => x.Report_Date == reportDateDt));
 
                 db.Bond_Spread_Info.AddRange(A96Data.Select(
