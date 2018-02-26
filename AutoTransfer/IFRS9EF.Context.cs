@@ -47,10 +47,11 @@ namespace AutoTransfer
         public virtual DbSet<Gov_Info_Monthly> Gov_Info_Monthly { get; set; }
         public virtual DbSet<Gov_Info_Quartly> Gov_Info_Quartly { get; set; }
         public virtual DbSet<Gov_Info_Yearly> Gov_Info_Yearly { get; set; }
-        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
-        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
         public virtual DbSet<Bond_Rating> Bond_Rating { get; set; }
         public virtual DbSet<Guarantor_Rating> Guarantor_Rating { get; set; }
         public virtual DbSet<Issuer_Rating> Issuer_Rating { get; set; }
+        public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
+        public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
+        public virtual DbSet<Bond_Spread_Info> Bond_Spread_Info { get; set; }
     }
 }

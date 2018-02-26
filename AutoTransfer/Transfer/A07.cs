@@ -216,7 +216,8 @@ namespace AutoTransfer.Transfer
                                 if (A07 != null)
                                 {
                                     var A07pro = A07.GetType().GetProperties()
-                                         .Where(x => x.Name.Replace("_", " ") == index.Replace("_", " ")).FirstOrDefault();
+                                                    .Where(x => x.Name.Replace("_", " ") == index.Replace("_", " "))
+                                                    .FirstOrDefault();
                                     if (A07pro != null)
                                     {
                                         A07pro.SetValue(A07, d);

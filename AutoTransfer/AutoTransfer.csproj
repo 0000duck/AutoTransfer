@@ -75,7 +75,10 @@
     <Compile Include="Bond_Rating_Summary.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
-    <Compile Include="Bond_Spread_Info\A96_Bond_Spread_Info.cs" />
+    <Compile Include="Bond_Spread_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BondSpreadInfo\A96_Bond_Spread_Info.cs" />
     <Compile Include="Bond_Ticker_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -85,6 +88,8 @@
     <Compile Include="CreateFile\CreateA96_1File.cs" />
     <Compile Include="CreateFile\CreateA96_2File.cs" />
     <Compile Include="CreateFile\CreateA96_3File.cs" />
+    <Compile Include="CreateFile\CreateA96_4File.cs" />
+    <Compile Include="CreateFile\CreateA96_5File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
     <Compile Include="CreateFile\CreateMissSecurityDesFile.cs" />

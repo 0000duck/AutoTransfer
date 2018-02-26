@@ -28,6 +28,10 @@ namespace AutoTransfer.CreateFile
         private static string A96_2Get = ConfigurationManager.AppSettings["A96_2Get"];
         private static string A96_3Put = ConfigurationManager.AppSettings["A96_3Put"];
         private static string A96_3Get = ConfigurationManager.AppSettings["A96_3Get"];
+        private static string A96_4Put = ConfigurationManager.AppSettings["A96_4Put"];
+        private static string A96_4Get = ConfigurationManager.AppSettings["A96_4Get"];
+        private static string A96_5Put = ConfigurationManager.AppSettings["A96_5Put"];
+        private static string A96_5Get = ConfigurationManager.AppSettings["A96_5Get"];
         private static string SecurityDesPut = string.Empty;
         private static string SecurityDesGet = string.Empty;
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
@@ -321,6 +325,13 @@ namespace AutoTransfer.CreateFile
                 _dateTime);
         }
 
+        public string getA96_1GZFileName()
+        {
+            return string.Format("Get{0}_1_{1}.csv.gz",
+                                  _type.ToString(),
+                                  _dateTime);
+        }
+
         public string getA96_2FilePath()
         {
             return A96_2Get.IsNullOrWhiteSpace() ?
@@ -371,6 +382,75 @@ namespace AutoTransfer.CreateFile
             return string.Format("Get{0}_3_{1}.req",
                                  _type.ToString(),
                                  _dateTime);
+        }
+
+        public string getA96_3GZFileName()
+        {
+            return string.Format("Get{0}_3_{1}.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
+
+        public string getA96_4FilePath()
+        {
+            return A96_4Get.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_4Get") : A96_4Get;
+        }
+
+        public string putA96_4FilePath()
+        {
+            return A96_4Put.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_4Put") : A96_4Put;
+        }
+
+        public string getA96_4FileName()
+        {
+            return string.Format("Get{0}_4_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA96_4FileName()
+        {
+            return string.Format("Get{0}_4_{1}.req",
+                                 _type.ToString(),
+                                 _dateTime);
+        }
+
+        public string getA96_4GZFileName()
+        {
+            return string.Format("Get{0}_4_{1}.csv.gz",
+                  _type.ToString(),
+                  _dateTime);
+        }
+
+        public string getA96_5FilePath()
+        {
+            return A96_5Get.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_5Get") : A96_5Get;
+        }
+
+        public string putA96_5FilePath()
+        {
+            return A96_5Put.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_5Put") : A96_5Put;
+        }
+
+        public string getA96_5FileName()
+        {
+            return string.Format("Get{0}_5_{1}.csv",
+                                 _type.ToString(),
+                                 _dateTime);
+        }
+
+        public string putA96_5FileName()
+        {
+            return string.Format("Get{0}_5_{1}.req",
+                                 _type.ToString(),
+                                 _dateTime);
+        }
+
+        public string getA96_5GZFileName()
+        {
+            return string.Format("Get{0}_5_{1}.csv.gz",
+                                  _type.ToString(),
+                                  _dateTime);
         }
 
         private string getExtensionName(string str)
