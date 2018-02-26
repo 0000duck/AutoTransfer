@@ -20,7 +20,7 @@ namespace AutoTransfer
         {
             ((IObjectContextAdapter)this).ObjectContext.CommandTimeout = 300;
         }
-    
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();

@@ -75,18 +75,21 @@ namespace AutoTransfer.CreateFile
             return flag;
         }
 
-        public string getGZFileName()
+        public string getGZFileName(string str = null)
         {
-            return string.Format("Get{0}_{1}.csv.gz",
+            return string.Format("Get{0}_{1}{2}.csv.gz",
                   _type.ToString(),
-                  _dateTime);
+                  _dateTime,
+                  getExtensionName(str)
+                  );
         }
 
-        public string getFileName()
+        public string getFileName(string str = null)
         {
-            return string.Format("Get{0}_{1}.csv",
+            return string.Format("Get{0}_{1}{2}.csv",
                 _type.ToString(),
-                _dateTime);
+                _dateTime,
+                getExtensionName(str));
         }
 
         public string getC04FilePath()
@@ -133,11 +136,12 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "sampleGet") : sampleGet;
         }
 
-        public string putFileName()
+        public string putFileName(string str = null)
         {
-            return string.Format("Get{0}_{1}.req",
+            return string.Format("Get{0}_{1}{2}.req",
                 _type.ToString(),
-                _dateTime);
+                _dateTime,
+                getExtensionName(str));
         }
 
         public string putC04FilePath()
@@ -447,6 +451,11 @@ namespace AutoTransfer.CreateFile
             return string.Format("Get{0}_5_{1}.csv.gz",
                                   _type.ToString(),
                                   _dateTime);
+        }
+
+        private string getExtensionName(string str)
+        {
+            return str.IsNullOrWhiteSpace() ? string.Empty : $"_{str}";
         }
     }
 }
