@@ -101,6 +101,7 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
             string error2 = string.Empty;
+            string error3 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
                 .Put(string.Empty,
                  setFile.putC04FilePath(),
@@ -111,8 +112,18 @@ namespace AutoTransfer.Transfer
                  setFile.putC04FilePath(),
                  setFile.putFileName("2"),
                  out error2);
-            if (!error.IsNullOrWhiteSpace() || !error2.IsNullOrWhiteSpace()) //fail
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                 setFile.putC04FilePath(),
+                 setFile.putFileName("3"),
+                 out error3);
+            if (!error.IsNullOrWhiteSpace() ||
+                !error2.IsNullOrWhiteSpace() ||
+                !error3.IsNullOrWhiteSpace()) //fail
             {
+                string _error =
+                    !error.IsNullOrWhiteSpace() ? error :
+                    !error2.IsNullOrWhiteSpace() ? error2 : error3;
                 #region 加入 sql transferCheck by Mark 2018/01/09
                 log.bothLog(
                     type,
@@ -122,7 +133,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now,
                     1,
                     logPath,
-                    error
+                    _error
                     );
                 #endregion
             }
@@ -142,6 +153,7 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
             string error2 = string.Empty;
+            string error3 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
             .Get(string.Empty,
                  setFile.getC04FilePath(),
@@ -152,8 +164,18 @@ namespace AutoTransfer.Transfer
                  setFile.getC04FilePath(),
                  setFile.getGZFileName("2"),
                  out error2);
-            if (!error.IsNullOrWhiteSpace() || !error2.IsNullOrWhiteSpace())
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            .Get(string.Empty,
+                 setFile.getC04FilePath(),
+                 setFile.getGZFileName("3"),
+                 out error2);
+            if (!error.IsNullOrWhiteSpace() || 
+                !error2.IsNullOrWhiteSpace() ||
+                !error3.IsNullOrWhiteSpace())
             {
+                string _error =
+                !error.IsNullOrWhiteSpace() ? error :
+                !error2.IsNullOrWhiteSpace() ? error2 : error3;
                 #region 加入 sql transferCheck by Mark 2018/01/09
                 log.bothLog(
                     type,
@@ -163,23 +185,29 @@ namespace AutoTransfer.Transfer
                     DateTime.Now,
                     1,
                     logPath,
-                    error
+                    _error
                     );
                 #endregion
             }
             else
             {
-                string sourceFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getGZFileName("1"));
-                string destFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getFileName("1"));
-                Extension.Decompress(sourceFileName, destFileName);
-
                 string _sourceFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getGZFileName("2"));
+                setFile.getC04FilePath(), setFile.getGZFileName("1"));
                 string _destFileName = Path.Combine(
-                setFile.getC04FilePath(), setFile.getFileName("2"));
+                setFile.getC04FilePath(), setFile.getFileName("1"));
                 Extension.Decompress(_sourceFileName, _destFileName);
+
+                string _sourceFileName2 = Path.Combine(
+                setFile.getC04FilePath(), setFile.getGZFileName("2"));
+                string _destFileName2 = Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("2"));
+                Extension.Decompress(_sourceFileName2, _destFileName2);
+
+                string _sourceFileName3 = Path.Combine(
+                setFile.getC04FilePath(), setFile.getGZFileName("3"));
+                string _destFileName3 = Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("3"));
+                Extension.Decompress(_sourceFileName3, _destFileName3);
                 DataToDb();
             }
         }
@@ -322,8 +350,69 @@ namespace AutoTransfer.Transfer
                     }
                 }
                 #endregion
-                #endregion A84 Data
+                #region 第三部分
+                using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getC04FilePath(), setFile.getFileName("3"))))
+                {
+                    bool flag = false; //判斷是否為要讀取的資料行數
+                    string line = string.Empty;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if ("END-OF-DATA".Equals(line))
+                        {
+                            flag = false;
+                        }
+                        if (flag) //找到的資料
+                        {
+                            var arr = line.Split('|');
+                            //arr[0]  ex: CPI INDX Index 
+                            //arr[1]  ex: 03/31/2016
+                            //arr[2]  ex: 8744.83
 
+                            if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
+                                !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                            {
+                                Econ_Foreign ef = new Econ_Foreign();
+
+                                DateTime dt = DateTime.MinValue;
+                                double d = 0d;
+                                string index = arr[0].Trim();
+                                if (arr[2] != null && double.TryParse(arr[2], out d) &&
+                                    DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null,
+                                    System.Globalization.DateTimeStyles.AllowWhiteSpaces,
+                                    out dt) && !index.IsNullOrWhiteSpace() &&
+                                    DateTime.Now.Date >= dt)
+                                {
+                                    index = index.Replace(" ", "_");
+                                    var YQ = dt.Year.ToString() + dt.Month.IntToYearQuartly();
+                                    var A84 = A84s.Where(x => x.Year_Quartly == YQ).FirstOrDefault();
+                                    var A84Data = A84Datas.FirstOrDefault(x => x.Year_Quartly == YQ);
+                                    if (A84 != null)
+                                    {
+                                        setData(A84pros, A84, index, d, date);
+                                    }
+                                    else if (A84Data != null)
+                                    {
+                                        setData(A84pros, A84Data, index, d, date);
+                                    }
+                                    else
+                                    {
+                                        Econ_Foreign newData = new Econ_Foreign();
+                                        newData.Year_Quartly = YQ;
+                                        setData(A84pros, newData, index, d, date);
+                                        A84Datas.Add(newData);
+                                    }
+                                }
+                            }
+                        }
+                        if ("START-OF-DATA".Equals(line))
+                        {
+                            flag = true;
+                        }
+                    }
+                }
+                #endregion
+                #endregion A84 Data
                 #region saveDb
                 try
                 {

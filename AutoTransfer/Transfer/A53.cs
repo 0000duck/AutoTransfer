@@ -64,7 +64,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.DateTime_Format_Fail.GetDescription()
                     );
@@ -92,7 +92,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     string.Join(",", errs)
                     );
@@ -126,7 +126,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.Create_Sample_File_Fail.GetDescription()
                     );
@@ -152,7 +152,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.Put_Sample_File_Fail.GetDescription()
                     );
@@ -187,7 +187,7 @@ namespace AutoTransfer.Transfer
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.Get_Sample_File_Fail.GetDescription()
                     );
@@ -457,7 +457,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                                     reportDateDt,
                                     startTime,
                                     DateTime.Now,
-                                    1,
+                                    verInt,
                                     logPath,
                                     "新增SecurityDes缺漏上傳檔案失敗"
                                     );
@@ -477,7 +477,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                                     reportDateDt,
                                     startTime,
                                     DateTime.Now,
-                                    1,
+                                    verInt,
                                     logPath,
                                     MessageType.Create_Commpany_File_Fail.GetDescription()
                                     );
@@ -492,7 +492,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             $"message: {ex.Message}" +
                             $", inner message {ex.InnerException?.InnerException?.Message}"
@@ -521,7 +521,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     "上傳SecurityDes缺漏檔案失敗"
                     );
@@ -552,7 +552,7 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     "下載SecurityDes缺漏檔案失敗"
                     );
@@ -628,7 +628,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                                 reportDateDt,
                                 startTime,
                                 DateTime.Now,
-                                1,
+                                verInt,
                                 logPath,
                                 MessageType.Create_Commpany_File_Fail.GetDescription()
                                 );
@@ -642,7 +642,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             $"message: {ex.Message}" +
                             $", inner message {ex.InnerException?.InnerException?.Message}"
@@ -671,7 +671,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.Put_Commpany_File_Fail.GetDescription()
                     );
@@ -707,7 +707,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     MessageType.Get_Commpanye_File_Fail.GetDescription()
                     );
@@ -1274,7 +1274,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             MessageType.Success.GetDescription()
                             );
@@ -1289,7 +1289,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                             reportDateDt,
                             startTime,
                             DateTime.Now,
-                            1,
+                            verInt,
                             logPath,
                             $"message: {ex.Message}" +
                             $", inner message {ex.InnerException?.InnerException?.Message}"
@@ -1309,7 +1309,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
                     reportDateDt,
                     startTime,
                     DateTime.Now,
-                    1,
+                    verInt,
                     logPath,
                     string.Format("{0} ({1}) {2}", TableType.A53.GetDescription(),
                     TableType.A53.ToString(), "回傳文件沒有新增任何資料")
