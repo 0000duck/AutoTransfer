@@ -107,13 +107,10 @@ namespace AutoTransfer.Utility
             using (IFRS9Entities db = new IFRS9Entities())
             {
                 var checkTable = db.Transfer_CheckTable.AsNoTracking();
-                //須符合有一筆"Y"(上一部完成),前置動作檢查檔案為A53版本只會有一版
+                //須符合有一筆"Y"(上一部完成)
                 if (checkTable.Any(x => x.ReportDate == reportDate &&
-                                                    ((checkName == "A53" &&
-                                                     x.Version == 1) ||
-                                                    (x.File_Name == checkName &&
-                                                   x.Version == version)) &&
-                                                   x.TransferType == "Y") &&
+                                        ((x.File_Name == checkName && x.Version == version)) &&
+                                        x.TransferType == "Y") &&
                 //自己沒有"Y"(重複做) 才算符合,轉檔為A53不用判斷
                     (fileName == "A53" ||
                     !checkTable.Any(x => x.File_Name == fileName &&
@@ -173,6 +170,7 @@ namespace AutoTransfer.Utility
                         var updateTable = db.Transfer_CheckTable
                             .Where(x => x.File_Name == fileName &&
                                         x.ReportDate == reportDate &&
+                                        x.Version == version &&
                                         x.TransferType == "Y").FirstOrDefault();
                         if (updateTable != null)
                             updateTable.TransferType = "R";

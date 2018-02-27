@@ -44,13 +44,11 @@ namespace AutoTransfer.Transfer
                 "(bra)","(cl)","(col)","(mex)",
                 "(P)","/*","*"
             };
-            bool flag = true;
             splitGetFirst.ForEach(x =>
             {
-                if (flag && value.Contains(x))
+                if (value.Contains(x))
                 {
                     value = SplitFirst(value, x);
-                    flag = false;
                 }
             });
             return value;
