@@ -41,6 +41,7 @@ namespace AutoTransfer.Transfer
                     {
                         try
                         {
+                            #region sql
                             string parmID = getParmID(); //選取離今日最近的D60
                             string reportData = dt.ToString("yyyy/MM/dd");
                             string ver = version.ToString();
@@ -51,6 +52,7 @@ namespace AutoTransfer.Transfer
                             string sql_D = string.Empty; //排除多餘
                             string sql1_3 = string.Empty; //更新三張信評特殊表格
                             string sql2 = string.Empty; //A58
+                            #region A57原始日 sql
                             sql = $@"
 --原始
 
@@ -370,7 +372,8 @@ and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.A.GetDescription()}'
 and Reference_Nbr in (select Reference_Nbr from tempDeleA) ; " ;
-
+                            #endregion
+                            #region A57評估日 sql
                             sql1_2 = $@"
 --評估日
 
@@ -575,6 +578,8 @@ and Rating is null
 and Rating_Type = '{Rating_Type.B.GetDescription()}'
 and Reference_Nbr in (select Reference_Nbr from tempDeleB); 
 ";
+                            #endregion
+                            #region 三張特殊表單更新 sql
                             sql1_3 = $@"
 -- update Bond_Rating(債項信評) 的設定
 update Bond_Rating_Info   
@@ -723,7 +728,8 @@ and Bond_Rating_Info.Version = {ver}
 and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' 
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 ";
-
+                            #endregion
+                            #region A58 sql
                             sql2 = $@"
 WITH A57 AS
 (
@@ -843,8 +849,12 @@ select
               Origination_Date_Old			
  from T4;
                             ";
+                            #endregion
+                            #endregion
                             db.Database.CommandTimeout = 300;
+                            //insert A57 原始日
                             db.Database.ExecuteSqlCommand(sql);
+                            //insert A57 評估日
                             db.Database.ExecuteSqlCommand(sql1_2);
                             #region 共用
                             var A51s = db.Grade_Moody_Info.AsNoTracking()
@@ -860,16 +870,19 @@ select
                             var _Guarantor_Ratings = db.Guarantor_Rating.AsNoTracking().ToList();                            
                             RatingOrg _Rating_Org = RatingOrg.SP;
                             RatingObject _Rating_Object = RatingObject.Bonds;
+                            string _RObject = string.Empty;
                             bool _insertFlag = false;
                             Grade_Moody_Info A51 = null;
                             if (_Bond_Ratings.Any())
                             {
                                 _Rating_Object = RatingObject.Bonds;
+                                _RObject = _Rating_Object.GetDescription();
                                 var _Bonds = _Bond_Ratings.Select(x => x.Bond_Number).ToList();
                                 db.Bond_Rating_Info.AsNoTracking()
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
+                                             x.Rating_Object == _RObject &&
                                              _Bonds.Contains(x.Bond_Number)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.Bond_Number })
                                   .ToList().ForEach(x =>
@@ -881,7 +894,7 @@ select
                                       var _RTG_Bloomberg_Field = string.Empty;
                                       _insertFlag = false;
                                       if (!_Bond_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_SP"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.SP;
@@ -890,7 +903,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_SP";
                                       }
                                       if (!_Bond_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_MOODY"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Moody;
@@ -899,7 +912,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_MOODY";
                                       }
                                       if (!_Bond_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Fitch;
@@ -908,7 +921,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_FITCH";
                                       }
                                       if (!_Bond_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_NATIONAL"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.FitchTwn;
@@ -917,7 +930,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL";
                                       }
                                       if (!_Bond_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_TRC"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.CW;
@@ -955,11 +968,13 @@ select
                             if (_Issuer_Ratings.Any())
                             {
                                 _Rating_Object = RatingObject.ISSUER;
+                                _RObject = _Rating_Object.GetDescription();
                                 var _Issuers = _Issuer_Ratings.Select(x => x.Issuer).ToList();
                                 db.Bond_Rating_Info.AsNoTracking()
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
+                                             x.Rating_Object == _RObject &&
                                              _Issuers.Contains(x.ISSUER)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
                                   .ToList().ForEach(x =>
@@ -971,7 +986,7 @@ select
                                       var _RTG_Bloomberg_Field = string.Empty;
                                       _insertFlag = false;
                                       if (!_Issuer_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_SP_LT_FC_ISSUER_CREDIT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.SP;
@@ -980,7 +995,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_SP_LT_FC_ISSUER_CREDIT";
                                       }
                                       if (!_Issuer_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_MDY_ISSUER"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Moody;
@@ -989,7 +1004,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_MDY_ISSUER";
                                       }
                                       if (!_Issuer_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_LT_ISSUER_DEFAULT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Fitch;
@@ -998,7 +1013,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_FITCH_LT_ISSUER_DEFAULT";
                                       }
                                       if (!_Issuer_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_FITCH_NATIONAL_LT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.FitchTwn;
@@ -1007,7 +1022,7 @@ select
                                           _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL_LT";
                                       }
                                       if (!_Issuer_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "RTG_TRC_LONG_TERM"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.CW;
@@ -1045,11 +1060,13 @@ select
                             if (_Guarantor_Ratings.Any())
                             {
                                 _Rating_Object = RatingObject.GUARANTOR;
+                                _RObject = _Rating_Object.GetDescription();
                                 var _Guarantors = _Guarantor_Ratings.Select(x => x.Issuer).ToList();
                                 db.Bond_Rating_Info.AsNoTracking()
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
+                                             x.Rating_Object == _RObject &&
                                              _Guarantors.Contains(x.ISSUER)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
                                   .ToList().ForEach(x =>
@@ -1061,7 +1078,7 @@ select
                                       var _RTG_Bloomberg_Field = string.Empty;
                                       _insertFlag = false;
                                       if (!_Guarantor_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_SP_LT_FC_ISSUER_CREDIT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.SP;
@@ -1070,7 +1087,7 @@ select
                                           _RTG_Bloomberg_Field = "G_RTG_SP_LT_FC_ISSUER_CREDIT";
                                       }
                                       if (!_Guarantor_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_MDY_ISSUER"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Moody;
@@ -1079,7 +1096,7 @@ select
                                           _RTG_Bloomberg_Field = "G_RTG_MDY_ISSUER";
                                       }
                                       if (!_Guarantor_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_FITCH_LT_ISSUER_DEFAULT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.Fitch;
@@ -1088,7 +1105,7 @@ select
                                           _RTG_Bloomberg_Field = "G_RTG_FITCH_LT_ISSUER_DEFAULT";
                                       }
                                       if (!_Guarantor_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_FITCH_NATIONAL_LT"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.FitchTwn;
@@ -1097,7 +1114,7 @@ select
                                           _RTG_Bloomberg_Field = "G_RTG_FITCH_NATIONAL_LT";
                                       }
                                       if (!_Guarantor_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.RTG_Bloomberg_Field == "G_RTG_TRC_LONG_TERM"))
+                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
                                           _insertFlag = true;
                                           _Rating_Org = RatingOrg.CW;
@@ -1135,7 +1152,9 @@ select
                             if (sql_A.Length > 0)
                                 db.Database.ExecuteSqlCommand(sql_A.ToString());
                             #endregion
+                            //刪除A57 預設
                             db.Database.ExecuteSqlCommand(sql_D);
+                            //三張特殊表單更新
                             db.Database.ExecuteSqlCommand(sql1_3);
                             #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
                             var ISSUERstr = RatingObject.ISSUER.GetDescription();
@@ -1358,8 +1377,8 @@ select
                                                     A57n.Rating_Org_Area = x.Rating_Org_Area;
                                                     A57n.Fill_up_YN = "Y";
                                                     A57n.Fill_up_Date = startTime;
-                                                    A57n.PD_Grade = A51.PD_Grade;
-                                                    A57n.Grade_Adjust = A51.Grade_Adjust;
+                                                    A57n.PD_Grade = A51?.PD_Grade;
+                                                    A57n.Grade_Adjust = A51?.Grade_Adjust;
                                                     A57n.RTG_Bloomberg_Field = x.RTG_Bloomberg_Field;
                                                     sb.Append(insertA57(A57n));
                                                     deleteSqlFlag = true;
@@ -1370,8 +1389,8 @@ select
                                                     sb.Append($@"
                                 UPDATE [Bond_Rating_Info]
                                    SET [Rating] = {x.Rating.stringToStrSql()}
-                                      ,[PD_Grade] = {A51.PD_Grade.intNToStrSql()}
-                                      ,[Grade_Adjust] = {A51.Grade_Adjust.intNToStrSql()} 
+                                      ,[PD_Grade] = {A51?.PD_Grade.intNToStrSql()}
+                                      ,[Grade_Adjust] = {A51?.Grade_Adjust.intNToStrSql()} 
                                       ,[Rating_Date] = {x.Rating_Date.dateTimeNToStrSql()}
                                       ,[Fill_up_YN] = 'Y'
                                       ,[Fill_up_Date] = '{startTime.ToString("yyyy/MM/dd")}'
@@ -1407,6 +1426,7 @@ select
                                 }
                             }
                             #endregion
+                            //insert A58
                             db.Database.ExecuteSqlCommand(sql2);
                             dbContextTransaction.Commit();
                             db.Dispose();
