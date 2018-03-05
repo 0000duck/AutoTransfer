@@ -596,7 +596,21 @@ set Rating =
 		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
 		 then Bond_Rating.TRC
 	  else Bond_Rating_Info.Rating
-	  end
+	  end,
+    Rating_Date = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
+	     then null
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Bond_Rating.Moodys is not null
+	     then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Bond_Rating.Fitch is not null
+		 then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Bond_Rating.Fitch_TW is not null
+		 then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
+		 then null
+	  else Bond_Rating_Info.Rating_Date
+      end
 from Bond_Rating
 where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
 and Bond_Rating_Info.Report_Date = '{reportData}'
@@ -645,7 +659,21 @@ set Rating =
 		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
 		 then Issuer_Rating.TRC
 	  else Bond_Rating_Info.Rating
-	  end
+	  end,
+    Rating_Date = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
+	     then null
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Issuer_Rating.Moodys is not null
+	     then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Issuer_Rating.Fitch is not null
+		 then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Issuer_Rating.Fitch_TW is not null
+		 then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
+		 then null
+	  else Bond_Rating_Info.Rating_Date
+      end
 from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
@@ -671,7 +699,8 @@ set PD_Grade =
 	       Grade_Moody_Info A51 
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-      end
+      end,
+    Rating_Date = null
 from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
@@ -694,7 +723,21 @@ set Rating =
 		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
 		 then Guarantor_Rating.TRC
 	  else Bond_Rating_Info.Rating
-	  end
+	  end,
+    Rating_Date = 
+      case
+	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
+	     then null
+        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Guarantor_Rating.Moodys is not null
+	     then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Guarantor_Rating.Fitch is not null
+		 then null
+		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Guarantor_Rating.Fitch_TW is not null
+		 then null
+		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
+		 then null
+	  else Bond_Rating_Info.Rating_Date
+      end
 from Guarantor_Rating
 where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
@@ -862,17 +905,16 @@ select
                             var A52s = db.Grade_Mapping_Info.AsNoTracking().ToList();
                             string Domestic = "國內";
                             string Foreign = "國外";
+                            Grade_Moody_Info A51 = null;
                             #endregion
                             #region  新增3張特殊表單rating
                             var _ratingType = Rating_Type.B.GetDescription();
                             var _Bond_Ratings = db.Bond_Rating.AsNoTracking().ToList();                          
                             var _Issuer_Ratings = db.Issuer_Rating.AsNoTracking().ToList();                            
-                            var _Guarantor_Ratings = db.Guarantor_Rating.AsNoTracking().ToList();                            
-                            RatingOrg _Rating_Org = RatingOrg.SP;
+                            var _Guarantor_Ratings = db.Guarantor_Rating.AsNoTracking().ToList();
+                            List<insertRating> _data = new List<insertRating>();
                             RatingObject _Rating_Object = RatingObject.Bonds;
-                            string _RObject = string.Empty;
-                            bool _insertFlag = false;
-                            Grade_Moody_Info A51 = null;
+                            string _RObject = string.Empty;                            
                             if (_Bond_Ratings.Any())
                             {
                                 _Rating_Object = RatingObject.Bonds;
@@ -882,87 +924,79 @@ select
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
-                                             x.Rating_Object == _RObject &&
                                              _Bonds.Contains(x.Bond_Number)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.Bond_Number })
                                   .ToList().ForEach(x =>
                                   {
+                                      _data = new List<insertRating>();
                                       var _first = x.First();
                                       var _Bond_Rating = _Bond_Ratings.First(y => y.Bond_Number == x.Key.Bond_Number);
-                                      var _Rating = string.Empty;
-                                      var _RatingOrgArea = string.Empty;
-                                      var _RTG_Bloomberg_Field = string.Empty;
-                                      _insertFlag = false;
                                       if (!_Bond_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.SP;
-                                          _Rating = _Bond_Rating.S_And_P;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_SP";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.SP,
+                                              _Rating = _Bond_Rating.S_And_P,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_SP"
+                                          });
                                       }
                                       if (!_Bond_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Moody;
-                                          _Rating = _Bond_Rating.Moodys;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_MOODY";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Moody,
+                                              _Rating = _Bond_Rating.Moodys,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_MOODY"
+                                          });
                                       }
                                       if (!_Bond_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Fitch;
-                                          _Rating = _Bond_Rating.Fitch;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_FITCH";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Fitch,
+                                              _Rating = _Bond_Rating.Fitch,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_FITCH"
+                                          });
                                       }
                                       if (!_Bond_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.FitchTwn;
-                                          _Rating = _Bond_Rating.Fitch_TW;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.FitchTwn,
+                                              _Rating = _Bond_Rating.Fitch_TW,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL"
+                                          });
                                       }
                                       if (!_Bond_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.CW;
-                                          _Rating = _Bond_Rating.TRC;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "RTG_TRC";
-                                      }
-                                      if (_insertFlag)
-                                      {
-                                          A51 = null;
-                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          _data.Add(new insertRating()
                                           {
-                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
-                                          }
-                                          else
-                                          {
-                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
-                                                                                 z.Rating == _Rating);
-                                              if (A52 != null)
-                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
-                                          }
-                                          _first.Rating_Object = _Rating_Object.GetDescription();
-                                          _first.Rating_Org_Area = _RatingOrgArea;
-                                          _first.Rating = _Rating;
-                                          _first.Rating_Org = _Rating_Org.GetDescription();
-                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
-                                          _first.Fill_up_YN = null;
-                                          _first.Fill_up_Date = null;
-                                          _first.PD_Grade = A51.PD_Grade;
-                                          _first.Grade_Adjust = A51.Grade_Adjust;
-                                          sql_A.Append(insertA57(_first));
+                                              _Rating_Org = RatingOrg.CW,
+                                              _Rating = _Bond_Rating.TRC,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "RTG_TRC"
+                                          });
                                       }
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
                                   });
                             }
                             if (_Issuer_Ratings.Any())
@@ -974,87 +1008,79 @@ select
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
-                                             x.Rating_Object == _RObject &&
                                              _Issuers.Contains(x.ISSUER)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
                                   .ToList().ForEach(x =>
                                   {
+                                      _data = new List<insertRating>();
                                       var _first = x.First();
                                       var _Issuer_Rating = _Issuer_Ratings.First(y => y.Issuer == x.Key.ISSUER);
-                                      var _Rating = string.Empty;
-                                      var _RatingOrgArea = string.Empty;
-                                      var _RTG_Bloomberg_Field = string.Empty;
-                                      _insertFlag = false;
                                       if (!_Issuer_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.SP;
-                                          _Rating = _Issuer_Rating.S_And_P;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_SP_LT_FC_ISSUER_CREDIT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.SP,
+                                              _Rating = _Issuer_Rating.S_And_P,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_SP_LT_FC_ISSUER_CREDIT"
+                                          });
                                       }
                                       if (!_Issuer_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Moody;
-                                          _Rating = _Issuer_Rating.Moodys;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_MDY_ISSUER";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Moody,
+                                              _Rating = _Issuer_Rating.Moodys,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_MDY_ISSUER"
+                                          });
                                       }
                                       if (!_Issuer_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Fitch;
-                                          _Rating = _Issuer_Rating.Fitch;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "RTG_FITCH_LT_ISSUER_DEFAULT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Fitch,
+                                              _Rating = _Issuer_Rating.Fitch,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "RTG_FITCH_LT_ISSUER_DEFAULT"
+                                          });
                                       }
                                       if (!_Issuer_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.FitchTwn;
-                                          _Rating = _Issuer_Rating.Fitch_TW;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL_LT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.FitchTwn,
+                                              _Rating = _Issuer_Rating.Fitch_TW,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "RTG_FITCH_NATIONAL_LT"
+                                          });
                                       }
                                       if (!_Issuer_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.CW;
-                                          _Rating = _Issuer_Rating.TRC;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "RTG_TRC_LONG_TERM";
-                                      }
-                                      if (_insertFlag)
-                                      {
-                                          A51 = null;
-                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          _data.Add(new insertRating()
                                           {
-                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
-                                          }
-                                          else
-                                          {
-                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
-                                                                                 z.Rating == _Rating);
-                                              if (A52 != null)
-                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
-                                          }
-                                          _first.Rating_Object = _Rating_Object.GetDescription();
-                                          _first.Rating_Org_Area = _RatingOrgArea;
-                                          _first.Rating = _Rating;
-                                          _first.Rating_Org = _Rating_Org.GetDescription();
-                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
-                                          _first.Fill_up_YN = null;
-                                          _first.Fill_up_Date = null;
-                                          _first.PD_Grade = A51.PD_Grade;
-                                          _first.Grade_Adjust = A51.Grade_Adjust;
-                                          sql_A.Append(insertA57(_first));
+                                              _Rating_Org = RatingOrg.CW,
+                                              _Rating = _Issuer_Rating.TRC,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "RTG_TRC_LONG_TERM"
+                                          });
                                       }
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
                                   });
                             }
                             if (_Guarantor_Ratings.Any())
@@ -1071,82 +1097,66 @@ select
                                              .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
                                   .ToList().ForEach(x =>
                                   {
+                                      _data = new List<insertRating>();
                                       var _first = x.First();
                                       var _Guarantor_Rating = _Guarantor_Ratings.First(y => y.Issuer == x.Key.ISSUER);
-                                      var _Rating = string.Empty;
-                                      var _RatingOrgArea = string.Empty;
-                                      var _RTG_Bloomberg_Field = string.Empty;
-                                      _insertFlag = false;
                                       if (!_Guarantor_Rating.S_And_P.IsNullOrWhiteSpace() &&
                                           !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.SP;
-                                          _Rating = _Guarantor_Rating.S_And_P;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "G_RTG_SP_LT_FC_ISSUER_CREDIT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.SP,
+                                              _Rating = _Guarantor_Rating.S_And_P,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "G_RTG_SP_LT_FC_ISSUER_CREDIT"
+                                          });
                                       }
                                       if (!_Guarantor_Rating.Moodys.IsNullOrWhiteSpace() &&
                                           !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Moody;
-                                          _Rating = _Guarantor_Rating.Moodys;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "G_RTG_MDY_ISSUER";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Moody,
+                                              _Rating = _Guarantor_Rating.Moodys,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "G_RTG_MDY_ISSUER"
+                                          });
                                       }
                                       if (!_Guarantor_Rating.Fitch.IsNullOrWhiteSpace() &&
                                           !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.Fitch;
-                                          _Rating = _Guarantor_Rating.Fitch;
-                                          _RatingOrgArea = Foreign;
-                                          _RTG_Bloomberg_Field = "G_RTG_FITCH_LT_ISSUER_DEFAULT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.Fitch,
+                                              _Rating = _Guarantor_Rating.Fitch,
+                                              _RatingOrgArea = Foreign,
+                                              _RTG_Bloomberg_Field = "G_RTG_FITCH_LT_ISSUER_DEFAULT"
+                                          });
                                       }
                                       if (!_Guarantor_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
                                           !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.FitchTwn;
-                                          _Rating = _Guarantor_Rating.Fitch_TW;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "G_RTG_FITCH_NATIONAL_LT";
+                                          _data.Add(new insertRating()
+                                          {
+                                              _Rating_Org = RatingOrg.FitchTwn,
+                                              _Rating = _Guarantor_Rating.Fitch_TW,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "G_RTG_FITCH_NATIONAL_LT"
+                                          });
                                       }
                                       if (!_Guarantor_Rating.TRC.IsNullOrWhiteSpace() &&
                                           !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
-                                          _insertFlag = true;
-                                          _Rating_Org = RatingOrg.CW;
-                                          _Rating = _Guarantor_Rating.TRC;
-                                          _RatingOrgArea = Domestic;
-                                          _RTG_Bloomberg_Field = "G_RTG_TRC_LONG_TERM";
-                                      }
-                                      if (_insertFlag)
-                                      {
-                                          A51 = null;
-                                          if ((_Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                                          _data.Add(new insertRating()
                                           {
-                                              A51 = A51s.FirstOrDefault(z => z.Rating == _Rating);
-                                          }
-                                          else
-                                          {
-                                              var A52 = A52s.FirstOrDefault(z => z.Rating_Org == _Rating_Org.GetDescription() &&
-                                                                                 z.Rating == _Rating);
-                                              if (A52 != null)
-                                                  A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
-                                          }
-                                          _first.Rating_Object = _Rating_Object.GetDescription();
-                                          _first.Rating_Org_Area = _RatingOrgArea;
-                                          _first.Rating = _Rating;
-                                          _first.Rating_Org = _Rating_Org.GetDescription();
-                                          _first.RTG_Bloomberg_Field = _RTG_Bloomberg_Field;
-                                          _first.Fill_up_YN = null;
-                                          _first.Fill_up_Date = null;
-                                          _first.PD_Grade = A51.PD_Grade;
-                                          _first.Grade_Adjust = A51.Grade_Adjust;
-                                          sql_A.Append(insertA57(_first));
+                                              _Rating_Org = RatingOrg.CW,
+                                              _Rating = _Guarantor_Rating.TRC,
+                                              _RatingOrgArea = Domestic,
+                                              _RTG_Bloomberg_Field = "G_RTG_TRC_LONG_TERM"
+                                          });
                                       }
+
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
                                   });
                             }
                             if (sql_A.Length > 0)
@@ -1774,36 +1784,40 @@ INSERT INTO [Bond_Rating_Info]
            ,{A57.Origination_Date_Old.dateTimeNToStrSql()} ); ";
         }
 
-        /// <summary>
-        /// 判斷國內外
-        /// </summary>
-        /// <param name="ratingOrg"></param>
-        /// <returns></returns>
-        private string formatOrgArea(string ratingOrg)
+        private void insertA57Rating(
+            List<insertRating> _data,
+            Bond_Rating_Info _first,
+            StringBuilder sb,
+            RatingObject _Rating_Object,
+            List<Grade_Mapping_Info> A52s,
+            List<Grade_Moody_Info> A51s)
         {
-            if (ratingOrg.Equals(RatingOrg.SP.GetDescription()) ||
-               ratingOrg.Equals(RatingOrg.Moody.GetDescription()) ||
-               ratingOrg.Equals(RatingOrg.Fitch.GetDescription()))
-                return "國外";
-            if (ratingOrg.Equals(RatingOrg.FitchTwn.GetDescription()) ||
-                ratingOrg.Equals(RatingOrg.CW.GetDescription()))
-                return "國內";
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// get Security_Ticker
-        /// </summary>
-        /// <param name="SMF"></param>
-        /// <param name="bondNumber"></param>
-        /// <returns></returns>
-        private string getSecurityTicker(string SMF, string bondNumber)
-        {
-            List<string> Mtges = new List<string>() { "A11", "932" };
-            if (!SMF.IsNullOrWhiteSpace() && SMF.Trim().Length > 3)
-                if (Mtges.Contains(SMF.Substring(0, 3)))
-                    return string.Format("{0} {1}", bondNumber, "Mtge");
-            return string.Format("{0} {1}", bondNumber, "Corp");
+            foreach (var item in _data)
+            {
+                Bond_Rating_Info _copy = _first.ModelConvert<Bond_Rating_Info, Bond_Rating_Info>();
+                Grade_Moody_Info A51 = null;
+                if ((item._Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                {
+                    A51 = A51s.FirstOrDefault(z => z.Rating == item._Rating);
+                }
+                else
+                {
+                    var A52 = A52s.FirstOrDefault(z => z.Rating_Org == item._Rating_Org.GetDescription() &&
+                                                       z.Rating == item._Rating);
+                    if (A52 != null)
+                        A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
+                }
+                _copy.Rating_Object = _Rating_Object.GetDescription();
+                _copy.Rating_Org_Area = item._RatingOrgArea;
+                _copy.Rating = item._Rating;
+                _copy.Rating_Org = item._Rating_Org.GetDescription();
+                _copy.RTG_Bloomberg_Field = item._RTG_Bloomberg_Field;
+                _copy.Fill_up_YN = null;
+                _copy.Fill_up_Date = null;
+                _copy.PD_Grade = A51?.PD_Grade;
+                _copy.Grade_Adjust = A51?.Grade_Adjust;
+                sb.Append(insertA57(_copy));
+            }
         }
 
         /// <summary>
@@ -1824,48 +1838,12 @@ INSERT INTO [Bond_Rating_Info]
             return parmID;
         }
 
-        /// <summary>
-        /// 抓取 sampleInfo
-        /// </summary>
-        /// <param name="sampleInfos"></param>
-        /// <param name="info"></param>
-        /// <param name="nullarr"></param>
-        /// <returns></returns>
-        private sampleInfo formateSampleInfo(
-            List<A53.sampleInfo> sampleInfos,
-            Rating_Info info,
-            List<string> nullarr)
+        private class insertRating
         {
-            if (RatingObject.Bonds.GetDescription().Equals(info.Rating_Object))
-            {
-                sampleInfo s = sampleInfos.FirstOrDefault(j => info.Bond_Number.Equals(j.Bond_Number));
-                if (s != null)
-                {
-                    return new sampleInfo()
-                    {
-                        Bond_Number = s.Bond_Number,
-                        ISSUER_TICKER = sampleInfoValue(s.ISSUER_TICKER, nullarr),
-                        GUARANTOR_EQY_TICKER = sampleInfoValue(s.GUARANTOR_EQY_TICKER, nullarr),
-                        GUARANTOR_NAME = sampleInfoValue(s.GUARANTOR_NAME, nullarr)
-                    };
-                }
-            }
-            return new sampleInfo();
-        }
-
-        /// <summary>
-        /// 判斷sampleInfo 參數
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="nullarr"></param>
-        /// <returns></returns>
-        private string sampleInfoValue(string value, List<string> nullarr)
-        {
-            if (value == null)
-                return null;
-            if (nullarr.Contains(value.Trim()))
-                return null;
-            return value.Trim();
+            public RatingOrg _Rating_Org { get; set; }
+            public string _Rating { get; set; }
+            public string _RatingOrgArea { get; set; }
+            public string _RTG_Bloomberg_Field { get; set; }
         }
 
         #endregion
