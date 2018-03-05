@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 
 namespace AutoTransfer.Utility
 {
@@ -200,5 +201,34 @@ namespace AutoTransfer.Utility
         }
 
         #endregion Double? To Double
+
+        /// Model 和 Model 轉換
+        /// <summary>
+        /// Model 和 Model 轉換
+        /// </summary>
+        /// <typeparam name="T1">來源型別</typeparam>
+        /// <typeparam name="T2">目的型別</typeparam>
+        /// <param name="model">來源資料</param>
+        /// <returns></returns>
+        public static T2 ModelConvert<T1, T2>(this T1 model) where T2 : new()
+        {
+            T2 newModel = new T2();
+            if (model != null)
+            {
+                foreach (PropertyInfo itemInfo in model.GetType().GetProperties())
+                {
+                    PropertyInfo propInfoT2 = typeof(T2).GetProperty(itemInfo.Name);
+                    if (propInfoT2 != null)
+                    {
+                        // 型別相同才可轉換
+                        if (propInfoT2.PropertyType == itemInfo.PropertyType)
+                        {
+                            propInfoT2.SetValue(newModel, itemInfo.GetValue(model, null), null);
+                        }
+                    }
+                }
+            }
+            return newModel;
+        }
     }
 }
