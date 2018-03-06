@@ -64,7 +64,13 @@ namespace AutoTransfer.Enum
             /// 信用利差資料
             /// </summary>
             [Description("Bond_Spread_Info")]
-            A96,
+            A961,
+
+            /// <summary>
+            /// 信用利差資料
+            /// </summary>
+            [Description("Bond_Spread_Info")]
+            A962,
 
             /// <summary>
             /// 前瞻性國外總經資料

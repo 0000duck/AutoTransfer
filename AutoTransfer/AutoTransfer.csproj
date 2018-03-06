@@ -85,11 +85,11 @@
     <Compile Include="CreateFile\CreateA91File.cs" />
     <Compile Include="CreateFile\CreateA92File.cs" />
     <Compile Include="CreateFile\CreateA93File.cs" />
-    <Compile Include="CreateFile\CreateA96_1File.cs" />
-    <Compile Include="CreateFile\CreateA96_2File.cs" />
-    <Compile Include="CreateFile\CreateA96_3File.cs" />
-    <Compile Include="CreateFile\CreateA96_4File.cs" />
-    <Compile Include="CreateFile\CreateA96_5File.cs" />
+    <Compile Include="CreateFile\CreateA9611File.cs" />
+    <Compile Include="CreateFile\CreateA9612File.cs" />
+    <Compile Include="CreateFile\CreateA9613File.cs" />
+    <Compile Include="CreateFile\CreateA9621File.cs" />
+    <Compile Include="CreateFile\CreateA9622File.cs" />
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
     <Compile Include="CreateFile\CreateMissSecurityDesFile.cs" />
@@ -155,7 +155,6 @@
     <Compile Include="StartTransferA91.cs" />
     <Compile Include="StartTransferA92.cs" />
     <Compile Include="StartTransferA93.cs" />
-    <Compile Include="StartTransferA96.cs" />
     <Compile Include="StartTransferC04.cs" />
     <Compile Include="StartTransferA84.cs" />
     <Compile Include="StartTransferA07.cs" />
@@ -165,7 +164,8 @@
     <Compile Include="Transfer\A91.cs" />
     <Compile Include="Transfer\A92.cs" />
     <Compile Include="Transfer\A93.cs" />
-    <Compile Include="Transfer\A96.cs" />
+    <Compile Include="Transfer\A961.cs" />
+    <Compile Include="Transfer\A962.cs" />
     <Compile Include="Transfer\C04.cs" />
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />

@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using static AutoTransfer.Enum.Ref;
+using System.Linq;
+using AutoTransfer.Utility;
 
 namespace AutoTransfer.CreateFile
 {
-    public class CreateA96_3File
+    public class CreateA9612File
     {
-        public bool create(TableType type, string dateTime, List<string> datas)
+        public bool create(TableType type, string dateTime, int ver)
         {
             bool flag = false;
             try
@@ -14,8 +17,8 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(type, dateTime);
 
-                //ex: GetA96_3_20180131
-                string getFileName = f.getA96_3FileName();
+                //ex: GetA9612_20180131
+                string getFileName = f.getA9612FileName();
 
                 #region File
 
@@ -39,7 +42,7 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-FIELDS
                 data.Add("START-OF-FIELDS");
-                data.Add("ID_CUSIP");
+                data.Add("BNCHMRK_TSY_ISSUE_ID");
                 data.Add("END-OF-FIELDS");
                 #endregion START-OF-FIELDS
 
@@ -48,7 +51,25 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
-                datas.ForEach(x => data.Add(string.Format("{0}|CUSIP|", x)));
+                int year = Int32.Parse(dateTime.Substring(0, 4));
+                int month = Int32.Parse(dateTime.Substring(4, 2));
+                int day = Int32.Parse(dateTime.Substring(6, 2));
+                DateTime date = new DateTime(year, month, day);
+                IFRS9Entities db = new IFRS9Entities();
+                db.Bond_Account_Info.AsNoTracking()
+                    .Where(x => x.Report_Date.HasValue &&
+                                x.Report_Date.Value == date &&
+                                x.Version.HasValue && x.Version == ver)
+                    .Select(x => x.Bond_Number).Distinct()
+                    .OrderBy(x => x)
+                    .ToList().ForEach(x =>
+                    {
+                        if (!x.IsNullOrWhiteSpace())
+                        {
+                            data.Add(string.Format("{0} Corp|ISIN|", x));
+                        }
+                    });
+                db.Dispose();
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
 
@@ -57,14 +78,15 @@ namespace AutoTransfer.CreateFile
                 #endregion File
 
                 flag = new CreatePutFile().create(
-                       f.putA96_3FilePath(),
-                       f.putA96_3FileName(),
-                       data);
+                    f.putA9612FilePath(),
+                    f.putA9612FileName(),
+                    data);
             }
             catch
             {
                 flag = false;
             }
+
             return flag;
         }
     }
