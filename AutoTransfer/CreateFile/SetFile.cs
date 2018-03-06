@@ -22,16 +22,16 @@ namespace AutoTransfer.CreateFile
         private static string A92Get = ConfigurationManager.AppSettings["A92Get"];
         private static string A93Put = ConfigurationManager.AppSettings["A93Put"];
         private static string A93Get = ConfigurationManager.AppSettings["A93Get"];
-        private static string A96_1Put = ConfigurationManager.AppSettings["A96_1Put"];
-        private static string A96_1Get = ConfigurationManager.AppSettings["A96_1Get"];
-        private static string A96_2Put = ConfigurationManager.AppSettings["A96_2Put"];
-        private static string A96_2Get = ConfigurationManager.AppSettings["A96_2Get"];
-        private static string A96_3Put = ConfigurationManager.AppSettings["A96_3Put"];
-        private static string A96_3Get = ConfigurationManager.AppSettings["A96_3Get"];
-        private static string A96_4Put = ConfigurationManager.AppSettings["A96_4Put"];
-        private static string A96_4Get = ConfigurationManager.AppSettings["A96_4Get"];
-        private static string A96_5Put = ConfigurationManager.AppSettings["A96_5Put"];
-        private static string A96_5Get = ConfigurationManager.AppSettings["A96_5Get"];
+        private static string A9611Put = ConfigurationManager.AppSettings["A9611Put"];
+        private static string A9611Get = ConfigurationManager.AppSettings["A9611Get"];
+        private static string A9612Put = ConfigurationManager.AppSettings["A9612Put"];
+        private static string A9612Get = ConfigurationManager.AppSettings["A9612Get"];
+        private static string A9613Put = ConfigurationManager.AppSettings["A9613Put"];
+        private static string A9613Get = ConfigurationManager.AppSettings["A9613Get"];
+        private static string A9621Put = ConfigurationManager.AppSettings["A9621Put"];
+        private static string A9621Get = ConfigurationManager.AppSettings["A9621Get"];
+        private static string A9622Put = ConfigurationManager.AppSettings["A9622Put"];
+        private static string A9622Get = ConfigurationManager.AppSettings["A9622Get"];
         private static string SecurityDesPut = string.Empty;
         private static string SecurityDesGet = string.Empty;
         private static string name = ConfigurationManager.AppSettings["FIRMNAME"];
@@ -299,156 +299,153 @@ namespace AutoTransfer.CreateFile
                   _dateTime);
         }
 
-        public string getA96_1FilePath()
+        public string getA9611FilePath()
         {
-            return A96_1Get.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_1Get") : A96_1Get;
+            return A9611Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9611Get") : A9611Get;
         }
 
-        public string putA96_1FilePath()
+        public string putA9611FilePath()
         {
-            return A96_1Put.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_1Put") : A96_1Put;
+            return A9611Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9611Put") : A9611Put;
         }
 
-        public string getA96_1FileName()
+        public string getA9611FileName()
         {
-            return string.Format("Get{0}_1_{1}.csv",
+            return string.Format("Get{0}1_{1}.csv",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string putA96_1FileName()
+        public string putA9611FileName()
         {
-            return string.Format("Get{0}_1_{1}.req",
+            return string.Format("Get{0}1_{1}.req",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string getA96_1GZFileName()
+        public string getA9611GZFileName()
         {
-            return string.Format("Get{0}_1_{1}.csv.gz",
+            return string.Format("Get{0}1_{1}.csv.gz",
                                   _type.ToString(),
                                   _dateTime);
         }
 
-        public string getA96_2FilePath()
+        public string getA9612FilePath()
         {
-            return A96_2Get.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_2Get") : A96_2Get;
+            return A9612Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9612Get") : A9612Get;
         }
 
-        public string putA96_2FilePath()
+        public string putA9612FilePath()
         {
-            return A96_2Put.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_2Put") : A96_2Put;
+            return A9612Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9612Put") : A9612Put;
         }
 
-        public string getA96_2FileName()
+        public string getA9612FileName()
         {
-            return string.Format("Get{0}_2_{1}.csv",
+            return string.Format("Get{0}2_{1}.csv",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string putA96_2FileName()
+        public string putA9612FileName()
         {
-            return string.Format("Get{0}_2_{1}.req",
+            return string.Format("Get{0}2_{1}.req",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string getA96_3FilePath()
+        public string getA9613FilePath()
         {
-            return A96_3Get.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_3Get") : A96_3Get;
+            return A9613Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9613Get") : A9613Get;
         }
 
-        public string putA96_3FilePath()
+        public string putA9613FilePath()
         {
-            return A96_3Put.IsNullOrWhiteSpace() ?
-                Path.Combine(startupPath, "A96_3Put") : A96_3Put;
+            return A9613Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9613Put") : A9613Put;
         }
 
-        public string getA96_3FileName()
+        public string getA9613FileName()
         {
-            return string.Format("Get{0}_3_{1}.csv",
+            return string.Format("Get{0}3_{1}.csv",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string putA96_3FileName()
+        public string putA9613FileName()
         {
-            return string.Format("Get{0}_3_{1}.req",
-                                 _type.ToString(),
-                                 _dateTime);
-        }
-
-        public string getA96_3GZFileName()
-        {
-            return string.Format("Get{0}_3_{1}.csv.gz",
-                  _type.ToString(),
-                  _dateTime);
-        }
-
-        public string getA96_4FilePath()
-        {
-            return A96_4Get.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_4Get") : A96_4Get;
-        }
-
-        public string putA96_4FilePath()
-        {
-            return A96_4Put.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_4Put") : A96_4Put;
-        }
-
-        public string getA96_4FileName()
-        {
-            return string.Format("Get{0}_4_{1}.csv",
+            return string.Format("Get{0}3_{1}.req",
                 _type.ToString(),
                 _dateTime);
         }
 
-        public string putA96_4FileName()
+        public string getA9621FilePath()
         {
-            return string.Format("Get{0}_4_{1}.req",
-                                 _type.ToString(),
-                                 _dateTime);
+            return A9621Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9621Get") : A9621Get;
         }
 
-        public string getA96_4GZFileName()
+        public string putA9621FilePath()
         {
-            return string.Format("Get{0}_4_{1}.csv.gz",
-                  _type.ToString(),
-                  _dateTime);
+            return A9621Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9621Put") : A9621Put;
         }
 
-        public string getA96_5FilePath()
+        public string getA9621FileName()
         {
-            return A96_5Get.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_5Get") : A96_5Get;
+            return string.Format("Get{0}1_{1}.csv",
+                _type.ToString(),
+                _dateTime);
         }
 
-        public string putA96_5FilePath()
+        public string putA9621FileName()
         {
-            return A96_5Put.IsNullOrWhiteSpace() ? Path.Combine(startupPath, "A96_5Put") : A96_5Put;
+            return string.Format("Get{0}1_{1}.req",
+                _type.ToString(),
+                _dateTime);
         }
 
-        public string getA96_5FileName()
+        public string getA9621GZFileName()
         {
-            return string.Format("Get{0}_5_{1}.csv",
-                                 _type.ToString(),
-                                 _dateTime);
+            return string.Format("Get{0}1_{1}.csv.gz",
+                                  _type.ToString(),
+                                  _dateTime);
         }
 
-        public string putA96_5FileName()
+        public string getA9622FilePath()
         {
-            return string.Format("Get{0}_5_{1}.req",
-                                 _type.ToString(),
-                                 _dateTime);
+            return A9622Get.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9622Get") : A9622Get;
         }
 
-        public string getA96_5GZFileName()
+        public string putA9622FilePath()
         {
-            return string.Format("Get{0}_5_{1}.csv.gz",
+            return A9622Put.IsNullOrWhiteSpace() ?
+                Path.Combine(startupPath, "A9622Put") : A9622Put;
+        }
+
+        public string getA9622FileName()
+        {
+            return string.Format("Get{0}2_{1}.csv",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string putA9622FileName()
+        {
+            return string.Format("Get{0}2_{1}.req",
+                _type.ToString(),
+                _dateTime);
+        }
+
+        public string getA9622GZFileName()
+        {
+            return string.Format("Get{0}2_{1}.csv.gz",
                                   _type.ToString(),
                                   _dateTime);
         }

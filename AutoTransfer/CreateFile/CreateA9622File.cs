@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using AutoTransfer.Utility;
+using System.Collections.Generic;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.CreateFile
 {
-    public class CreateA96_5File
+    public class CreateA9622File
     {
-        public bool create(TableType type, string dateRageStart, string dateRageEnd, string dateTime, List<string> datas)
+        public bool create(TableType type, string dateRageStart, string dateRageEnd, string dateTime, List<Bond_Spread_Info> datas)
         {
             bool flag = false;
             try
@@ -14,8 +15,8 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(type, dateTime);
 
-                //ex: GetA96_5_20180131
-                string getFileName = f.getA96_5FileName();
+                //ex: GetA9622_20180131
+                string getFileName = f.getA9622FileName();
 
                 #region File
 
@@ -47,7 +48,14 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
-                datas.ForEach(x => data.Add(string.Format("{0}@BGN Govt|CUSIP|", x)));
+                datas.ForEach(x =>
+                {
+                    if (x.ID_CUSIP.IsNullOrWhiteSpace() == false)
+                    {
+                        data.Add(string.Format("{0}@BGN Govt|CUSIP|", x.ID_CUSIP));
+                    }
+                }
+                            );
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
 
@@ -56,8 +64,8 @@ namespace AutoTransfer.CreateFile
                 #endregion File
 
                 flag = new CreatePutFile().create(
-                       f.putA96_5FilePath(),
-                       f.putA96_5FileName(),
+                       f.putA9622FilePath(),
+                       f.putA9622FileName(),
                        data);
             }
             catch

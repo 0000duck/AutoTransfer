@@ -6,7 +6,7 @@ using AutoTransfer.Utility;
 
 namespace AutoTransfer.CreateFile
 {
-    public class CreateA96_1File
+    public class CreateA9611File
     {
         public bool create(TableType type, string dateTime, int ver)
         {
@@ -17,8 +17,8 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(type, dateTime);
 
-                //ex: GetA96_1_20180131
-                string getFileName = f.getA96_1FileName();
+                //ex: GetA9611_20180131
+                string getFileName = f.getA9611FileName();
 
                 #region File
 
@@ -77,8 +77,8 @@ namespace AutoTransfer.CreateFile
                 #endregion File
 
                 flag = new CreatePutFile().create(
-                    f.putA96_1FilePath(),
-                    f.putA96_1FileName(),
+                    f.putA9611FilePath(),
+                    f.putA9611FileName(),
                     data);
             }
             catch
