@@ -23,10 +23,10 @@ namespace AutoTransfer.Transfer
             if (rating.IndexOf("N/A") > -1)
                 return string.Empty;
             string value = rating.Trim();       
-            if (value.IndexOf("u") > -1)
-                return value.Split('u')[0].Trim();
-            if (value.IndexOf("e") > -1)
-                return value.Split('e')[0].Trim();
+            //if (value.IndexOf("u") > -1)
+            //    return value.Split('u')[0].Trim();
+            //if (value.IndexOf("e") > -1)
+            //    return value.Split('e')[0].Trim();
             if (value.IndexOf("NR") > -1)
                 return string.Empty;
             if (value.IndexOf("twNR") > -1)
@@ -40,7 +40,7 @@ namespace AutoTransfer.Transfer
 
             List<string> splitGetFirst = new List<string>()
             {
-                "/*-","/*+","*-","*+",
+                "u","e","/*-","/*+","*-","*+",
                 "(bra)","(cl)","(col)","(mex)",
                 "(P)","/*","*"
             };

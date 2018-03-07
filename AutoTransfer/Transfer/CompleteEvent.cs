@@ -68,18 +68,12 @@ temp AS
 (
 select RTG_Bloomberg_Field,
        Rating_Object,
-       CASE WHEN ISIN_Changed_Ind = 'Y'
-            THEN Bond_Number_Old
-            ELSE Bond_Number
-       END  AS Bond_Number,
-       CASE WHEN ISIN_Changed_Ind = 'Y'
-            THEN Lots_Old
-            ELSE Lots
-       END  AS Lots,
-       CASE WHEN ISIN_Changed_Ind = 'Y'
-            THEN Portfolio_Name_Old
-            ELSE Portfolio_Name
-       END  AS Portfolio_Name,
+       Bond_Number,
+       Lots,
+       Portfolio_Name,
+	   Bond_Number_Old,
+	   Lots_Old,
+	   Portfolio_Name_Old,
        Rating,
        Rating_Date,
        Rating_Org,
@@ -191,13 +185,59 @@ T1 AS (
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
-   FROM  A41 BA_Info --A41
+   FROM  (select * from tempA where ISIN_Changed_Ind is null) AS BA_Info --沒換券的A41
    JOIN  tempA57t oldA57 --oldA57
    ON    BA_Info.Bond_Number =  oldA57.Bond_Number
    AND   BA_Info.Lots = oldA57.Lots
-   AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name
-   AND   BA_Info.ISIN_Changed_Ind is null
-   WHERE BA_Info.ISIN_Changed_Ind is null --沒換券的A41
+   AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name 
+UNION ALL
+   SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
+          BA_Info.Bond_Number AS Bond_Number,
+		  BA_Info.Lots AS Lots,
+		  BA_Info.Portfolio AS Portfolio,
+		  BA_Info.Segment_Name AS Segment_Name,
+		  BA_Info.Bond_Type AS Bond_Type,
+		  BA_Info.Lien_position AS Lien_position,
+		  BA_Info.Origination_Date AS Origination_Date,
+          BA_Info.Report_Date AS Report_Date,
+		  oldA57.Rating_Date AS Rating_Date,
+          CASE WHEN oldA57.Rating_Object is null
+               THEN ' '
+               ELSE oldA57.Rating_Object
+          END AS Rating_Object,
+          oldA57.Rating_Org AS Rating_Org,
+		  oldA57.Rating AS Rating,
+		  (CASE WHEN oldA57.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN oldA57.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+                ELSE ' '
+	      END) AS Rating_Org_Area,
+          oldA57.PD_Grade,
+          oldA57.Grade_Adjust,
+		  CASE WHEN BA_Info.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.ISSUER_TICKER END AS ISSUER_TICKER,
+		  CASE WHEN BA_Info.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_NAME END AS GUARANTOR_NAME,
+		  CASE WHEN BA_Info.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
+		  BA_Info.Portfolio_Name AS Portfolio_Name,
+          CASE WHEN oldA57.RTG_Bloomberg_Field is null
+               THEN ' '
+               ELSE oldA57.RTG_Bloomberg_Field
+          END AS RTG_Bloomberg_Field,
+		  BA_Info.PRODUCT AS SMF,
+		  BA_Info.ISSUER AS ISSUER,
+		  BA_Info.Version AS Version,
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
+		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
+          BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
+          BA_Info.Bond_Number_Old AS Bond_Number_Old,
+          BA_Info.Lots_Old AS Lots_Old,
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
+   FROM  (select * from tempA where ISIN_Changed_Ind is null) AS BA_Info --沒換券的A41
+   JOIN  tempA57t oldA57 --oldA57
+   ON    oldA57.Bond_Number_Old is not null
+   AND   BA_Info.Bond_Number =  oldA57.Bond_Number_Old
+   AND   BA_Info.Lots = oldA57.Lots_Old
+   AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name_Old
 UNION ALL
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
@@ -240,13 +280,59 @@ UNION ALL
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
-   FROM  A41 BA_Info --A41
-   JOIN  tempA57t oldA57 --oldA57 
+   FROM  (select * from tempA where ISIN_Changed_Ind = 'Y') AS BA_Info --換券的A41
+   JOIN  tempA57t oldA57 --oldA57
    ON    BA_Info.Bond_Number_Old = oldA57.Bond_Number
    AND   BA_Info.Lots_Old = oldA57.Lots
-   AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name 
-   AND   BA_Info.ISIN_Changed_Ind = 'Y'
-   WHERE BA_Info.ISIN_Changed_Ind = 'Y' --換券的A41
+   AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name
+UNION ALL
+   SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
+          BA_Info.Bond_Number AS Bond_Number,
+		  BA_Info.Lots AS Lots,
+		  BA_Info.Portfolio AS Portfolio,
+		  BA_Info.Segment_Name AS Segment_Name,
+		  BA_Info.Bond_Type AS Bond_Type,
+		  BA_Info.Lien_position AS Lien_position,
+		  BA_Info.Origination_Date AS Origination_Date,
+          BA_Info.Report_Date AS Report_Date,
+		  oldA57.Rating_Date AS Rating_Date,
+          CASE WHEN oldA57.Rating_Object is null
+               THEN ' '
+               ELSE oldA57.Rating_Object
+          END AS Rating_Object,
+          oldA57.Rating_Org AS Rating_Org,
+		  oldA57.Rating AS Rating,
+		  (CASE WHEN oldA57.Rating_Org in ('{RatingOrg.SP.GetDescription()}','{RatingOrg.Moody.GetDescription()}','{RatingOrg.Fitch.GetDescription()}') THEN '國外'
+	            WHEN oldA57.Rating_Org in ('{RatingOrg.FitchTwn.GetDescription()}','{RatingOrg.CW.GetDescription()}') THEN '國內'
+                ELSE ' '
+	      END) AS Rating_Org_Area,
+          oldA57.PD_Grade,
+          oldA57.Grade_Adjust,
+          CASE WHEN BA_Info.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.ISSUER_TICKER END AS ISSUER_TICKER,
+          CASE WHEN BA_Info.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_NAME END AS GUARANTOR_NAME,
+          CASE WHEN BA_Info.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
+		  BA_Info.Portfolio_Name AS Portfolio_Name,
+          CASE WHEN oldA57.RTG_Bloomberg_Field is null
+               THEN ' '
+               ELSE oldA57.RTG_Bloomberg_Field
+          END AS RTG_Bloomberg_Field,
+		  BA_Info.PRODUCT AS SMF,
+		  BA_Info.ISSUER AS ISSUER,
+		  BA_Info.Version AS Version,
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
+		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
+          BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
+          BA_Info.Bond_Number_Old AS Bond_Number_Old,
+          BA_Info.Lots_Old AS Lots_Old,
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
+   FROM  (select * from tempA where ISIN_Changed_Ind = 'Y') AS BA_Info --換券的A41
+   JOIN  tempA57t oldA57 --oldA57
+   ON    oldA57.Bond_Number_Old is not null
+   AND   BA_Info.Bond_Number_Old =  oldA57.Bond_Number_Old
+   AND   BA_Info.Lots_Old = oldA57.Lots_Old
+   AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name_Old
 ),
 T1s AS(
 Select BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -1299,13 +1385,16 @@ select
                                 if (_ver != null)
                                 {
                                     var D60s = db.Bond_Rating_Parm.AsNoTracking().ToList();
+                                    //目前版本
                                     var A57n1 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == "Y").ToList();
                                     var A57n2 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == null).ToList();
-                                    var A57s1 = A57.Where(x => x.Version == _ver).ToList();
-                                    var A57s2 = A57s1.Where(x => x.Fill_up_YN == "Y" &&
-                                                             x.Grade_Adjust != null).ToList();
-                                    var datas = A57s2
-                                        .GroupBy(x => new
+                                    //目前版本
+                                    //上一次最後一版
+                                    var A57s = A57.Where(x => x.Version == _ver &&
+                                                               x.Fill_up_YN == "Y").ToList();
+                                    //上一次最後一版
+                                    var datas = A57s
+                                    .GroupBy(x => new
                                         {
                                             x.Reference_Nbr,
                                             x.Bond_Number,
@@ -1319,35 +1408,30 @@ select
                                     {
                                         bool deleteSqlFlag = false;
                                         var deleteA57 = new Bond_Rating_Info();
-                                        var _Bond_Number = string.Empty;
-                                        var _Lots = string.Empty;
-                                        var _Portfolio_Name = string.Empty;
                                         var first = item.First();
-                                        if (first.ISIN_Changed_Ind == "Y")
-                                        {
-                                            _Bond_Number = first.Bond_Number_Old;
-                                            _Lots = first.Lots_Old;
-                                            _Portfolio_Name = first.Portfolio_Name_Old;
-                                        }
-                                        else
-                                        {
-                                            _Bond_Number = first.Bond_Number;
-                                            _Lots = first.Lots;
-                                            _Portfolio_Name = first.Portfolio_Name;
-                                        }
                                         //A57n => 這一版A57變更共用資料(新增A57用)
                                         var A57n = A57n2.FirstOrDefault(y =>
-                                                        y.Bond_Number == _Bond_Number &&
-                                                        y.Lots == _Lots &&
-                                                        y.Portfolio_Name == _Portfolio_Name
+                                                        y.Bond_Number == first.Bond_Number &&
+                                                        y.Lots == first.Lots &&
+                                                        y.Portfolio_Name == first.Portfolio_Name ||
+                                                        !first.Bond_Number_Old.IsNullOrWhiteSpace() &&
+                                                        y.Bond_Number == first.Bond_Number_Old &&
+                                                        y.Lots == first.Lots_Old &&
+                                                        y.Portfolio_Name == first.Portfolio_Name_Old
                                         );
                                         if (A57n == null)
                                             A57n = A57n1.FirstOrDefault(y =>
-                                                       y.Bond_Number_Old == _Bond_Number &&
-                                                       y.Lots_Old == _Lots &&
-                                                       y.Portfolio_Name_Old == _Portfolio_Name
+                                                       y.Bond_Number_Old == first.Bond_Number &&
+                                                       y.Lots_Old == first.Lots &&
+                                                       y.Portfolio_Name_Old == first.Portfolio_Name ||
+                                                       !first.Bond_Number_Old.IsNullOrWhiteSpace() &&
+                                                       y.Bond_Number_Old == first.Bond_Number_Old &&
+                                                       y.Lots_Old == first.Lots_Old &&
+                                                       y.Portfolio_Name_Old == first.Portfolio_Name_Old
                                         );
-                                        item.ToList().ForEach(
+                                        if (A57n != null) //目前版本沒有不需要繼續
+                                        {
+                                            item.ToList().ForEach(
                                             x =>
                                             {
                                                 A51 = null;
@@ -1364,20 +1448,30 @@ select
                                                 }
                                                     //找尋目前版本存不存在相同的資料
                                                     var A57o = new Bond_Rating_Info();
-                                                A57o = A57n1.FirstOrDefault(y =>
-                                                y.Rating_Object == x.Rating_Object &&
-                                                y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
-                                                y.Bond_Number_Old == _Bond_Number &&
-                                                y.Lots_Old == _Lots &&
-                                                y.Portfolio_Name_Old == _Portfolio_Name);
+                                                A57o = A57n2.FirstOrDefault(y =>
+                                                    y.Rating_Object == x.Rating_Object &&
+                                                    y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
+                                                    (y.Bond_Number == x.Bond_Number &&
+                                                    y.Lots == x.Lots &&
+                                                    y.Portfolio_Name == x.Portfolio_Name ||
+                                                    !x.Bond_Number_Old.IsNullOrWhiteSpace() &&
+                                                    y.Bond_Number == x.Bond_Number_Old &&
+                                                    y.Lots == x.Lots_Old &&
+                                                    y.Portfolio_Name == x.Portfolio_Name_Old
+                                                    ));
                                                 if (A57o == null)
-                                                    A57o = A57n2.FirstOrDefault(y =>
-                                                y.Rating_Object == x.Rating_Object &&
-                                                y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
-                                                y.Bond_Number == _Bond_Number &&
-                                                y.Lots == _Lots &&
-                                                y.Portfolio_Name == _Portfolio_Name);
-                                                    //不存在新增
+                                                    A57o = A57n1.FirstOrDefault(y =>
+                                                    y.Rating_Object == x.Rating_Object &&
+                                                    y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
+                                                    (y.Bond_Number_Old == x.Bond_Number &&
+                                                    y.Lots_Old == x.Lots &&
+                                                    y.Portfolio_Name_Old == x.Portfolio_Name ||
+                                                    !x.Bond_Number_Old.IsNullOrWhiteSpace() &&
+                                                    y.Bond_Number_Old == x.Bond_Number_Old &&
+                                                    y.Lots_Old == x.Lots_Old &&
+                                                    y.Portfolio_Name_Old == x.Portfolio_Name_Old
+                                                    ));
+                                                    //不存在新增 防呆
                                                     if (A57o == null)
                                                 {
                                                     A57n.Rating_Date = x.Rating_Date;
@@ -1391,44 +1485,46 @@ select
                                                     A57n.Grade_Adjust = A51?.Grade_Adjust;
                                                     A57n.RTG_Bloomberg_Field = x.RTG_Bloomberg_Field;
                                                     sb.Append(insertA57(A57n));
-                                                    deleteSqlFlag = true;
+                                                    if (A51 != null)
+                                                        deleteSqlFlag = true;
                                                 }
                                                     //存在修改
-                                                    else
+                                                    else if (A57o != null)
                                                 {
                                                     sb.Append($@"
-                                UPDATE [Bond_Rating_Info]
-                                   SET [Rating] = {x.Rating.stringToStrSql()}
-                                      ,[PD_Grade] = {A51?.PD_Grade.intNToStrSql()}
-                                      ,[Grade_Adjust] = {A51?.Grade_Adjust.intNToStrSql()} 
-                                      ,[Rating_Date] = {x.Rating_Date.dateTimeNToStrSql()}
-                                      ,[Fill_up_YN] = 'Y'
-                                      ,[Fill_up_Date] = '{startTime.ToString("yyyy/MM/dd")}'
-                                WHERE Reference_Nbr = { A57o.Reference_Nbr.stringToStrSql() }
-                                  AND Report_Date = { A57o.Report_Date.dateTimeToStrSql() }
-                                  AND Rating_Type = { A57o.Rating_Type.stringToStrSql() }
-                                  AND Bond_Number = { A57o.Bond_Number.stringToStrSql() }
-                                  AND Lots = { A57o.Lots.stringToStrSql() }
-                                  AND RTG_Bloomberg_Field = { A57o.RTG_Bloomberg_Field.stringToStrSql() }
-                                  AND Portfolio_Name = { A57o.Portfolio_Name.stringToStrSql() }
-                                  AND Version = { A57o.Version.intNToStrSql() }; ");
+                                                    UPDATE [Bond_Rating_Info]
+                                                       SET [Rating] = {x.Rating.stringToStrSql()}
+                                                          ,[PD_Grade] = {(A51?.PD_Grade).intNToStrSql()}
+                                                          ,[Grade_Adjust] = {(A51?.Grade_Adjust).intNToStrSql()}
+                                                          ,[Rating_Date] = {x.Rating_Date.dateTimeNToStrSql()}
+                                                          ,[Fill_up_YN] = 'Y'
+                                                          ,[Fill_up_Date] = '{startTime.ToString("yyyy/MM/dd")}'
+                                                    WHERE Reference_Nbr = { A57o.Reference_Nbr.stringToStrSql() }
+                                                      AND Report_Date = { A57o.Report_Date.dateTimeToStrSql() }
+                                                      AND Rating_Type = { A57o.Rating_Type.stringToStrSql() }
+                                                      AND Bond_Number = { A57o.Bond_Number.stringToStrSql() }
+                                                      AND Lots = { A57o.Lots.stringToStrSql() }
+                                                      AND RTG_Bloomberg_Field = { A57o.RTG_Bloomberg_Field.stringToStrSql() }
+                                                      AND Portfolio_Name = { A57o.Portfolio_Name.stringToStrSql() }
+                                                      AND Version = { A57o.Version.intNToStrSql() }; ");
                                                 }
                                             });
-                                        if (deleteSqlFlag)
-                                        {
-                                            sb.Append($@"
-                                Delete Bond_Rating_Info
-                                where Reference_Nbr = {A57n.Reference_Nbr.stringToStrSql()}
-                                and Bond_Number = {A57n.Bond_Number.stringToStrSql()}
-                                and Lots = {A57n.Lots.stringToStrSql()}
-                                and Rating_Type = {A57n.Rating_Type.stringToStrSql()}
-                                and Report_Date = {A57n.Report_Date.dateTimeToStrSql()}
-                                and Version = {A57n.Version.intNToStrSql()}
-                                and Portfolio_Name = {A57n.Portfolio_Name.stringToStrSql()}
-                                and Rating_Object = ' '
-                                and Rating_Org is null
-                                and Rating is null
-                                and Rating_Org_Area = ' ' ;  ");
+                                            if (deleteSqlFlag)
+                                            {
+                                                sb.Append($@"
+                            Delete Bond_Rating_Info
+                            where Reference_Nbr = {A57n.Reference_Nbr.stringToStrSql()}
+                            and Bond_Number = {A57n.Bond_Number.stringToStrSql()}
+                            and Lots = {A57n.Lots.stringToStrSql()}
+                            and Rating_Type = {A57n.Rating_Type.stringToStrSql()}
+                            and Report_Date = {A57n.Report_Date.dateTimeToStrSql()}
+                            and Version = {A57n.Version.intNToStrSql()}
+                            and Portfolio_Name = {A57n.Portfolio_Name.stringToStrSql()}
+                            and Rating_Object = ' '
+                            and Rating_Org is null
+                            and Rating is null
+                            and Rating_Org_Area = ' ' ;  ");
+                                            }
                                         }
                                     }
                                     if (sb.Length > 0)
