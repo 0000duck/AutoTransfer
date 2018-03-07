@@ -144,7 +144,6 @@ AND    _A57.Rating = _A51_2.Rating
 WHERE  _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 ), --最後一版A57(原始投資信評) 加入信評
 T1 AS (
-(
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -191,7 +190,7 @@ T1 AS (
    ON    BA_Info.Bond_Number =  oldA57.Bond_Number
    AND   BA_Info.Lots = oldA57.Lots
    AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name 
-UNION 
+UNION ALL
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -239,9 +238,7 @@ UNION
    AND   BA_Info.Bond_Number =  oldA57.Bond_Number_Old
    AND   BA_Info.Lots = oldA57.Lots_Old
    AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name_Old
-)
 UNION ALL
-(
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -288,7 +285,7 @@ UNION ALL
    ON    BA_Info.Bond_Number_Old = oldA57.Bond_Number
    AND   BA_Info.Lots_Old = oldA57.Lots
    AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name
-UNION 
+UNION ALL
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
 		  BA_Info.Lots AS Lots,
@@ -336,7 +333,6 @@ UNION
    AND   BA_Info.Bond_Number_Old =  oldA57.Bond_Number_Old
    AND   BA_Info.Lots_Old = oldA57.Lots_Old
    AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name_Old
-)
 ),
 T1s AS(
 Select BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -1389,13 +1385,16 @@ select
                                 if (_ver != null)
                                 {
                                     var D60s = db.Bond_Rating_Parm.AsNoTracking().ToList();
+                                    //目前版本
                                     var A57n1 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == "Y").ToList();
                                     var A57n2 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == null).ToList();
-                                    var A57s1 = A57.Where(x => x.Version == _ver).ToList();
-                                    var A57s2 = A57s1.Where(x => x.Fill_up_YN == "Y" &&
-                                                             x.Grade_Adjust != null).ToList();
-                                    var datas = A57s2
-                                        .GroupBy(x => new
+                                    //目前版本
+                                    //上一次最後一版
+                                    var A57s = A57.Where(x => x.Version == _ver &&
+                                                               x.Fill_up_YN == "Y").ToList();
+                                    //上一次最後一版
+                                    var datas = A57s
+                                    .GroupBy(x => new
                                         {
                                             x.Reference_Nbr,
                                             x.Bond_Number,
