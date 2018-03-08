@@ -6,7 +6,7 @@ namespace AutoTransfer.CreateFile
 {
     public class CreateA9621File
     {
-        public bool create(TableType type, string dateTime, List<Bond_Spread_Info> datas)
+        public bool create(TableType type, string dateRageStart, string dateRageEnd, string dateTime, List<Bond_Spread_Info> datas)
         {
             bool flag = false;
             try
@@ -29,7 +29,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
                 data.Add("SECID=ISIN");
-                data.Add($"DATERANGE={dateTime}|{dateTime}");
+                data.Add($"DATERANGE={dateRageStart}|{dateRageEnd}");
                 data.Add("HIST_PERIOD=d");
 
                 #endregion Title
@@ -49,12 +49,12 @@ namespace AutoTransfer.CreateFile
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
                 datas.ForEach(x =>
-                                {
-                                    if (x.ID_CUSIP.IsNullOrWhiteSpace() == false)
-                                    {
-                                        data.Add(string.Format("{0}@BGN Govt|CUSIP|", x.ID_CUSIP));
-                                    }
-                                }
+                {
+                    if (x.ID_CUSIP.IsNullOrWhiteSpace() == false)
+                    {
+                        data.Add(string.Format("{0}@BGN Govt|CUSIP|", x.ID_CUSIP));
+                    }
+                }
                             );
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
