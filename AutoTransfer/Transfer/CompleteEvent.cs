@@ -59,7 +59,7 @@ namespace AutoTransfer.Transfer
 WITH temp2 AS
 (
   SELECT
-  CASE WHEN ((SELECT TOP 1 Report_Date FROM Bond_Rating_Info WHERE Report_Date = '{reportData}') != null)
+  CASE WHEN ((SELECT TOP 1 Report_Date FROM Bond_Rating_Info WHERE Report_Date = '{reportData}' and Rating_Type = '{Rating_Type.A.GetDescription()}') is not null)
        THEN '{reportData}'
 	   ELSE (SELECT TOP 1 Report_Date from Bond_Rating_Info order by Report_Date desc)
   END AS Report_Date
@@ -80,7 +80,7 @@ select RTG_Bloomberg_Field,
        A57.Report_Date
 FROM   Bond_Rating_Info A57,temp2
 WHERE  A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
-AND    A57.Version = (select top 1 Version from Bond_Rating_Info where Report_Date = temp2.Report_Date order by Version desc)
+AND    A57.Version = (select top 1 Version from Bond_Rating_Info where Report_Date = temp2.Report_Date and Rating_Type = '{Rating_Type.A.GetDescription()}' order by Version desc)
 AND    A57.Report_Date = temp2.Report_Date
 AND    A57.Grade_Adjust is not null
 ), --最後一版A57(原始投資信評)
