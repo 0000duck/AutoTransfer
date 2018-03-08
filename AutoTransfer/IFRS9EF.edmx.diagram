@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="96352dad362c474d87b7c14085066f27" Name="Diagram1" ZoomLevel="46" ShowGrid="false">
+      <Diagram DiagramId="96352dad362c474d87b7c14085066f27" Name="Diagram1" ZoomLevel="38" ShowGrid="false">
         <EntityTypeShape EntityType="IFRS9Model.Grade_Mapping_Info" Width="1.5" PointX="3.375" PointY="3.625" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Rating_Parm" Width="1.5" PointX="8.375" PointY="0.75" />
         <EntityTypeShape EntityType="IFRS9Model.Rating_Info" Width="1.5" PointX="3.375" PointY="0.75" />
@@ -15,7 +15,6 @@
         <EntityTypeShape EntityType="IFRS9Model.Econ_D_YYYYMMDD" Width="1.5" PointX="13" PointY="7.875" />
         <AssociationConnector Association="IFRS9Model.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" />
         <EntityTypeShape EntityType="IFRS9Model.Moody_Quartly_PD_Info" Width="1.5" PointX="12.75" PointY="0.75" />
-        <EntityTypeShape EntityType="IFRS9Model.Econ_F_YYYYMMDD" Width="1.5" PointX="5.375" PointY="12.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Ticker_Info" Width="1.5" PointX="7.375" PointY="12.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Category_Info" Width="1.5" PointX="13.375" PointY="3.75" />
         <EntityTypeShape EntityType="IFRS9Model.Group_Product_Code_Mapping" Width="1.5" PointX="15.375" PointY="0.75" />
@@ -30,9 +29,10 @@
         <EntityTypeShape EntityType="IFRS9Model.Bond_Rating" Width="1.5" PointX="7.375" PointY="17.75" />
         <EntityTypeShape EntityType="IFRS9Model.Guarantor_Rating" Width="1.5" PointX="9.375" PointY="17.75" />
         <EntityTypeShape EntityType="IFRS9Model.Issuer_Rating" Width="1.5" PointX="11.375" PointY="18.75" />
-        <EntityTypeShape EntityType="IFRS9Model.Econ_Foreign" Width="1.5" PointX="17.375" PointY="5.75" />
-        <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="9.375" PointY="6.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Spread_Info" Width="1.5" PointX="19.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Econ_F_YYYYMMDD" Width="1.5" PointX="17.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Econ_Foreign" Width="1.5" PointX="19.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="9.375" PointY="6.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

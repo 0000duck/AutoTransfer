@@ -21,5 +21,11 @@ namespace AutoTransfer
         public string Fitch { get; set; }
         public string Fitch_TW { get; set; }
         public string TRC { get; set; }
+        public string Create_User { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.TimeSpan> Create_Time { get; set; }
+        public string LastUpdate_User { get; set; }
+        public Nullable<System.DateTime> LastUpdate_Date { get; set; }
+        public Nullable<System.TimeSpan> LastUpdate_Time { get; set; }
     }
 }
