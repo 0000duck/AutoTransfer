@@ -76,7 +76,7 @@ namespace AutoTransfer.CreateFile
                         {
                             data.Add(x.Name.Replace("_", "$ "));
                         }
-                        else if (x.Name != "NEUENTTR_Index" && x.Name != "USDR1T_Curncy")
+                        else if (x.Name != "NEUENTTR_Index" && x.Name != "USDR1T_CMPN_Curncy")
                         {
                             data.Add(x.Name.Replace("_", " "));
                         }
@@ -170,7 +170,7 @@ namespace AutoTransfer.CreateFile
                 //ex: GetC04_20170803_3.csv
                 string _getFileName3 = f.getFileName("3");
 
-                #region File (USDR1T Curncy)
+                #region File (USDR1T CMPN Curncy)
 
                 data3.Add("START-OF-FILE");
 
@@ -205,7 +205,7 @@ namespace AutoTransfer.CreateFile
 
                 data3.Add("START-OF-DATA");
 
-                data3.Add("USDR1T Curncy");
+                data3.Add("USDR1T CMPN Curncy");
 
                 data3.Add("END-OF-DATA");
 

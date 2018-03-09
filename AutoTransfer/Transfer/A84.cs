@@ -24,7 +24,7 @@ namespace AutoTransfer.Transfer
         private DateTime startTime = DateTime.MinValue;
         private ThreadTask t = new ThreadTask();
         private string type = TableType.A84.ToString();
-
+        private string _SystemUser = "System";
         #endregion 共用參數
 
         /// <summary>
@@ -221,6 +221,8 @@ namespace AutoTransfer.Transfer
             {
                 List<Econ_Foreign> A84Datas = new List<Econ_Foreign>();
                 string date = startTime.ToString("yyyyMMdd");
+                DateTime _date = startTime.Date;
+                TimeSpan _ts = startTime.TimeOfDay;
                 #region A84 Data
                 var A84s = db.Econ_Foreign.ToList();
                 var A84pros = new Econ_Foreign().GetType().GetProperties();
@@ -266,6 +268,9 @@ namespace AutoTransfer.Transfer
                                     if (A84 != null)
                                     {
                                         setData(A84pros, A84, index, d, date);
+                                        A84.LastUpdate_User = _SystemUser;
+                                        A84.LastUpdate_Date = _date;
+                                        A84.LastUpdate_Time = _ts;
                                     }
                                     else if (A84Data != null)
                                     {
@@ -275,6 +280,9 @@ namespace AutoTransfer.Transfer
                                     {
                                         Econ_Foreign newData = new Econ_Foreign();
                                         newData.Year_Quartly = YQ;
+                                        newData.Create_User = _SystemUser;
+                                        newData.Create_Date = _date;
+                                        newData.Create_Time = _ts;
                                         setData(A84pros, newData,index,d,date);
                                         A84Datas.Add(newData);
                                     }
@@ -328,6 +336,9 @@ namespace AutoTransfer.Transfer
                                     if (A84 != null)
                                     {
                                         setData(A84pros, A84, index, d, date);
+                                        A84.LastUpdate_User = _SystemUser;
+                                        A84.LastUpdate_Date = _date;
+                                        A84.LastUpdate_Time = _ts;
                                     }
                                     else if (A84Data != null)
                                     {
@@ -337,6 +348,9 @@ namespace AutoTransfer.Transfer
                                     {
                                         Econ_Foreign newData = new Econ_Foreign();
                                         newData.Year_Quartly = YQ;
+                                        newData.Create_User = _SystemUser;
+                                        newData.Create_Date = _date;
+                                        newData.Create_Time = _ts;
                                         setData(A84pros, newData, index, d, date);
                                         A84Datas.Add(newData);
                                     }
@@ -390,6 +404,9 @@ namespace AutoTransfer.Transfer
                                     if (A84 != null)
                                     {
                                         setData(A84pros, A84, index, d, date);
+                                        A84.LastUpdate_User = _SystemUser;
+                                        A84.LastUpdate_Date = _date;
+                                        A84.LastUpdate_Time = _ts;
                                     }
                                     else if (A84Data != null)
                                     {
@@ -399,6 +416,9 @@ namespace AutoTransfer.Transfer
                                     {
                                         Econ_Foreign newData = new Econ_Foreign();
                                         newData.Year_Quartly = YQ;
+                                        newData.Create_User = _SystemUser;
+                                        newData.Create_Date = _date;
+                                        newData.Create_Time = _ts;
                                         setData(A84pros, newData, index, d, date);
                                         A84Datas.Add(newData);
                                     }

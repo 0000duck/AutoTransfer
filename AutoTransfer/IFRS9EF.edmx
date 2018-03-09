@@ -67,6 +67,12 @@
           <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
           <Property Name="Security_Name" Type="varchar" MaxLength="50" />
           <Property Name="Origination_Date_Old" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Category_Info">
           <Key>
@@ -95,6 +101,12 @@
           <Property Name="Fitch" Type="varchar" MaxLength="50" />
           <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
           <Property Name="TRC" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Rating_Info">
           <Key>
@@ -362,12 +374,12 @@
           <Property Name="EUSATOTN_Index" Type="float" />
           <Property Name="EUR003M_Index" Type="float" />
           <Property Name="EUORDEPO_Index" Type="float" />
-          <Property Name="USDR1T_Curncy" Type="float" />
+          <Property Name="USDR1T_CMPN_Curncy" Type="float" />
           <Property Name="FDTR_Index" Type="float" />
           <Property Name="SXEE_Index" Type="float" />
-          <Property Name="NGA_Comdty" Type="float" />
-          <Property Name="COA_Comdty" Type="float" />
-          <Property Name="CLA_Comdty" Type="float" />
+          <Property Name="NG1_Comdty" Type="float" />
+          <Property Name="CO1_COMDTY" Type="float" />
+          <Property Name="CL1_Comdty" Type="float" />
           <Property Name="XOI_Index" Type="float" />
           <Property Name="EURUSD_Curncy" Type="float" />
           <Property Name="USDCNY_Curncy" Type="float" />
@@ -432,6 +444,12 @@
           <Property Name="CNFRIMPY_Index" Type="float" />
           <Property Name="CNFREXPY_Index" Type="float" />
           <Property Name="GRFIDEBT_Index" Type="float" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Econ_Foreign">
           <Key>
@@ -486,12 +504,12 @@
           <Property Name="EUSATOTN_Index" Type="float" />
           <Property Name="EUR003M_Index" Type="float" />
           <Property Name="EUORDEPO_Index" Type="float" />
-          <Property Name="USDR1T_Curncy" Type="float" />
+          <Property Name="USDR1T_CMPN_Curncy" Type="float" />
           <Property Name="FDTR_Index" Type="float" />
           <Property Name="SXEE_Index" Type="float" />
-          <Property Name="NGA_Comdty" Type="float" />
-          <Property Name="COA_Comdty" Type="float" />
-          <Property Name="CLA_Comdty" Type="float" />
+          <Property Name="NG1_Comdty" Type="float" />
+          <Property Name="CO1_COMDTY" Type="float" />
+          <Property Name="CL1_Comdty" Type="float" />
           <Property Name="XOI_Index" Type="float" />
           <Property Name="EURUSD_Curncy" Type="float" />
           <Property Name="USDCNY_Curncy" Type="float" />
@@ -556,6 +574,12 @@
           <Property Name="CNFRIMPY_Index" Type="float" />
           <Property Name="CNFREXPY_Index" Type="float" />
           <Property Name="GRFIDEBT_Index" Type="float" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Gov_Info_Monthly">
           <Key>
@@ -643,6 +667,12 @@
           <Property Name="Fitch" Type="varchar" MaxLength="50" />
           <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
           <Property Name="TRC" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Issuer_Rating">
           <Key>
@@ -655,6 +685,12 @@
           <Property Name="Fitch" Type="varchar" MaxLength="50" />
           <Property Name="Fitch_TW" Type="varchar" MaxLength="50" />
           <Property Name="TRC" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Loan_Account_Info">
           <Key>
@@ -697,7 +733,6 @@
         </EntityType>
         <EntityType Name="Loan_default_Info">
           <Key>
-            <PropertyRef Name="Year_Month" />
             <PropertyRef Name="Year_Quartly" />
           </Key>
           <Property Name="Year_Month" Type="varchar" MaxLength="6" Nullable="false" />
@@ -829,7 +864,6 @@
             <End Role="Econ_D_YYYYMMDD" EntitySet="Econ_D_YYYYMMDD" />
           </AssociationSet>
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="IFRS9Model.Moody_Quartly_PD_Info" />
-          <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
           <EntitySet Name="Bond_Ticker_Info" EntityType="IFRS9Model.Bond_Ticker_Info" />
           <EntitySet Name="Bond_Category_Info" EntityType="IFRS9Model.Bond_Category_Info" />
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
@@ -844,9 +878,10 @@
           <EntitySet Name="Bond_Rating" EntityType="IFRS9Model.Bond_Rating" />
           <EntitySet Name="Guarantor_Rating" EntityType="IFRS9Model.Guarantor_Rating" />
           <EntitySet Name="Issuer_Rating" EntityType="IFRS9Model.Issuer_Rating" />
+          <EntitySet Name="Bond_Spread_Info" EntityType="IFRS9Model.Bond_Spread_Info" />
+          <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
-          <EntitySet Name="Bond_Spread_Info" EntityType="IFRS9Model.Bond_Spread_Info" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -984,6 +1019,12 @@
           <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="Security_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Origination_Date_Old" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Econ_Domestic">
           <Key>
@@ -1078,133 +1119,6 @@
           <Property Name="Data_Year" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
           <Property Name="Year_Quartly" Type="String" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="PD" Type="Double" />
-        </EntityType>
-        <EntityType Name="Econ_F_YYYYMMDD">
-          <Key>
-            <PropertyRef Name="Year_Quartly" />
-          </Key>
-          <Property Name="Processing_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Product_Code" Type="String" MaxLength="64" FixedLength="false" Unicode="false" />
-          <Property Name="Data_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="PD_Quartly" Type="Double" />
-          <Property Name="CPI_INDX_Index" Type="Double" />
-          <Property Name="CACPSA_Index" Type="Double" />
-          <Property Name="KOCPI_Index" Type="Double" />
-          <Property Name="EACPI_Index" Type="Double" />
-          <Property Name="GRCP2000_Index" Type="Double" />
-          <Property Name="UKRPCHVJ_Index" Type="Double" />
-          <Property Name="NECPIND_Index" Type="Double" />
-          <Property Name="AUCCTOTS_Index" Type="Double" />
-          <Property Name="JCPTSGEN_Index" Type="Double" />
-          <Property Name="USGG3M_Index" Type="Double" />
-          <Property Name="GECU3M_Index" Type="Double" />
-          <Property Name="USGG10YR_Index" Type="Double" />
-          <Property Name="GECU10YR_Index" Type="Double" />
-          <Property Name="DEBPTOTL_Index" Type="Double" />
-          <Property Name="NKY_Index" Type="Double" />
-          <Property Name="INDU_Index" Type="Double" />
-          <Property Name="CCMP_Index" Type="Double" />
-          <Property Name="SPX_Index" Type="Double" />
-          <Property Name="DAX_Index" Type="Double" />
-          <Property Name="DJST_Index" Type="Double" />
-          <Property Name="USURTOT_Index" Type="Double" />
-          <Property Name="UMRTEMU_Index" Type="Double" />
-          <Property Name="JNUE_Index" Type="Double" />
-          <Property Name="CANLXEMR_Index" Type="Double" />
-          <Property Name="GRUEPR_Index" Type="Double" />
-          <Property Name="UKUEILOR_Index" Type="Double" />
-          <Property Name="NEUENTTR_Index" Type="Double" />
-          <Property Name="KOEAUERS_Index" Type="Double" />
-          <Property Name="AULFUNEM_Index" Type="Double" />
-          <Property Name="HPIMLEVL_Index" Type="Double" />
-          <Property Name="GDP_CHWG_Index" Type="Double" />
-          <Property Name="CGE9MP_Index" Type="Double" />
-          <Property Name="EUGNEMU_Index" Type="Double" />
-          <Property Name="GRGDEGDP_Index" Type="Double" />
-          <Property Name="UKGRABMI_Index" Type="Double" />
-          <Property Name="NEGDPESA_Index" Type="Double" />
-          <Property Name="JGDPGDP_Index" Type="Double" />
-          <Property Name="KOGDSTOT_Index" Type="Double" />
-          <Property Name="AUNAGDP_Index" Type="Double" />
-          <Property Name="EUQDGEUR_Index" Type="Double" />
-          <Property Name="USCABAL_Index" Type="Double" />
-          <Property Name="EHCAUS_Index" Type="Double" />
-          <Property Name="GRCAEU_Index" Type="Double" />
-          <Property Name="EHCADE_Index" Type="Double" />
-          <Property Name="EUSATOTN_Index" Type="Double" />
-          <Property Name="EUR003M_Index" Type="Double" />
-          <Property Name="EUORDEPO_Index" Type="Double" />
-          <Property Name="USDR1T_Curncy" Type="Double" />
-          <Property Name="FDTR_Index" Type="Double" />
-          <Property Name="SXEE_Index" Type="Double" />
-          <Property Name="NGA_Comdty" Type="Double" />
-          <Property Name="COA_Comdty" Type="Double" />
-          <Property Name="CLA_Comdty" Type="Double" />
-          <Property Name="XOI_Index" Type="Double" />
-          <Property Name="EURUSD_Curncy" Type="Double" />
-          <Property Name="USDCNY_Curncy" Type="Double" />
-          <Property Name="USDJPY_Curncy" Type="Double" />
-          <Property Name="USDKRW_Curncy" Type="Double" />
-          <Property Name="USDTWD_Curncy" Type="Double" />
-          <Property Name="EURTWD_Curncy" Type="Double" />
-          <Property Name="CNYTWD_Curncy" Type="Double" />
-          <Property Name="JPYTWD_Curncy" Type="Double" />
-          <Property Name="KRWTWD_Curncy" Type="Double" />
-          <Property Name="EURR002W_Index" Type="Double" />
-          <Property Name="NAPMPMI_Index" Type="Double" />
-          <Property Name="NAPMNMI_Index" Type="Double" />
-          <Property Name="NAPMNEWO_Index" Type="Double" />
-          <Property Name="OUTFGAF_Index" Type="Double" />
-          <Property Name="LEI_WKIJ_Index" Type="Double" />
-          <Property Name="LEI_LCI_Index" Type="Double" />
-          <Property Name="USHBMIDX_Index" Type="Double" />
-          <Property Name="ARDIMONY_Index" Type="Double" />
-          <Property Name="M1_Index" Type="Double" />
-          <Property Name="ECMAM1_Index" Type="Double" />
-          <Property Name="M2_Index" Type="Double" />
-          <Property Name="ECMAM2_Index" Type="Double" />
-          <Property Name="CEEREU_Index" Type="Double" />
-          <Property Name="DXY_Curncy" Type="Double" />
-          <Property Name="EUBCI_Index" Type="Double" />
-          <Property Name="OEDEA044_Index" Type="Double" />
-          <Property Name="EUESEMU_Index" Type="Double" />
-          <Property Name="SNTEEUGX_Index" Type="Double" />
-          <Property Name="XTSBEZ_Index" Type="Double" />
-          <Property Name="GRTBALE_Index" Type="Double" />
-          <Property Name="EBLS11NC_Index" Type="Double" />
-          <Property Name="MXWO0MT_Index" Type="Double" />
-          <Property Name="S5MATRX_Index" Type="Double" />
-          <Property Name="XAU_Curncy" Type="Double" />
-          <Property Name="USTBTOT_Index" Type="Double" />
-          <Property Name="ADP_CHNG_Index" Type="Double" />
-          <Property Name="NFP_TCH_Index" Type="Double" />
-          <Property Name="CNSTTMOM_Index" Type="Double" />
-          <Property Name="TMNOCHNG_Index" Type="Double" />
-          <Property Name="DGNOCHNG_Index" Type="Double" />
-          <Property Name="IP_CHNG_Index" Type="Double" />
-          <Property Name="NHSPSTOT_Index" Type="Double" />
-          <Property Name="NHCHSTCH_Index" Type="Double" />
-          <Property Name="NHSPATOT_Index" Type="Double" />
-          <Property Name="NHCHATCH_Index" Type="Double" />
-          <Property Name="LEI_CHNG_Index" Type="Double" />
-          <Property Name="ETSLTOTL_Index" Type="Double" />
-          <Property Name="ETSLMOM_Index" Type="Double" />
-          <Property Name="NHSLTOT_Index" Type="Double" />
-          <Property Name="NHSLCHNG_Index" Type="Double" />
-          <Property Name="CONSSENT_Index" Type="Double" />
-          <Property Name="RSTAMOM_Index" Type="Double" />
-          <Property Name="EUPPEMUM_Index" Type="Double" />
-          <Property Name="EUCCEMU_Index" Type="Double" />
-          <Property Name="CPMINDX_Index" Type="Double" />
-          <Property Name="MPMICNMA_Index" Type="Double" />
-          <Property Name="CNFRBAL_Index" Type="Double" />
-          <Property Name="CNCPIYOY_Index" Type="Double" />
-          <Property Name="CHEFTYOY_Index" Type="Double" />
-          <Property Name="CNMS2YOY_Index" Type="Double" />
-          <Property Name="CNFRIMPY_Index" Type="Double" />
-          <Property Name="CNFREXPY_Index" Type="Double" />
-          <Property Name="GRFIDEBT_Index" Type="Double" />
         </EntityType>
         <EntityType Name="Bond_Ticker_Info">
           <Key>
@@ -1440,6 +1354,12 @@
           <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Guarantor_Rating">
           <Key>
@@ -1452,6 +1372,12 @@
           <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Issuer_Rating">
           <Key>
@@ -1464,13 +1390,46 @@
           <Property Name="Fitch" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Fitch_TW" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="TRC" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
-        <EntityType Name="Econ_Foreign">
+        <EntityType Name="Bond_Spread_Info">
+          <Key>
+            <PropertyRef Name="Reference_Nbr" />
+          </Key>
+          <Property Name="Reference_Nbr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Version" Type="Int32" Nullable="false" />
+          <Property Name="Bond_Number" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Lots" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Portfolio_Name" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Origination_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="EIR" Type="Double" Nullable="false" />
+          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Mid_Yield" Type="Double" />
+          <Property Name="BNCHMRK_TSY_ISSUE_ID" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
+          <Property Name="ID_CUSIP" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Spread_Current" Type="Double" />
+          <Property Name="Spread_When_Trade" Type="Double" />
+          <Property Name="Treasury_Current" Type="Double" />
+          <Property Name="Treasury_When_Trade" Type="Double" />
+          <Property Name="All_in_Chg" Type="Double" />
+          <Property Name="Chg_In_Spread" Type="Double" />
+          <Property Name="Chg_In_Treasury" Type="Double" />
+        </EntityType>
+        <EntityType Name="Econ_F_YYYYMMDD">
           <Key>
             <PropertyRef Name="Year_Quartly" />
           </Key>
-          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Processing_Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Product_Code" Type="String" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="Data_ID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="PD_Quartly" Type="Double" />
           <Property Name="CPI_INDX_Index" Type="Double" />
           <Property Name="CACPSA_Index" Type="Double" />
           <Property Name="KOCPI_Index" Type="Double" />
@@ -1518,12 +1477,12 @@
           <Property Name="EUSATOTN_Index" Type="Double" />
           <Property Name="EUR003M_Index" Type="Double" />
           <Property Name="EUORDEPO_Index" Type="Double" />
-          <Property Name="USDR1T_Curncy" Type="Double" />
+          <Property Name="USDR1T_CMPN_Curncy" Type="Double" />
           <Property Name="FDTR_Index" Type="Double" />
           <Property Name="SXEE_Index" Type="Double" />
-          <Property Name="NGA_Comdty" Type="Double" />
-          <Property Name="COA_Comdty" Type="Double" />
-          <Property Name="CLA_Comdty" Type="Double" />
+          <Property Name="NG1_Comdty" Type="Double" />
+          <Property Name="CO1_COMDTY" Type="Double" />
+          <Property Name="CL1_Comdty" Type="Double" />
           <Property Name="XOI_Index" Type="Double" />
           <Property Name="EURUSD_Curncy" Type="Double" />
           <Property Name="USDCNY_Curncy" Type="Double" />
@@ -1588,40 +1547,151 @@
           <Property Name="CNFRIMPY_Index" Type="Double" />
           <Property Name="CNFREXPY_Index" Type="Double" />
           <Property Name="GRFIDEBT_Index" Type="Double" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
+        <EntityType Name="Econ_Foreign">
+          <Key>
+            <PropertyRef Name="Year_Quartly" />
+          </Key>
+          <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Date" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="CPI_INDX_Index" Type="Double" />
+          <Property Name="CACPSA_Index" Type="Double" />
+          <Property Name="KOCPI_Index" Type="Double" />
+          <Property Name="EACPI_Index" Type="Double" />
+          <Property Name="GRCP2000_Index" Type="Double" />
+          <Property Name="UKRPCHVJ_Index" Type="Double" />
+          <Property Name="NECPIND_Index" Type="Double" />
+          <Property Name="AUCCTOTS_Index" Type="Double" />
+          <Property Name="JCPTSGEN_Index" Type="Double" />
+          <Property Name="USGG3M_Index" Type="Double" />
+          <Property Name="GECU3M_Index" Type="Double" />
+          <Property Name="USGG10YR_Index" Type="Double" />
+          <Property Name="GECU10YR_Index" Type="Double" />
+          <Property Name="DEBPTOTL_Index" Type="Double" />
+          <Property Name="NKY_Index" Type="Double" />
+          <Property Name="INDU_Index" Type="Double" />
+          <Property Name="CCMP_Index" Type="Double" />
+          <Property Name="SPX_Index" Type="Double" />
+          <Property Name="DAX_Index" Type="Double" />
+          <Property Name="DJST_Index" Type="Double" />
+          <Property Name="USURTOT_Index" Type="Double" />
+          <Property Name="UMRTEMU_Index" Type="Double" />
+          <Property Name="JNUE_Index" Type="Double" />
+          <Property Name="CANLXEMR_Index" Type="Double" />
+          <Property Name="GRUEPR_Index" Type="Double" />
+          <Property Name="UKUEILOR_Index" Type="Double" />
+          <Property Name="NEUENTTR_Index" Type="Double" />
+          <Property Name="KOEAUERS_Index" Type="Double" />
+          <Property Name="AULFUNEM_Index" Type="Double" />
+          <Property Name="HPIMLEVL_Index" Type="Double" />
+          <Property Name="GDP_CHWG_Index" Type="Double" />
+          <Property Name="CGE9MP_Index" Type="Double" />
+          <Property Name="EUGNEMU_Index" Type="Double" />
+          <Property Name="GRGDEGDP_Index" Type="Double" />
+          <Property Name="UKGRABMI_Index" Type="Double" />
+          <Property Name="NEGDPESA_Index" Type="Double" />
+          <Property Name="JGDPGDP_Index" Type="Double" />
+          <Property Name="KOGDSTOT_Index" Type="Double" />
+          <Property Name="AUNAGDP_Index" Type="Double" />
+          <Property Name="EUQDGEUR_Index" Type="Double" />
+          <Property Name="USCABAL_Index" Type="Double" />
+          <Property Name="EHCAUS_Index" Type="Double" />
+          <Property Name="GRCAEU_Index" Type="Double" />
+          <Property Name="EHCADE_Index" Type="Double" />
+          <Property Name="EUSATOTN_Index" Type="Double" />
+          <Property Name="EUR003M_Index" Type="Double" />
+          <Property Name="EUORDEPO_Index" Type="Double" />
+          <Property Name="USDR1T_CMPN_Curncy" Type="Double" />
+          <Property Name="FDTR_Index" Type="Double" />
+          <Property Name="SXEE_Index" Type="Double" />
+          <Property Name="NG1_Comdty" Type="Double" />
+          <Property Name="CO1_COMDTY" Type="Double" />
+          <Property Name="CL1_Comdty" Type="Double" />
+          <Property Name="XOI_Index" Type="Double" />
+          <Property Name="EURUSD_Curncy" Type="Double" />
+          <Property Name="USDCNY_Curncy" Type="Double" />
+          <Property Name="USDJPY_Curncy" Type="Double" />
+          <Property Name="USDKRW_Curncy" Type="Double" />
+          <Property Name="USDTWD_Curncy" Type="Double" />
+          <Property Name="EURTWD_Curncy" Type="Double" />
+          <Property Name="CNYTWD_Curncy" Type="Double" />
+          <Property Name="JPYTWD_Curncy" Type="Double" />
+          <Property Name="KRWTWD_Curncy" Type="Double" />
+          <Property Name="EURR002W_Index" Type="Double" />
+          <Property Name="NAPMPMI_Index" Type="Double" />
+          <Property Name="NAPMNMI_Index" Type="Double" />
+          <Property Name="NAPMNEWO_Index" Type="Double" />
+          <Property Name="OUTFGAF_Index" Type="Double" />
+          <Property Name="LEI_WKIJ_Index" Type="Double" />
+          <Property Name="LEI_LCI_Index" Type="Double" />
+          <Property Name="USHBMIDX_Index" Type="Double" />
+          <Property Name="ARDIMONY_Index" Type="Double" />
+          <Property Name="M1_Index" Type="Double" />
+          <Property Name="ECMAM1_Index" Type="Double" />
+          <Property Name="M2_Index" Type="Double" />
+          <Property Name="ECMAM2_Index" Type="Double" />
+          <Property Name="CEEREU_Index" Type="Double" />
+          <Property Name="DXY_Curncy" Type="Double" />
+          <Property Name="EUBCI_Index" Type="Double" />
+          <Property Name="OEDEA044_Index" Type="Double" />
+          <Property Name="EUESEMU_Index" Type="Double" />
+          <Property Name="SNTEEUGX_Index" Type="Double" />
+          <Property Name="XTSBEZ_Index" Type="Double" />
+          <Property Name="GRTBALE_Index" Type="Double" />
+          <Property Name="EBLS11NC_Index" Type="Double" />
+          <Property Name="MXWO0MT_Index" Type="Double" />
+          <Property Name="S5MATRX_Index" Type="Double" />
+          <Property Name="XAU_Curncy" Type="Double" />
+          <Property Name="USTBTOT_Index" Type="Double" />
+          <Property Name="ADP_CHNG_Index" Type="Double" />
+          <Property Name="NFP_TCH_Index" Type="Double" />
+          <Property Name="CNSTTMOM_Index" Type="Double" />
+          <Property Name="TMNOCHNG_Index" Type="Double" />
+          <Property Name="DGNOCHNG_Index" Type="Double" />
+          <Property Name="IP_CHNG_Index" Type="Double" />
+          <Property Name="NHSPSTOT_Index" Type="Double" />
+          <Property Name="NHCHSTCH_Index" Type="Double" />
+          <Property Name="NHSPATOT_Index" Type="Double" />
+          <Property Name="NHCHATCH_Index" Type="Double" />
+          <Property Name="LEI_CHNG_Index" Type="Double" />
+          <Property Name="ETSLTOTL_Index" Type="Double" />
+          <Property Name="ETSLMOM_Index" Type="Double" />
+          <Property Name="NHSLTOT_Index" Type="Double" />
+          <Property Name="NHSLCHNG_Index" Type="Double" />
+          <Property Name="CONSSENT_Index" Type="Double" />
+          <Property Name="RSTAMOM_Index" Type="Double" />
+          <Property Name="EUPPEMUM_Index" Type="Double" />
+          <Property Name="EUCCEMU_Index" Type="Double" />
+          <Property Name="CPMINDX_Index" Type="Double" />
+          <Property Name="MPMICNMA_Index" Type="Double" />
+          <Property Name="CNFRBAL_Index" Type="Double" />
+          <Property Name="CNCPIYOY_Index" Type="Double" />
+          <Property Name="CHEFTYOY_Index" Type="Double" />
+          <Property Name="CNMS2YOY_Index" Type="Double" />
+          <Property Name="CNFRIMPY_Index" Type="Double" />
+          <Property Name="CNFREXPY_Index" Type="Double" />
+          <Property Name="GRFIDEBT_Index" Type="Double" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Loan_default_Info">
           <Key>
-            <PropertyRef Name="Year_Month" />
             <PropertyRef Name="Year_Quartly" />
           </Key>
           <Property Name="Year_Month" Type="String" Nullable="false" MaxLength="6" FixedLength="false" Unicode="false" />
           <Property Name="PD_Quartly" Type="Double" Nullable="false" />
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
-        </EntityType>
-        <EntityType Name="Bond_Spread_Info">
-          <Key>
-            <PropertyRef Name="Reference_Nbr" />
-          </Key>
-          <Property Name="Reference_Nbr" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Version" Type="Int32" Nullable="false" />
-          <Property Name="Bond_Number" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="false" />
-          <Property Name="Lots" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="Portfolio_Name" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Origination_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="EIR" Type="Double" Nullable="false" />
-          <Property Name="Processing_Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Mid_Yield" Type="Double" />
-          <Property Name="BNCHMRK_TSY_ISSUE_ID" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />
-          <Property Name="ID_CUSIP" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Spread_Current" Type="Double" />
-          <Property Name="Spread_When_Trade" Type="Double" />
-          <Property Name="Treasury_Current" Type="Double" />
-          <Property Name="Treasury_When_Trade" Type="Double" />
-          <Property Name="All_in_Chg" Type="Double" />
-          <Property Name="Chg_In_Spread" Type="Double" />
-          <Property Name="Chg_In_Treasury" Type="Double" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -1708,6 +1778,12 @@
           <EntitySetMapping Name="Bond_Account_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Account_Info">
               <MappingFragment StoreEntitySet="Bond_Account_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Origination_Date_Old" ColumnName="Origination_Date_Old" />
                 <ScalarProperty Name="Security_Name" ColumnName="Security_Name" />
                 <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
@@ -1849,134 +1925,6 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Econ_F_YYYYMMDD">
-            <EntityTypeMapping TypeName="IFRS9Model.Econ_F_YYYYMMDD">
-              <MappingFragment StoreEntitySet="Econ_F_YYYYMMDD">
-                <ScalarProperty Name="GRFIDEBT_Index" ColumnName="GRFIDEBT_Index" />
-                <ScalarProperty Name="CNFREXPY_Index" ColumnName="CNFREXPY_Index" />
-                <ScalarProperty Name="CNFRIMPY_Index" ColumnName="CNFRIMPY_Index" />
-                <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
-                <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
-                <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
-                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
-                <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
-                <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
-                <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />
-                <ScalarProperty Name="EUPPEMUM_Index" ColumnName="EUPPEMUM_Index" />
-                <ScalarProperty Name="RSTAMOM_Index" ColumnName="RSTAMOM_Index" />
-                <ScalarProperty Name="CONSSENT_Index" ColumnName="CONSSENT_Index" />
-                <ScalarProperty Name="NHSLCHNG_Index" ColumnName="NHSLCHNG_Index" />
-                <ScalarProperty Name="NHSLTOT_Index" ColumnName="NHSLTOT_Index" />
-                <ScalarProperty Name="ETSLMOM_Index" ColumnName="ETSLMOM_Index" />
-                <ScalarProperty Name="ETSLTOTL_Index" ColumnName="ETSLTOTL_Index" />
-                <ScalarProperty Name="LEI_CHNG_Index" ColumnName="LEI_CHNG_Index" />
-                <ScalarProperty Name="NHCHATCH_Index" ColumnName="NHCHATCH_Index" />
-                <ScalarProperty Name="NHSPATOT_Index" ColumnName="NHSPATOT_Index" />
-                <ScalarProperty Name="NHCHSTCH_Index" ColumnName="NHCHSTCH_Index" />
-                <ScalarProperty Name="NHSPSTOT_Index" ColumnName="NHSPSTOT_Index" />
-                <ScalarProperty Name="IP_CHNG_Index" ColumnName="IP_CHNG_Index" />
-                <ScalarProperty Name="DGNOCHNG_Index" ColumnName="DGNOCHNG_Index" />
-                <ScalarProperty Name="TMNOCHNG_Index" ColumnName="TMNOCHNG_Index" />
-                <ScalarProperty Name="CNSTTMOM_Index" ColumnName="CNSTTMOM_Index" />
-                <ScalarProperty Name="NFP_TCH_Index" ColumnName="NFP_TCH_Index" />
-                <ScalarProperty Name="ADP_CHNG_Index" ColumnName="ADP_CHNG_Index" />
-                <ScalarProperty Name="USTBTOT_Index" ColumnName="USTBTOT_Index" />
-                <ScalarProperty Name="XAU_Curncy" ColumnName="XAU_Curncy" />
-                <ScalarProperty Name="S5MATRX_Index" ColumnName="S5MATRX_Index" />
-                <ScalarProperty Name="MXWO0MT_Index" ColumnName="MXWO0MT_Index" />
-                <ScalarProperty Name="EBLS11NC_Index" ColumnName="EBLS11NC_Index" />
-                <ScalarProperty Name="GRTBALE_Index" ColumnName="GRTBALE_Index" />
-                <ScalarProperty Name="XTSBEZ_Index" ColumnName="XTSBEZ_Index" />
-                <ScalarProperty Name="SNTEEUGX_Index" ColumnName="SNTEEUGX_Index" />
-                <ScalarProperty Name="EUESEMU_Index" ColumnName="EUESEMU_Index" />
-                <ScalarProperty Name="OEDEA044_Index" ColumnName="OEDEA044_Index" />
-                <ScalarProperty Name="EUBCI_Index" ColumnName="EUBCI_Index" />
-                <ScalarProperty Name="DXY_Curncy" ColumnName="DXY_Curncy" />
-                <ScalarProperty Name="CEEREU_Index" ColumnName="CEEREU_Index" />
-                <ScalarProperty Name="ECMAM2_Index" ColumnName="ECMAM2_Index" />
-                <ScalarProperty Name="M2_Index" ColumnName="M2_Index" />
-                <ScalarProperty Name="ECMAM1_Index" ColumnName="ECMAM1_Index" />
-                <ScalarProperty Name="M1_Index" ColumnName="M1_Index" />
-                <ScalarProperty Name="ARDIMONY_Index" ColumnName="ARDIMONY_Index" />
-                <ScalarProperty Name="USHBMIDX_Index" ColumnName="USHBMIDX_Index" />
-                <ScalarProperty Name="LEI_LCI_Index" ColumnName="LEI_LCI_Index" />
-                <ScalarProperty Name="LEI_WKIJ_Index" ColumnName="LEI_WKIJ_Index" />
-                <ScalarProperty Name="OUTFGAF_Index" ColumnName="OUTFGAF_Index" />
-                <ScalarProperty Name="NAPMNEWO_Index" ColumnName="NAPMNEWO_Index" />
-                <ScalarProperty Name="NAPMNMI_Index" ColumnName="NAPMNMI_Index" />
-                <ScalarProperty Name="NAPMPMI_Index" ColumnName="NAPMPMI_Index" />
-                <ScalarProperty Name="EURR002W_Index" ColumnName="EURR002W_Index" />
-                <ScalarProperty Name="KRWTWD_Curncy" ColumnName="KRWTWD_Curncy" />
-                <ScalarProperty Name="JPYTWD_Curncy" ColumnName="JPYTWD_Curncy" />
-                <ScalarProperty Name="CNYTWD_Curncy" ColumnName="CNYTWD_Curncy" />
-                <ScalarProperty Name="EURTWD_Curncy" ColumnName="EURTWD_Curncy" />
-                <ScalarProperty Name="USDTWD_Curncy" ColumnName="USDTWD_Curncy" />
-                <ScalarProperty Name="USDKRW_Curncy" ColumnName="USDKRW_Curncy" />
-                <ScalarProperty Name="USDJPY_Curncy" ColumnName="USDJPY_Curncy" />
-                <ScalarProperty Name="USDCNY_Curncy" ColumnName="USDCNY_Curncy" />
-                <ScalarProperty Name="EURUSD_Curncy" ColumnName="EURUSD_Curncy" />
-                <ScalarProperty Name="XOI_Index" ColumnName="XOI_Index" />
-                <ScalarProperty Name="CLA_Comdty" ColumnName="CLA_Comdty" />
-                <ScalarProperty Name="COA_Comdty" ColumnName="COA_Comdty" />
-                <ScalarProperty Name="NGA_Comdty" ColumnName="NGA_Comdty" />
-                <ScalarProperty Name="SXEE_Index" ColumnName="SXEE_Index" />
-                <ScalarProperty Name="FDTR_Index" ColumnName="FDTR_Index" />
-                <ScalarProperty Name="USDR1T_Curncy" ColumnName="USDR1T_Curncy" />
-                <ScalarProperty Name="EUORDEPO_Index" ColumnName="EUORDEPO_Index" />
-                <ScalarProperty Name="EUR003M_Index" ColumnName="EUR003M_Index" />
-                <ScalarProperty Name="EUSATOTN_Index" ColumnName="EUSATOTN_Index" />
-                <ScalarProperty Name="EHCADE_Index" ColumnName="EHCADE_Index" />
-                <ScalarProperty Name="GRCAEU_Index" ColumnName="GRCAEU_Index" />
-                <ScalarProperty Name="EHCAUS_Index" ColumnName="EHCAUS_Index" />
-                <ScalarProperty Name="USCABAL_Index" ColumnName="USCABAL_Index" />
-                <ScalarProperty Name="EUQDGEUR_Index" ColumnName="EUQDGEUR_Index" />
-                <ScalarProperty Name="AUNAGDP_Index" ColumnName="AUNAGDP_Index" />
-                <ScalarProperty Name="KOGDSTOT_Index" ColumnName="KOGDSTOT_Index" />
-                <ScalarProperty Name="JGDPGDP_Index" ColumnName="JGDPGDP_Index" />
-                <ScalarProperty Name="NEGDPESA_Index" ColumnName="NEGDPESA_Index" />
-                <ScalarProperty Name="UKGRABMI_Index" ColumnName="UKGRABMI_Index" />
-                <ScalarProperty Name="GRGDEGDP_Index" ColumnName="GRGDEGDP_Index" />
-                <ScalarProperty Name="EUGNEMU_Index" ColumnName="EUGNEMU_Index" />
-                <ScalarProperty Name="CGE9MP_Index" ColumnName="CGE9MP_Index" />
-                <ScalarProperty Name="GDP_CHWG_Index" ColumnName="GDP_CHWG_Index" />
-                <ScalarProperty Name="HPIMLEVL_Index" ColumnName="HPIMLEVL_Index" />
-                <ScalarProperty Name="AULFUNEM_Index" ColumnName="AULFUNEM_Index" />
-                <ScalarProperty Name="KOEAUERS_Index" ColumnName="KOEAUERS_Index" />
-                <ScalarProperty Name="NEUENTTR_Index" ColumnName="NEUENTTR_Index" />
-                <ScalarProperty Name="UKUEILOR_Index" ColumnName="UKUEILOR_Index" />
-                <ScalarProperty Name="GRUEPR_Index" ColumnName="GRUEPR_Index" />
-                <ScalarProperty Name="CANLXEMR_Index" ColumnName="CANLXEMR_Index" />
-                <ScalarProperty Name="JNUE_Index" ColumnName="JNUE_Index" />
-                <ScalarProperty Name="UMRTEMU_Index" ColumnName="UMRTEMU_Index" />
-                <ScalarProperty Name="USURTOT_Index" ColumnName="USURTOT_Index" />
-                <ScalarProperty Name="DJST_Index" ColumnName="DJST_Index" />
-                <ScalarProperty Name="DAX_Index" ColumnName="DAX_Index" />
-                <ScalarProperty Name="SPX_Index" ColumnName="SPX_Index" />
-                <ScalarProperty Name="CCMP_Index" ColumnName="CCMP_Index" />
-                <ScalarProperty Name="INDU_Index" ColumnName="INDU_Index" />
-                <ScalarProperty Name="NKY_Index" ColumnName="NKY_Index" />
-                <ScalarProperty Name="DEBPTOTL_Index" ColumnName="DEBPTOTL_Index" />
-                <ScalarProperty Name="GECU10YR_Index" ColumnName="GECU10YR_Index" />
-                <ScalarProperty Name="USGG10YR_Index" ColumnName="USGG10YR_Index" />
-                <ScalarProperty Name="GECU3M_Index" ColumnName="GECU3M_Index" />
-                <ScalarProperty Name="USGG3M_Index" ColumnName="USGG3M_Index" />
-                <ScalarProperty Name="JCPTSGEN_Index" ColumnName="JCPTSGEN_Index" />
-                <ScalarProperty Name="AUCCTOTS_Index" ColumnName="AUCCTOTS_Index" />
-                <ScalarProperty Name="NECPIND_Index" ColumnName="NECPIND_Index" />
-                <ScalarProperty Name="UKRPCHVJ_Index" ColumnName="UKRPCHVJ_Index" />
-                <ScalarProperty Name="GRCP2000_Index" ColumnName="GRCP2000_Index" />
-                <ScalarProperty Name="EACPI_Index" ColumnName="EACPI_Index" />
-                <ScalarProperty Name="KOCPI_Index" ColumnName="KOCPI_Index" />
-                <ScalarProperty Name="CACPSA_Index" ColumnName="CACPSA_Index" />
-                <ScalarProperty Name="CPI_INDX_Index" ColumnName="CPI_INDX_Index" />
-                <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
-                <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
-                <ScalarProperty Name="Data_ID" ColumnName="Data_ID" />
-                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2193,6 +2141,12 @@
           <EntitySetMapping Name="Bond_Rating">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating">
               <MappingFragment StoreEntitySet="Bond_Rating">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="TRC" ColumnName="TRC" />
                 <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
                 <ScalarProperty Name="Fitch" ColumnName="Fitch" />
@@ -2206,6 +2160,12 @@
           <EntitySetMapping Name="Guarantor_Rating">
             <EntityTypeMapping TypeName="IFRS9Model.Guarantor_Rating">
               <MappingFragment StoreEntitySet="Guarantor_Rating">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="TRC" ColumnName="TRC" />
                 <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
                 <ScalarProperty Name="Fitch" ColumnName="Fitch" />
@@ -2219,6 +2179,12 @@
           <EntitySetMapping Name="Issuer_Rating">
             <EntityTypeMapping TypeName="IFRS9Model.Issuer_Rating">
               <MappingFragment StoreEntitySet="Issuer_Rating">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="TRC" ColumnName="TRC" />
                 <ScalarProperty Name="Fitch_TW" ColumnName="Fitch_TW" />
                 <ScalarProperty Name="Fitch" ColumnName="Fitch" />
@@ -2229,9 +2195,40 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Econ_Foreign">
-            <EntityTypeMapping TypeName="IFRS9Model.Econ_Foreign">
-              <MappingFragment StoreEntitySet="Econ_Foreign">
+          <EntitySetMapping Name="Bond_Spread_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Spread_Info">
+              <MappingFragment StoreEntitySet="Bond_Spread_Info">
+                <ScalarProperty Name="Chg_In_Treasury" ColumnName="Chg_In_Treasury" />
+                <ScalarProperty Name="Chg_In_Spread" ColumnName="Chg_In_Spread" />
+                <ScalarProperty Name="All_in_Chg" ColumnName="All_in_Chg" />
+                <ScalarProperty Name="Treasury_When_Trade" ColumnName="Treasury_When_Trade" />
+                <ScalarProperty Name="Treasury_Current" ColumnName="Treasury_Current" />
+                <ScalarProperty Name="Spread_When_Trade" ColumnName="Spread_When_Trade" />
+                <ScalarProperty Name="Spread_Current" ColumnName="Spread_Current" />
+                <ScalarProperty Name="ID_CUSIP" ColumnName="ID_CUSIP" />
+                <ScalarProperty Name="BNCHMRK_TSY_ISSUE_ID" ColumnName="BNCHMRK_TSY_ISSUE_ID" />
+                <ScalarProperty Name="Mid_Yield" ColumnName="Mid_Yield" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="EIR" ColumnName="EIR" />
+                <ScalarProperty Name="Origination_Date" ColumnName="Origination_Date" />
+                <ScalarProperty Name="Portfolio_Name" ColumnName="Portfolio_Name" />
+                <ScalarProperty Name="Lots" ColumnName="Lots" />
+                <ScalarProperty Name="Bond_Number" ColumnName="Bond_Number" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
+                <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Econ_F_YYYYMMDD">
+            <EntityTypeMapping TypeName="IFRS9Model.Econ_F_YYYYMMDD">
+              <MappingFragment StoreEntitySet="Econ_F_YYYYMMDD">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="GRFIDEBT_Index" ColumnName="GRFIDEBT_Index" />
                 <ScalarProperty Name="CNFREXPY_Index" ColumnName="CNFREXPY_Index" />
                 <ScalarProperty Name="CNFRIMPY_Index" ColumnName="CNFRIMPY_Index" />
@@ -2296,12 +2293,146 @@
                 <ScalarProperty Name="USDCNY_Curncy" ColumnName="USDCNY_Curncy" />
                 <ScalarProperty Name="EURUSD_Curncy" ColumnName="EURUSD_Curncy" />
                 <ScalarProperty Name="XOI_Index" ColumnName="XOI_Index" />
-                <ScalarProperty Name="CLA_Comdty" ColumnName="CLA_Comdty" />
-                <ScalarProperty Name="COA_Comdty" ColumnName="COA_Comdty" />
-                <ScalarProperty Name="NGA_Comdty" ColumnName="NGA_Comdty" />
+                <ScalarProperty Name="CL1_Comdty" ColumnName="CL1_Comdty" />
+                <ScalarProperty Name="CO1_COMDTY" ColumnName="CO1_COMDTY" />
+                <ScalarProperty Name="NG1_Comdty" ColumnName="NG1_Comdty" />
                 <ScalarProperty Name="SXEE_Index" ColumnName="SXEE_Index" />
                 <ScalarProperty Name="FDTR_Index" ColumnName="FDTR_Index" />
-                <ScalarProperty Name="USDR1T_Curncy" ColumnName="USDR1T_Curncy" />
+                <ScalarProperty Name="USDR1T_CMPN_Curncy" ColumnName="USDR1T_CMPN_Curncy" />
+                <ScalarProperty Name="EUORDEPO_Index" ColumnName="EUORDEPO_Index" />
+                <ScalarProperty Name="EUR003M_Index" ColumnName="EUR003M_Index" />
+                <ScalarProperty Name="EUSATOTN_Index" ColumnName="EUSATOTN_Index" />
+                <ScalarProperty Name="EHCADE_Index" ColumnName="EHCADE_Index" />
+                <ScalarProperty Name="GRCAEU_Index" ColumnName="GRCAEU_Index" />
+                <ScalarProperty Name="EHCAUS_Index" ColumnName="EHCAUS_Index" />
+                <ScalarProperty Name="USCABAL_Index" ColumnName="USCABAL_Index" />
+                <ScalarProperty Name="EUQDGEUR_Index" ColumnName="EUQDGEUR_Index" />
+                <ScalarProperty Name="AUNAGDP_Index" ColumnName="AUNAGDP_Index" />
+                <ScalarProperty Name="KOGDSTOT_Index" ColumnName="KOGDSTOT_Index" />
+                <ScalarProperty Name="JGDPGDP_Index" ColumnName="JGDPGDP_Index" />
+                <ScalarProperty Name="NEGDPESA_Index" ColumnName="NEGDPESA_Index" />
+                <ScalarProperty Name="UKGRABMI_Index" ColumnName="UKGRABMI_Index" />
+                <ScalarProperty Name="GRGDEGDP_Index" ColumnName="GRGDEGDP_Index" />
+                <ScalarProperty Name="EUGNEMU_Index" ColumnName="EUGNEMU_Index" />
+                <ScalarProperty Name="CGE9MP_Index" ColumnName="CGE9MP_Index" />
+                <ScalarProperty Name="GDP_CHWG_Index" ColumnName="GDP_CHWG_Index" />
+                <ScalarProperty Name="HPIMLEVL_Index" ColumnName="HPIMLEVL_Index" />
+                <ScalarProperty Name="AULFUNEM_Index" ColumnName="AULFUNEM_Index" />
+                <ScalarProperty Name="KOEAUERS_Index" ColumnName="KOEAUERS_Index" />
+                <ScalarProperty Name="NEUENTTR_Index" ColumnName="NEUENTTR_Index" />
+                <ScalarProperty Name="UKUEILOR_Index" ColumnName="UKUEILOR_Index" />
+                <ScalarProperty Name="GRUEPR_Index" ColumnName="GRUEPR_Index" />
+                <ScalarProperty Name="CANLXEMR_Index" ColumnName="CANLXEMR_Index" />
+                <ScalarProperty Name="JNUE_Index" ColumnName="JNUE_Index" />
+                <ScalarProperty Name="UMRTEMU_Index" ColumnName="UMRTEMU_Index" />
+                <ScalarProperty Name="USURTOT_Index" ColumnName="USURTOT_Index" />
+                <ScalarProperty Name="DJST_Index" ColumnName="DJST_Index" />
+                <ScalarProperty Name="DAX_Index" ColumnName="DAX_Index" />
+                <ScalarProperty Name="SPX_Index" ColumnName="SPX_Index" />
+                <ScalarProperty Name="CCMP_Index" ColumnName="CCMP_Index" />
+                <ScalarProperty Name="INDU_Index" ColumnName="INDU_Index" />
+                <ScalarProperty Name="NKY_Index" ColumnName="NKY_Index" />
+                <ScalarProperty Name="DEBPTOTL_Index" ColumnName="DEBPTOTL_Index" />
+                <ScalarProperty Name="GECU10YR_Index" ColumnName="GECU10YR_Index" />
+                <ScalarProperty Name="USGG10YR_Index" ColumnName="USGG10YR_Index" />
+                <ScalarProperty Name="GECU3M_Index" ColumnName="GECU3M_Index" />
+                <ScalarProperty Name="USGG3M_Index" ColumnName="USGG3M_Index" />
+                <ScalarProperty Name="JCPTSGEN_Index" ColumnName="JCPTSGEN_Index" />
+                <ScalarProperty Name="AUCCTOTS_Index" ColumnName="AUCCTOTS_Index" />
+                <ScalarProperty Name="NECPIND_Index" ColumnName="NECPIND_Index" />
+                <ScalarProperty Name="UKRPCHVJ_Index" ColumnName="UKRPCHVJ_Index" />
+                <ScalarProperty Name="GRCP2000_Index" ColumnName="GRCP2000_Index" />
+                <ScalarProperty Name="EACPI_Index" ColumnName="EACPI_Index" />
+                <ScalarProperty Name="KOCPI_Index" ColumnName="KOCPI_Index" />
+                <ScalarProperty Name="CACPSA_Index" ColumnName="CACPSA_Index" />
+                <ScalarProperty Name="CPI_INDX_Index" ColumnName="CPI_INDX_Index" />
+                <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
+                <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
+                <ScalarProperty Name="Data_ID" ColumnName="Data_ID" />
+                <ScalarProperty Name="Product_Code" ColumnName="Product_Code" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Econ_Foreign">
+            <EntityTypeMapping TypeName="IFRS9Model.Econ_Foreign">
+              <MappingFragment StoreEntitySet="Econ_Foreign">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="GRFIDEBT_Index" ColumnName="GRFIDEBT_Index" />
+                <ScalarProperty Name="CNFREXPY_Index" ColumnName="CNFREXPY_Index" />
+                <ScalarProperty Name="CNFRIMPY_Index" ColumnName="CNFRIMPY_Index" />
+                <ScalarProperty Name="CNMS2YOY_Index" ColumnName="CNMS2YOY_Index" />
+                <ScalarProperty Name="CHEFTYOY_Index" ColumnName="CHEFTYOY_Index" />
+                <ScalarProperty Name="CNCPIYOY_Index" ColumnName="CNCPIYOY_Index" />
+                <ScalarProperty Name="CNFRBAL_Index" ColumnName="CNFRBAL_Index" />
+                <ScalarProperty Name="MPMICNMA_Index" ColumnName="MPMICNMA_Index" />
+                <ScalarProperty Name="CPMINDX_Index" ColumnName="CPMINDX_Index" />
+                <ScalarProperty Name="EUCCEMU_Index" ColumnName="EUCCEMU_Index" />
+                <ScalarProperty Name="EUPPEMUM_Index" ColumnName="EUPPEMUM_Index" />
+                <ScalarProperty Name="RSTAMOM_Index" ColumnName="RSTAMOM_Index" />
+                <ScalarProperty Name="CONSSENT_Index" ColumnName="CONSSENT_Index" />
+                <ScalarProperty Name="NHSLCHNG_Index" ColumnName="NHSLCHNG_Index" />
+                <ScalarProperty Name="NHSLTOT_Index" ColumnName="NHSLTOT_Index" />
+                <ScalarProperty Name="ETSLMOM_Index" ColumnName="ETSLMOM_Index" />
+                <ScalarProperty Name="ETSLTOTL_Index" ColumnName="ETSLTOTL_Index" />
+                <ScalarProperty Name="LEI_CHNG_Index" ColumnName="LEI_CHNG_Index" />
+                <ScalarProperty Name="NHCHATCH_Index" ColumnName="NHCHATCH_Index" />
+                <ScalarProperty Name="NHSPATOT_Index" ColumnName="NHSPATOT_Index" />
+                <ScalarProperty Name="NHCHSTCH_Index" ColumnName="NHCHSTCH_Index" />
+                <ScalarProperty Name="NHSPSTOT_Index" ColumnName="NHSPSTOT_Index" />
+                <ScalarProperty Name="IP_CHNG_Index" ColumnName="IP_CHNG_Index" />
+                <ScalarProperty Name="DGNOCHNG_Index" ColumnName="DGNOCHNG_Index" />
+                <ScalarProperty Name="TMNOCHNG_Index" ColumnName="TMNOCHNG_Index" />
+                <ScalarProperty Name="CNSTTMOM_Index" ColumnName="CNSTTMOM_Index" />
+                <ScalarProperty Name="NFP_TCH_Index" ColumnName="NFP_TCH_Index" />
+                <ScalarProperty Name="ADP_CHNG_Index" ColumnName="ADP_CHNG_Index" />
+                <ScalarProperty Name="USTBTOT_Index" ColumnName="USTBTOT_Index" />
+                <ScalarProperty Name="XAU_Curncy" ColumnName="XAU_Curncy" />
+                <ScalarProperty Name="S5MATRX_Index" ColumnName="S5MATRX_Index" />
+                <ScalarProperty Name="MXWO0MT_Index" ColumnName="MXWO0MT_Index" />
+                <ScalarProperty Name="EBLS11NC_Index" ColumnName="EBLS11NC_Index" />
+                <ScalarProperty Name="GRTBALE_Index" ColumnName="GRTBALE_Index" />
+                <ScalarProperty Name="XTSBEZ_Index" ColumnName="XTSBEZ_Index" />
+                <ScalarProperty Name="SNTEEUGX_Index" ColumnName="SNTEEUGX_Index" />
+                <ScalarProperty Name="EUESEMU_Index" ColumnName="EUESEMU_Index" />
+                <ScalarProperty Name="OEDEA044_Index" ColumnName="OEDEA044_Index" />
+                <ScalarProperty Name="EUBCI_Index" ColumnName="EUBCI_Index" />
+                <ScalarProperty Name="DXY_Curncy" ColumnName="DXY_Curncy" />
+                <ScalarProperty Name="CEEREU_Index" ColumnName="CEEREU_Index" />
+                <ScalarProperty Name="ECMAM2_Index" ColumnName="ECMAM2_Index" />
+                <ScalarProperty Name="M2_Index" ColumnName="M2_Index" />
+                <ScalarProperty Name="ECMAM1_Index" ColumnName="ECMAM1_Index" />
+                <ScalarProperty Name="M1_Index" ColumnName="M1_Index" />
+                <ScalarProperty Name="ARDIMONY_Index" ColumnName="ARDIMONY_Index" />
+                <ScalarProperty Name="USHBMIDX_Index" ColumnName="USHBMIDX_Index" />
+                <ScalarProperty Name="LEI_LCI_Index" ColumnName="LEI_LCI_Index" />
+                <ScalarProperty Name="LEI_WKIJ_Index" ColumnName="LEI_WKIJ_Index" />
+                <ScalarProperty Name="OUTFGAF_Index" ColumnName="OUTFGAF_Index" />
+                <ScalarProperty Name="NAPMNEWO_Index" ColumnName="NAPMNEWO_Index" />
+                <ScalarProperty Name="NAPMNMI_Index" ColumnName="NAPMNMI_Index" />
+                <ScalarProperty Name="NAPMPMI_Index" ColumnName="NAPMPMI_Index" />
+                <ScalarProperty Name="EURR002W_Index" ColumnName="EURR002W_Index" />
+                <ScalarProperty Name="KRWTWD_Curncy" ColumnName="KRWTWD_Curncy" />
+                <ScalarProperty Name="JPYTWD_Curncy" ColumnName="JPYTWD_Curncy" />
+                <ScalarProperty Name="CNYTWD_Curncy" ColumnName="CNYTWD_Curncy" />
+                <ScalarProperty Name="EURTWD_Curncy" ColumnName="EURTWD_Curncy" />
+                <ScalarProperty Name="USDTWD_Curncy" ColumnName="USDTWD_Curncy" />
+                <ScalarProperty Name="USDKRW_Curncy" ColumnName="USDKRW_Curncy" />
+                <ScalarProperty Name="USDJPY_Curncy" ColumnName="USDJPY_Curncy" />
+                <ScalarProperty Name="USDCNY_Curncy" ColumnName="USDCNY_Curncy" />
+                <ScalarProperty Name="EURUSD_Curncy" ColumnName="EURUSD_Curncy" />
+                <ScalarProperty Name="XOI_Index" ColumnName="XOI_Index" />
+                <ScalarProperty Name="CL1_Comdty" ColumnName="CL1_Comdty" />
+                <ScalarProperty Name="CO1_COMDTY" ColumnName="CO1_COMDTY" />
+                <ScalarProperty Name="NG1_Comdty" ColumnName="NG1_Comdty" />
+                <ScalarProperty Name="SXEE_Index" ColumnName="SXEE_Index" />
+                <ScalarProperty Name="FDTR_Index" ColumnName="FDTR_Index" />
+                <ScalarProperty Name="USDR1T_CMPN_Curncy" ColumnName="USDR1T_CMPN_Curncy" />
                 <ScalarProperty Name="EUORDEPO_Index" ColumnName="EUORDEPO_Index" />
                 <ScalarProperty Name="EUR003M_Index" ColumnName="EUR003M_Index" />
                 <ScalarProperty Name="EUSATOTN_Index" ColumnName="EUSATOTN_Index" />
@@ -2361,31 +2492,6 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Bond_Spread_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Bond_Spread_Info">
-              <MappingFragment StoreEntitySet="Bond_Spread_Info">
-                <ScalarProperty Name="Chg_In_Treasury" ColumnName="Chg_In_Treasury" />
-                <ScalarProperty Name="Chg_In_Spread" ColumnName="Chg_In_Spread" />
-                <ScalarProperty Name="All_in_Chg" ColumnName="All_in_Chg" />
-                <ScalarProperty Name="Treasury_When_Trade" ColumnName="Treasury_When_Trade" />
-                <ScalarProperty Name="Treasury_Current" ColumnName="Treasury_Current" />
-                <ScalarProperty Name="Spread_When_Trade" ColumnName="Spread_When_Trade" />
-                <ScalarProperty Name="Spread_Current" ColumnName="Spread_Current" />
-                <ScalarProperty Name="ID_CUSIP" ColumnName="ID_CUSIP" />
-                <ScalarProperty Name="BNCHMRK_TSY_ISSUE_ID" ColumnName="BNCHMRK_TSY_ISSUE_ID" />
-                <ScalarProperty Name="Mid_Yield" ColumnName="Mid_Yield" />
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-                <ScalarProperty Name="EIR" ColumnName="EIR" />
-                <ScalarProperty Name="Origination_Date" ColumnName="Origination_Date" />
-                <ScalarProperty Name="Portfolio_Name" ColumnName="Portfolio_Name" />
-                <ScalarProperty Name="Lots" ColumnName="Lots" />
-                <ScalarProperty Name="Bond_Number" ColumnName="Bond_Number" />
-                <ScalarProperty Name="Version" ColumnName="Version" />
-                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
-                <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

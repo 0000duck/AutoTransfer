@@ -24,7 +24,8 @@ namespace AutoTransfer.Transfer
         private ThreadTask t = new ThreadTask();
         private string type = TableType.C04.ToString();
         private DateTime reportDateDt = DateTime.MinValue;
-
+        private DateTime startTime = DateTime.MinValue;
+        private string _SystemUser = "System";
         #endregion 共用參數
 
         /// <summary>
@@ -35,6 +36,8 @@ namespace AutoTransfer.Transfer
         {
             logPath = log.txtLocation(type);
             DateTime dt = DateTime.Now;
+            DateTime _date = dt.Date;
+            TimeSpan _ts = dt.TimeOfDay;
             List<string> notParm = new List<string>() { "Year_Quartly", "Date" };
 
             if (dateTime.Length != 8 ||
@@ -85,6 +88,9 @@ namespace AutoTransfer.Transfer
                         if (C04Data != null)
                         {
                             C04Data.Processing_Date = dt.ToString("yyyyMMdd");
+                            C04Data.LastUpdate_User = _SystemUser;
+                            C04Data.LastUpdate_Date = _date;
+                            C04Data.LastUpdate_Time = _ts;
                             var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
                             if (A82Data != null)
                                 C04Data.PD_Quartly = A82Data.PD;
@@ -103,6 +109,9 @@ namespace AutoTransfer.Transfer
                             C04Data = new Econ_F_YYYYMMDD();
                             C04Data.Processing_Date = dt.ToString("yyyyMMdd");
                             C04Data.Year_Quartly = x.Year_Quartly;
+                            C04Data.Create_User = _SystemUser;
+                            C04Data.Create_Date = _date;
+                            C04Data.Create_Time = _ts;
                             var A82Data = A82Datas.FirstOrDefault(z => z.Year_Quartly == x.Year_Quartly);
                             if (A82Data != null)
                                 C04Data.PD_Quartly = A82Data.PD;

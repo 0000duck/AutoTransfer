@@ -63,12 +63,12 @@ namespace AutoTransfer
         public Nullable<double> EUSATOTN_Index { get; set; }
         public Nullable<double> EUR003M_Index { get; set; }
         public Nullable<double> EUORDEPO_Index { get; set; }
-        public Nullable<double> USDR1T_Curncy { get; set; }
+        public Nullable<double> USDR1T_CMPN_Curncy { get; set; }
         public Nullable<double> FDTR_Index { get; set; }
         public Nullable<double> SXEE_Index { get; set; }
-        public Nullable<double> NGA_Comdty { get; set; }
-        public Nullable<double> COA_Comdty { get; set; }
-        public Nullable<double> CLA_Comdty { get; set; }
+        public Nullable<double> NG1_Comdty { get; set; }
+        public Nullable<double> CO1_COMDTY { get; set; }
+        public Nullable<double> CL1_Comdty { get; set; }
         public Nullable<double> XOI_Index { get; set; }
         public Nullable<double> EURUSD_Curncy { get; set; }
         public Nullable<double> USDCNY_Curncy { get; set; }
@@ -133,5 +133,11 @@ namespace AutoTransfer
         public Nullable<double> CNFRIMPY_Index { get; set; }
         public Nullable<double> CNFREXPY_Index { get; set; }
         public Nullable<double> GRFIDEBT_Index { get; set; }
+        public string Create_User { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.TimeSpan> Create_Time { get; set; }
+        public string LastUpdate_User { get; set; }
+        public Nullable<System.DateTime> LastUpdate_Date { get; set; }
+        public Nullable<System.TimeSpan> LastUpdate_Time { get; set; }
     }
 }
