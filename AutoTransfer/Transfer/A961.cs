@@ -145,11 +145,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //         filePath,
-            //         replyFileName,
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                     filePath,
+                     replyFileName,
+                     out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -166,7 +166,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
 
                 string getFilePath = "";
                 string getFileName = "";
@@ -199,11 +199,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //         getFilePath,
-            //         getFileName,
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                     getFilePath,
+                     getFileName,
+                     out error);
 
             if (!error.IsNullOrWhiteSpace())
             {

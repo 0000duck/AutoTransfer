@@ -1,5 +1,4 @@
-﻿using AutoTransfer.BondSpreadInfo;
-using AutoTransfer.CreateFile;
+﻿using AutoTransfer.CreateFile;
 using AutoTransfer.SFTPConnect;
 using AutoTransfer.Utility;
 using System;
@@ -127,11 +126,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Put(string.Empty,
-            //         filePath,
-            //         replyFileName,
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Put(string.Empty,
+                     filePath,
+                     replyFileName,
+                     out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -148,7 +147,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                //Thread.Sleep(20 * 60 * 1000);
+                Thread.Sleep(20 * 60 * 1000);
 
                 string getFilePath = "";
                 string getFileName = "";
@@ -177,11 +176,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-            //    .Get(string.Empty,
-            //         getFilePath,
-            //         getFileName,
-            //         out error);
+            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+                .Get(string.Empty,
+                     getFilePath,
+                     getFileName,
+                     out error);
 
             if (!error.IsNullOrWhiteSpace())
             {
@@ -384,7 +383,7 @@ namespace AutoTransfer.Transfer
                     var Chg_In_Treasury = (item.Chg_In_Treasury == null ? "NULL" : item.Chg_In_Treasury.ToString());
 
                     sb.Append($@"
-                                    UPDATE Bond_Spread_Info SET Processing_Date = '{DateTime.Now.Date.ToString("yyyy/MM/dd")}',
+                                    UPDATE Bond_Spread_Info SET Processing_Date = '{DateTime.Now.ToString("yyyy/MM/dd")}',
                                                                 Spread_Current = {Spread_Current},
                                                                 Spread_When_Trade = {Spread_When_Trade},
                                                                 Treasury_Current = {Treasury_Current},
