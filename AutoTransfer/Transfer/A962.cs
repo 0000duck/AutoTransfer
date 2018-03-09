@@ -101,7 +101,10 @@ namespace AutoTransfer.Transfer
 
         protected void createA9621File()
         {
-            if (new CreateA9621File().create(tableType, reportDateStr, A96Data))
+            string minOriginationDate = A96Data.DefaultIfEmpty().Min(x => x.Origination_Date).ToString("yyyyMMdd");
+            string maxOriginationDate = A96Data.DefaultIfEmpty().Max(x => x.Origination_Date).ToString("yyyyMMdd");
+
+            if (new CreateA9621File().create(tableType, minOriginationDate, maxOriginationDate, reportDateStr, A96Data))
             {
                 putSFTP("1", setFile.putA9621FilePath(), setFile.putA9621FileName());
             }
@@ -124,11 +127,11 @@ namespace AutoTransfer.Transfer
         {
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Put(string.Empty,
-                     filePath,
-                     replyFileName,
-                     out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //    .Put(string.Empty,
+            //         filePath,
+            //         replyFileName,
+            //         out error);
 
             if (!error.IsNullOrWhiteSpace()) //fail
             {
@@ -145,7 +148,7 @@ namespace AutoTransfer.Transfer
             }
             else
             {
-                Thread.Sleep(20 * 60 * 1000);
+                //Thread.Sleep(20 * 60 * 1000);
 
                 string getFilePath = "";
                 string getFileName = "";
@@ -174,11 +177,11 @@ namespace AutoTransfer.Transfer
 
             string error = string.Empty;
 
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Get(string.Empty,
-                     getFilePath,
-                     getFileName,
-                     out error);
+            //new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
+            //    .Get(string.Empty,
+            //         getFilePath,
+            //         getFileName,
+            //         out error);
 
             if (!error.IsNullOrWhiteSpace())
             {
@@ -204,14 +207,14 @@ namespace AutoTransfer.Transfer
                         sourceFileName = Path.Combine(getFilePath, getFileName);
                         destFileName = Path.Combine(getFilePath, setFile.getA9621FileName());
                         Extension.Decompress(sourceFileName, destFileName);
-                        DataTreasuryToA96(setFile.getA9621FilePath(), setFile.getA9621FileName(), "Current");
+                        DataTreasuryToA96(setFile.getA9621FilePath(), setFile.getA9621FileName(), "When_Trade");
                         createA9622File();
                         break;
                     case "2":
                         sourceFileName = Path.Combine(getFilePath, getFileName);
                         destFileName = Path.Combine(getFilePath, setFile.getA9622FileName());
                         Extension.Decompress(sourceFileName, destFileName);
-                        DataTreasuryToA96(setFile.getA9622FilePath(), setFile.getA9622FileName(), "When_Trade");
+                        DataTreasuryToA96(setFile.getA9622FilePath(), setFile.getA9622FileName(), "Current");
                         DataToDb();
                         break;
                     default:
@@ -247,16 +250,23 @@ namespace AutoTransfer.Transfer
                         if (arr.Length >= 3 && !arr[0].IsNullOrWhiteSpace() &&
                             !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
                         {
-                            var ID_CUSIP = arr[0].Trim().Split('@')[0];
-                            var dateYLD_YTM_MID = arr[1].Trim();
-                            dateYLD_YTM_MID = dateYLD_YTM_MID.Substring(6, 4) + "/" + dateYLD_YTM_MID.Substring(0, 2) + "/" + dateYLD_YTM_MID.Substring(3, 2);
-                            var YLD_YTM_MID = arr[2].Trim();
+                            DateTime dt = DateTime.MinValue;
+                            double d = 0d;
 
-                            YLD_YTM_MID_Class yld = new YLD_YTM_MID_Class();
-                            yld.ID_CUSIP = ID_CUSIP;
-                            yld.DATE_YLD_YTM_MID = dateYLD_YTM_MID;
-                            yld.YLD_YTM_MID = YLD_YTM_MID;
-                            listYLD.Add(yld);
+                            if (DateTime.TryParseExact(arr[1], "MM/dd/yyyy", null, System.Globalization.DateTimeStyles.AllowWhiteSpaces, out dt)
+                                && arr[2] != null && double.TryParse(arr[2], out d))
+                            {
+                                var ID_CUSIP = arr[0].Trim().Split('@')[0];
+                                var dateYLD_YTM_MID = arr[1].Trim();
+                                dateYLD_YTM_MID = dateYLD_YTM_MID.Substring(6, 4) + "/" + dateYLD_YTM_MID.Substring(0, 2) + "/" + dateYLD_YTM_MID.Substring(3, 2);
+                                var YLD_YTM_MID = arr[2].Trim();
+
+                                YLD_YTM_MID_Class yld = new YLD_YTM_MID_Class();
+                                yld.ID_CUSIP = ID_CUSIP;
+                                yld.DATE_YLD_YTM_MID = dateYLD_YTM_MID;
+                                yld.YLD_YTM_MID = YLD_YTM_MID;
+                                listYLD.Add(yld);
+                            }
                         }
                     }
 
@@ -272,7 +282,6 @@ namespace AutoTransfer.Transfer
                 {
                     string reportDate = item.Report_Date.ToString("yyyy/MM/dd");
                     string originationDate = item.Origination_Date.ToString("yyyy/MM/dd");
-
 
                     var YLDs = listYLD.Where(x => x.ID_CUSIP == item.ID_CUSIP
                                               && (x.DATE_YLD_YTM_MID == reportDate)).ToList();
@@ -304,10 +313,7 @@ namespace AutoTransfer.Transfer
 
         protected void createA9622File()
         {
-            string minOriginationDate = A96Data.DefaultIfEmpty().Min(x => x.Origination_Date).ToString("yyyyMMdd");
-            string maxOriginationDate = A96Data.DefaultIfEmpty().Max(x => x.Origination_Date).ToString("yyyyMMdd");
-
-            if (new CreateA9622File().create(tableType, minOriginationDate, maxOriginationDate, reportDateStr, A96Data))
+            if (new CreateA9622File().create(tableType, reportDateStr, A96Data))
             {
                 putSFTP("2", setFile.putA9622FilePath(), setFile.putA9622FileName());
             }
@@ -378,7 +384,8 @@ namespace AutoTransfer.Transfer
                     var Chg_In_Treasury = (item.Chg_In_Treasury == null ? "NULL" : item.Chg_In_Treasury.ToString());
 
                     sb.Append($@"
-                                    UPDATE Bond_Spread_Info SET Spread_Current = {Spread_Current},
+                                    UPDATE Bond_Spread_Info SET Processing_Date = '{DateTime.Now.Date.ToString("yyyy/MM/dd")}',
+                                                                Spread_Current = {Spread_Current},
                                                                 Spread_When_Trade = {Spread_When_Trade},
                                                                 Treasury_Current = {Treasury_Current},
                                                                 Treasury_When_Trade = {Treasury_When_Trade},
