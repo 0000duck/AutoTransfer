@@ -1410,7 +1410,7 @@ select
                                         var deleteA57 = new Bond_Rating_Info();
                                         var first = item.First();
                                         //A57n => 這一版A57變更共用資料(新增A57用)
-                                        var A57n = A57n2.FirstOrDefault(y =>
+                                        var A57ns = A57n2.Where(y =>
                                                         y.Bond_Number == first.Bond_Number &&
                                                         y.Lots == first.Lots &&
                                                         y.Portfolio_Name == first.Portfolio_Name ||
@@ -1418,9 +1418,9 @@ select
                                                         y.Bond_Number == first.Bond_Number_Old &&
                                                         y.Lots == first.Lots_Old &&
                                                         y.Portfolio_Name == first.Portfolio_Name_Old
-                                        );
-                                        if (A57n == null)
-                                            A57n = A57n1.FirstOrDefault(y =>
+                                        ).ToList();
+                                        if (!A57ns.Any())
+                                            A57ns = A57n1.Where(y =>
                                                        y.Bond_Number_Old == first.Bond_Number &&
                                                        y.Lots_Old == first.Lots &&
                                                        y.Portfolio_Name_Old == first.Portfolio_Name ||
@@ -1428,9 +1428,11 @@ select
                                                        y.Bond_Number_Old == first.Bond_Number_Old &&
                                                        y.Lots_Old == first.Lots_Old &&
                                                        y.Portfolio_Name_Old == first.Portfolio_Name_Old
-                                        );
-                                        if (A57n != null) //目前版本沒有不需要繼續
+                                        ).ToList();
+                                        if (A57ns.Any()) //目前版本沒有不需要繼續
                                         {
+                                            var A57n = A57ns.First();
+                                            //上一版有修改過的A57
                                             item.ToList().ForEach(
                                             x =>
                                             {
@@ -1446,33 +1448,13 @@ select
                                                     if (A52 != null)
                                                         A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
                                                 }
-                                                    //找尋目前版本存不存在相同的資料
-                                                    var A57o = new Bond_Rating_Info();
-                                                A57o = A57n2.FirstOrDefault(y =>
-                                                    y.Rating_Object == x.Rating_Object &&
-                                                    y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
-                                                    (y.Bond_Number == x.Bond_Number &&
-                                                    y.Lots == x.Lots &&
-                                                    y.Portfolio_Name == x.Portfolio_Name ||
-                                                    !x.Bond_Number_Old.IsNullOrWhiteSpace() &&
-                                                    y.Bond_Number == x.Bond_Number_Old &&
-                                                    y.Lots == x.Lots_Old &&
-                                                    y.Portfolio_Name == x.Portfolio_Name_Old
-                                                    ));
+                                                //找尋目前版本存不存在相同的資料
+                                                var A57o = new Bond_Rating_Info();
+                                                A57o = A57ns.FirstOrDefault(y =>
+                                                y.Rating_Object == x.Rating_Object &&
+                                                y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field);
+                                                //不存在新增 防呆
                                                 if (A57o == null)
-                                                    A57o = A57n1.FirstOrDefault(y =>
-                                                    y.Rating_Object == x.Rating_Object &&
-                                                    y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field &&
-                                                    (y.Bond_Number_Old == x.Bond_Number &&
-                                                    y.Lots_Old == x.Lots &&
-                                                    y.Portfolio_Name_Old == x.Portfolio_Name ||
-                                                    !x.Bond_Number_Old.IsNullOrWhiteSpace() &&
-                                                    y.Bond_Number_Old == x.Bond_Number_Old &&
-                                                    y.Lots_Old == x.Lots_Old &&
-                                                    y.Portfolio_Name_Old == x.Portfolio_Name_Old
-                                                    ));
-                                                    //不存在新增 防呆
-                                                    if (A57o == null)
                                                 {
                                                     A57n.Rating_Date = x.Rating_Date;
                                                     A57n.Rating_Object = x.Rating_Object;
@@ -1488,8 +1470,8 @@ select
                                                     if (A51 != null)
                                                         deleteSqlFlag = true;
                                                 }
-                                                    //存在修改
-                                                    else if (A57o != null)
+                                                //存在修改
+                                                else if (A57o != null)
                                                 {
                                                     sb.Append($@"
                                                     UPDATE [Bond_Rating_Info]
