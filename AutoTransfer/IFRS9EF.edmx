@@ -155,15 +155,19 @@
         </EntityType>
         <EntityType Name="Bond_Rating_Parm">
           <Key>
-            <PropertyRef Name="Id" />
+            <PropertyRef Name="Parm_ID" />
           </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="Parm_ID" Type="varchar" MaxLength="30" />
-          <Property Name="Rating_Priority" Type="int" />
-          <Property Name="Rating_Object" Type="varchar" MaxLength="10" />
+          <Property Name="Parm_ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Rating_Priority" Type="int" Nullable="false" />
+          <Property Name="Rating_Object" Type="varchar" MaxLength="10" Nullable="false" />
           <Property Name="Rating_Org_Area" Type="varchar" MaxLength="10" />
-          <Property Name="Rating_Selection" Type="varchar" MaxLength="2" />
-          <Property Name="Processing_Date" Type="date" />
+          <Property Name="Rating_Selection" Type="varchar" MaxLength="2" Nullable="false" />
+          <Property Name="Rule_setter" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="Rule_setting_Date" Type="date" Nullable="false" />
+          <Property Name="Auditor" Type="varchar" MaxLength="20" />
+          <Property Name="Audit_Date" Type="date" />
+          <Property Name="Status" Type="varchar" MaxLength="1" Nullable="false" />
+          <Property Name="IsActive" Type="varchar" MaxLength="1" Nullable="false" />
         </EntityType>
         <EntityType Name="Bond_Rating_Summary">
           <Key>
@@ -852,7 +856,6 @@
       <Schema Namespace="IFRS9Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="IFRS9Entities" annotation:LazyLoadingEnabled="true" >
           <EntitySet Name="Grade_Mapping_Info" EntityType="IFRS9Model.Grade_Mapping_Info" />
-          <EntitySet Name="Bond_Rating_Parm" EntityType="IFRS9Model.Bond_Rating_Parm" />
           <EntitySet Name="Rating_Info" EntityType="IFRS9Model.Rating_Info" />
           <EntitySet Name="Transfer_CheckTable" EntityType="IFRS9Model.Transfer_CheckTable" />
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="IFRS9Model.Rating_Info_SampleInfo" />
@@ -882,6 +885,7 @@
           <EntitySet Name="Econ_F_YYYYMMDD" EntityType="IFRS9Model.Econ_F_YYYYMMDD" />
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
+          <EntitySet Name="Bond_Rating_Parm" EntityType="IFRS9Model.Bond_Rating_Parm" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -892,18 +896,6 @@
           <Property Name="Rating_Org" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="PD_Grade" Type="Int32" Nullable="false" />
           <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-        </EntityType>
-        <EntityType Name="Bond_Rating_Parm">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Parm_ID" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
-          <Property Name="Rating_Priority" Type="Int32" />
-          <Property Name="Rating_Object" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Rating_Org_Area" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="Rating_Selection" Type="String" MaxLength="2" FixedLength="false" Unicode="false" />
-          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
         </EntityType>
         <EntityType Name="Rating_Info">
           <Key>
@@ -1693,6 +1685,22 @@
           <Property Name="Year_Quartly" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
         </EntityType>
+        <EntityType Name="Bond_Rating_Parm">
+          <Key>
+            <PropertyRef Name="Parm_ID" />
+          </Key>
+          <Property Name="Parm_ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Rating_Priority" Type="Int32" Nullable="false" />
+          <Property Name="Rating_Object" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Rating_Org_Area" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Rating_Selection" Type="String" Nullable="false" MaxLength="2" FixedLength="false" Unicode="false" />
+          <Property Name="Rule_setter" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Rule_setting_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Auditor" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Audit_Date" Type="DateTime" Precision="0" />
+          <Property Name="Status" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1705,19 +1713,6 @@
                 <ScalarProperty Name="Rating" ColumnName="Rating" />
                 <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
                 <ScalarProperty Name="Rating_Org" ColumnName="Rating_Org" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Bond_Rating_Parm">
-            <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Parm">
-              <MappingFragment StoreEntitySet="Bond_Rating_Parm">
-                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
-                <ScalarProperty Name="Rating_Selection" ColumnName="Rating_Selection" />
-                <ScalarProperty Name="Rating_Org_Area" ColumnName="Rating_Org_Area" />
-                <ScalarProperty Name="Rating_Object" ColumnName="Rating_Object" />
-                <ScalarProperty Name="Rating_Priority" ColumnName="Rating_Priority" />
-                <ScalarProperty Name="Parm_ID" ColumnName="Parm_ID" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2492,6 +2487,23 @@
                 <ScalarProperty Name="Year_Quartly" ColumnName="Year_Quartly" />
                 <ScalarProperty Name="PD_Quartly" ColumnName="PD_Quartly" />
                 <ScalarProperty Name="Year_Month" ColumnName="Year_Month" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bond_Rating_Parm">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Parm">
+              <MappingFragment StoreEntitySet="Bond_Rating_Parm">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Audit_Date" ColumnName="Audit_Date" />
+                <ScalarProperty Name="Auditor" ColumnName="Auditor" />
+                <ScalarProperty Name="Rule_setting_Date" ColumnName="Rule_setting_Date" />
+                <ScalarProperty Name="Rule_setter" ColumnName="Rule_setter" />
+                <ScalarProperty Name="Rating_Selection" ColumnName="Rating_Selection" />
+                <ScalarProperty Name="Rating_Org_Area" ColumnName="Rating_Org_Area" />
+                <ScalarProperty Name="Rating_Object" ColumnName="Rating_Object" />
+                <ScalarProperty Name="Rating_Priority" ColumnName="Rating_Priority" />
+                <ScalarProperty Name="Parm_ID" ColumnName="Parm_ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
