@@ -27,7 +27,6 @@ namespace AutoTransfer
         }
     
         public virtual DbSet<Grade_Mapping_Info> Grade_Mapping_Info { get; set; }
-        public virtual DbSet<Bond_Rating_Parm> Bond_Rating_Parm { get; set; }
         public virtual DbSet<Rating_Info> Rating_Info { get; set; }
         public virtual DbSet<Transfer_CheckTable> Transfer_CheckTable { get; set; }
         public virtual DbSet<Rating_Info_SampleInfo> Rating_Info_SampleInfo { get; set; }
@@ -53,5 +52,6 @@ namespace AutoTransfer
         public virtual DbSet<Econ_F_YYYYMMDD> Econ_F_YYYYMMDD { get; set; }
         public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
         public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
+        public virtual DbSet<Bond_Rating_Parm> Bond_Rating_Parm { get; set; }
     }
 }

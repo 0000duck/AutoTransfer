@@ -15,7 +15,6 @@ namespace AutoTransfer.Transfer
         private Log log = new Log();
         private string A57logPath = string.Empty;
         private string A58logPath = string.Empty;
-
         /// <summary>
         /// A53 save 後續動作(save A57,A58)
         /// </summary>
@@ -25,6 +24,7 @@ namespace AutoTransfer.Transfer
         {
             A57logPath = log.txtLocation(TableType.A57.ToString());
             A58logPath = log.txtLocation(TableType.A58.ToString());
+            List<Bond_Rating_Parm> parmIDs = getParmIDs(); //選取有效的D60
 
             DateTime startTime = DateTime.Now;
 
@@ -42,7 +42,6 @@ namespace AutoTransfer.Transfer
                         try
                         {
                             #region sql
-                            string parmID = getParmID(); //選取離今日最近的D60
                             string reportData = dt.ToString("yyyy/MM/dd");
                             string ver = version.ToString();
                             string complement = ConfigurationManager.AppSettings["complement"];
@@ -52,14 +51,16 @@ namespace AutoTransfer.Transfer
                             string sql_D = string.Empty; //排除多餘
                             string sql1_3 = string.Empty; //更新三張信評特殊表格
                             string sql2 = string.Empty; //A58
+
                             #region A57原始日 sql
+
                             sql = $@"
 --原始
 
 WITH temp2 AS
 (
   SELECT
-  CASE WHEN ((SELECT TOP 1 Report_Date FROM Bond_Rating_Info WHERE Report_Date = '{reportData}' and Rating_Type = '{Rating_Type.A.GetDescription()}') is not null)
+  CASE WHEN ((SELECT TOP 1 Report_Date FROM Bond_Rating_Info WHERE Report_Date = '{reportData}' and Rating_Type = '{Rating_Type.A.GetDescription()}') is not null )
        THEN '{reportData}'
 	   ELSE (SELECT TOP 1 Report_Date from Bond_Rating_Info order by Report_Date desc)
   END AS Report_Date
@@ -91,36 +92,6 @@ A51 AS (
    SELECT * FROM Grade_Moody_Info
    WHERE Effective = 'Y'
 ),
-A41 AS(
-   SELECT A41.Reference_Nbr,
-          A41.Bond_Number,
-          A41.Lots,
-          A41.Portfolio,
-          A41.Segment_Name,
-          A41.Bond_Type,
-          A41.Lien_position,
-          A41.Origination_Date,
-          A41.Report_Date,
-		  A41.Portfolio_Name,
-		  A41.PRODUCT,
-		  A41.ISSUER,
-		  A41.Version,
-		  A41.ISIN_Changed_Ind,
-          A41.Bond_Number_Old,
-          A41.Lots_Old,
-          A41.Portfolio_Name_Old,
-          A41.Origination_Date_Old,
-      	  _A53Sample.ISSUER_TICKER,
-		  _A53Sample.GUARANTOR_NAME,
-		  _A53Sample.GUARANTOR_EQY_TICKER
-   FROM (Select * 
-   from Bond_Account_Info 
-   where Report_Date = '{reportData}'
-   and   Version =  {ver}) AS A41
-   LEFT JOIN Rating_Info_SampleInfo _A53Sample
-   ON  A41.Bond_Number = _A53Sample.Bond_Number
-   AND _A53Sample.Report_Date = '{reportData}'
-), --全部的A41
 tempA57t AS (
 SELECT _A57.*,
        _A51.Grade_Adjust,
@@ -142,7 +113,39 @@ left JOIN   A51 _A51_2
 ON     _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 AND    _A57.Rating = _A51_2.Rating
 WHERE  _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-), --最後一版A57(原始投資信評) 加入信評
+),
+--最後一版A57(原始投資信評) 加入信評
+tempA AS(
+   SELECT A41.Reference_Nbr,
+          A41.Bond_Number,
+          A41.Lots,
+          A41.Portfolio,
+          A41.Segment_Name,
+          A41.Bond_Type,
+          A41.Lien_position,
+          A41.Origination_Date,
+          A41.Report_Date,
+		  A41.Portfolio_Name,
+		  A41.PRODUCT,
+		  A41.ISSUER,
+		  A41.Version,
+		  A41.ISIN_Changed_Ind,
+          A41.Bond_Number_Old,
+          A41.Lots_Old,
+          A41.Portfolio_Name_Old,
+          A41.Origination_Date_Old,
+      	  _A53Sample.ISSUER_TICKER,
+		  _A53Sample.GUARANTOR_NAME,
+		  _A53Sample.GUARANTOR_EQY_TICKER
+   FROM (Select *
+   from Bond_Account_Info
+   where Report_Date = '{reportData}'
+   and   Version =  {ver})
+   AS A41
+   LEFT JOIN Rating_Info_SampleInfo _A53Sample
+   ON  A41.Bond_Number = _A53Sample.Bond_Number
+   AND _A53Sample.Report_Date = '{reportData}'
+), --全部的A41
 T1 AS (
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
           BA_Info.Bond_Number AS Bond_Number,
@@ -360,20 +363,28 @@ Select BA_Info.Reference_Nbr AS Reference_Nbr ,
     BA_Info.ISSUER AS ISSUER,
     BA_Info.Version AS Version,
     CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
-         THEN BA_Info.Bond_Number + ' Mtge' 
-	    ELSE BA_Info.Bond_Number + ' Corp' 
+         THEN BA_Info.Bond_Number + ' Mtge'
+	    ELSE BA_Info.Bond_Number + ' Corp'
     END AS Security_Ticker,
     BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
     BA_Info.Bond_Number_Old AS Bond_Number_Old,
     BA_Info.Lots_Old AS Lots_Old,
     BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
     BA_Info.Origination_Date_Old AS Origination_Date_Old
-from  A41 BA_Info 
+from tempA BA_Info
 ),
 T1all AS(
-  select * from T1
+  select T1.*, D60.Parm_ID AS Parm_ID from T1
+  left join
+  (select * from Bond_Rating_Parm where Status = '2' and IsActive = 'Y') D60
+  on T1.Rating_Object = D60.Rating_Object
+  and T1.Rating_Org_Area = 
+      case when D60.Rating_Org_Area is null
+  	     then T1.Rating_Org_Area
+  		 else D60.Rating_Org_Area
+      end
   UNION ALL
-  select * from T1s
+  select *, null AS Parm_ID from T1s
 )
 INSERT INTO Bond_Rating_Info
            (Reference_Nbr,
@@ -428,7 +439,7 @@ SELECT     Reference_Nbr,
            ISSUER_TICKER,
            GUARANTOR_NAME,
            GUARANTOR_EQY_TICKER,
-           '{parmID}',
+           Parm_ID,
            Portfolio_Name,
            RTG_Bloomberg_Field,
            SMF,
@@ -443,7 +454,8 @@ SELECT     Reference_Nbr,
 		   From
 		   T1all ; ";
 
-            sql_D += $@"
+                            //刪除A57(原始)預設
+                            sql_D += $@"
 with tempDeleA as
 (
 Select distinct Reference_Nbr from Bond_Rating_Info
@@ -451,17 +463,20 @@ where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating_Type = '{Rating_Type.A.GetDescription()}'
 and Rating is not null
-) 
+)
 delete Bond_Rating_Info
 where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.A.GetDescription()}'
-and Reference_Nbr in (select Reference_Nbr from tempDeleA) ; " ;
-                            #endregion
+and Reference_Nbr in (select Reference_Nbr from tempDeleA); ";
+
+                            #endregion A57原始日 sql
+
                             #region A57評估日 sql
+
                             sql1_2 = $@"
---評估日
+ --評估日
 
 WITH A52 AS (
    SELECT * FROM Grade_Mapping_Info
@@ -469,37 +484,6 @@ WITH A52 AS (
 A51 AS (
    SELECT * FROM Grade_Moody_Info
    WHERE Effective = 'Y'
-),
-A41 AS (
-   SELECT   A41.Reference_Nbr,
-            A41.Bond_Number,
-            A41.Lots,
-            A41.Portfolio,
-            A41.Segment_Name,
-            A41.Bond_Type,
-            A41.Lien_position,
-            A41.Origination_Date,
-            A41.Report_Date,
-		    A41.Portfolio_Name,
-		    A41.PRODUCT,
-		    A41.ISSUER,
-		    A41.Version,
-		    A41.ISIN_Changed_Ind,
-            A41.Bond_Number_Old,
-            A41.Lots_Old,
-            A41.Portfolio_Name_Old,
-            A41.Origination_Date_Old,
-	        _A53Sample.ISSUER_TICKER,
-			_A53Sample.GUARANTOR_NAME,
-			_A53Sample.GUARANTOR_EQY_TICKER
-	 FROM Bond_Account_Info A41
-	 LEFT JOIN Rating_Info_SampleInfo _A53Sample
-	 ON   A41.Bond_Number = _A53Sample.Bond_Number
-     AND  _A53Sample.Report_Date = '{reportData}'
-     AND  A41.Report_Date = '{reportData}'
-     AND  A41.VERSION = {ver}
-     WHERE A41.Report_Date = '{reportData}'
-     AND  A41.VERSION = {ver}
 ),
 A53 AS (
   SELECT  Bond_Number,
@@ -533,6 +517,36 @@ left JOIN   A51 _A51_2
 ON     _A53.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 AND    _A53.Rating = _A51_2.Rating
 WHERE  _A53.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+),
+tempC AS (
+   SELECT   A41.Reference_Nbr,
+            A41.Bond_Number,
+            A41.Lots,
+            A41.Portfolio,
+            A41.Segment_Name,
+            A41.Bond_Type,
+            A41.Lien_position,
+            A41.Origination_Date,
+            A41.Report_Date,
+		    A41.Portfolio_Name,
+		    A41.PRODUCT,
+		    A41.ISSUER,
+		    A41.Version,
+		    A41.ISIN_Changed_Ind,
+            A41.Bond_Number_Old,
+            A41.Lots_Old,
+            A41.Portfolio_Name_Old,
+            A41.Origination_Date_Old,
+	        _A53Sample.ISSUER_TICKER,
+			_A53Sample.GUARANTOR_NAME,
+			_A53Sample.GUARANTOR_EQY_TICKER
+	 FROM (select * from Bond_Account_Info
+     where Report_Date = '{reportData}'
+     and VERSION = {ver}
+     ) AS A41
+	 LEFT JOIN Rating_Info_SampleInfo _A53Sample
+	 ON   A41.Bond_Number = _A53Sample.Bond_Number
+     AND  _A53Sample.Report_Date = '{reportData}'
 ),
 T0 AS (
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -576,9 +590,43 @@ T0 AS (
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
-   FROM  A41 BA_Info --A41
-   LEFT JOIN A53t RA_Info --A53
+   FROM  tempC BA_Info --A41
+   JOIN A53t RA_Info --A53
    ON BA_Info.Bond_Number = RA_Info.Bond_Number
+   UNION ALL
+   SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
+          BA_Info.Bond_Number AS Bond_Number,
+		  BA_Info.Lots AS Lots,
+		  BA_Info.Portfolio AS Portfolio,
+		  BA_Info.Segment_Name AS Segment_Name,
+		  BA_Info.Bond_Type AS Bond_Type,
+		  BA_Info.Lien_position AS Lien_position,
+		  BA_Info.Origination_Date AS Origination_Date,
+          BA_Info.Report_Date AS Report_Date,
+		  null,
+          ' ' AS Rating_Object,
+          null,
+		  null,
+		  ' ' AS Rating_Org_Area,
+          null,
+          null,
+		  CASE WHEN BA_Info.ISSUER_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.ISSUER_TICKER END AS ISSUER_TICKER,
+		  CASE WHEN BA_Info.GUARANTOR_NAME in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_NAME END AS GUARANTOR_NAME,
+		  CASE WHEN BA_Info.GUARANTOR_EQY_TICKER in ('N.S.', 'N.A.') THEN null Else BA_Info.GUARANTOR_EQY_TICKER END AS GUARANTOR_EQY_TICKER,
+		  BA_Info.Portfolio_Name AS Portfolio_Name,
+		  ' ' AS RTG_Bloomberg_Field,
+		  BA_Info.PRODUCT AS SMF,
+		  BA_Info.ISSUER AS ISSUER,
+		  BA_Info.Version AS Version,
+		  (CASE WHEN BA_Info.PRODUCT like 'A11%' OR BA_Info.PRODUCT like '932%'
+		  THEN BA_Info.Bond_Number + ' Mtge' ELSE
+		    BA_Info.Bond_Number + ' Corp' END) AS Security_Ticker,
+          BA_Info.ISIN_Changed_Ind AS ISIN_Changed_Ind,
+          BA_Info.Bond_Number_Old AS Bond_Number_Old,
+          BA_Info.Lots_Old AS Lots_Old,
+          BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
+          BA_Info.Origination_Date_Old AS Origination_Date_Old
+   FROM  tempC BA_Info --A41
 )
 Insert into Bond_Rating_Info
            (Reference_Nbr,
@@ -613,42 +661,51 @@ Insert into Bond_Rating_Info
            Lots_Old,
            Portfolio_Name_Old,
            Origination_Date_Old)
-SELECT     Reference_Nbr,
-		   Bond_Number,
-		   Lots,
-           Portfolio,
-           Segment_Name,
-           Bond_Type,
-           Lien_position,
-           Origination_Date,
-           Report_Date,
-           Rating_Date,
+SELECT     T0.Reference_Nbr,
+		   T0.Bond_Number,
+		   T0.Lots,
+           T0.Portfolio,
+           T0.Segment_Name,
+           T0.Bond_Type,
+           T0.Lien_position,
+           T0.Origination_Date,
+           T0.Report_Date,
+           T0.Rating_Date,
            '{Rating_Type.B.GetDescription()}',
-           Rating_Object,
-           Rating_Org,
-           Rating,
-           Rating_Org_Area,
-           PD_Grade,
-           Grade_Adjust,
-           ISSUER_TICKER,
-           GUARANTOR_NAME,
-           GUARANTOR_EQY_TICKER,
-           '{parmID}',
-           Portfolio_Name,
-           RTG_Bloomberg_Field,
-           SMF,
-           ISSUER,
-           Version,
-           Security_Ticker,
-           ISIN_Changed_Ind,
-           Bond_Number_Old,
-           Lots_Old,
-           Portfolio_Name_Old,
-           Origination_Date_Old
-		   From
-		   T0; ";
+           T0.Rating_Object,
+           T0.Rating_Org,
+           T0.Rating,
+           T0.Rating_Org_Area,
+           T0.PD_Grade,
+           T0.Grade_Adjust,
+           T0.ISSUER_TICKER,
+           T0.GUARANTOR_NAME,
+           T0.GUARANTOR_EQY_TICKER,
+           D60.Parm_ID,
+           T0.Portfolio_Name,
+           T0.RTG_Bloomberg_Field,
+           T0.SMF,
+           T0.ISSUER,
+           T0.Version,
+           T0.Security_Ticker,
+           T0.ISIN_Changed_Ind,
+           T0.Bond_Number_Old,
+           T0.Lots_Old,
+           T0.Portfolio_Name_Old,
+           T0.Origination_Date_Old
+		   From T0
+  left join
+  (select * from Bond_Rating_Parm where Status = '2' and IsActive = 'Y') D60
+  on T0.Rating_Object = D60.Rating_Object
+  and T0.Rating_Org_Area = 
+      case when D60.Rating_Org_Area is null
+  	     then T0.Rating_Org_Area
+  		 else D60.Rating_Org_Area
+      end
+; ";
 
-           sql_D += $@"
+                            //刪除A57(評估日)預設
+                            sql_D += $@"
 with tempDeleB as
 (
 Select distinct Reference_Nbr from Bond_Rating_Info
@@ -656,20 +713,23 @@ where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating_Type = '{Rating_Type.B.GetDescription()}'
 and Rating is not null
-) 
+)
 delete Bond_Rating_Info
 where  Report_Date = '{reportData}'
 and Version = {ver}
 and Rating is null
 and Rating_Type = '{Rating_Type.B.GetDescription()}'
-and Reference_Nbr in (select Reference_Nbr from tempDeleB); 
+and Reference_Nbr in (select Reference_Nbr from tempDeleB);
 ";
-                            #endregion
+
+                            #endregion A57評估日 sql
+
                             #region 三張特殊表單更新 sql
+
                             sql1_3 = $@"
 -- update Bond_Rating(債項信評) 的設定
-update Bond_Rating_Info   
-set Rating = 
+update Bond_Rating_Info
+set Rating =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
 	     then Bond_Rating.S_And_P
@@ -683,7 +743,7 @@ set Rating =
 		 then Bond_Rating.TRC
 	  else Bond_Rating_Info.Rating
 	  end,
-    Rating_Date = 
+    Rating_Date =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
 	     then null
@@ -705,21 +765,21 @@ and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
-set PD_Grade = 
+set PD_Grade =
        case
          when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
          then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
        end ,
-    Grade_Adjust =  
-         case 
+    Grade_Adjust =
+         case
 	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
       end
@@ -727,12 +787,12 @@ from Bond_Rating
 where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}' 
+and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 -- update Issuer_Rating(發行者信評) 的設定
-update Bond_Rating_Info   
-set Rating = 
+update Bond_Rating_Info
+set Rating =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
 	     then Issuer_Rating.S_And_P
@@ -746,7 +806,7 @@ set Rating =
 		 then Issuer_Rating.TRC
 	  else Bond_Rating_Info.Rating
 	  end,
-    Rating_Date = 
+    Rating_Date =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
 	     then null
@@ -764,39 +824,38 @@ from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' 
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
-set PD_Grade = 
+set PD_Grade =
        case
          when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
          then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
        end ,
-    Grade_Adjust =  
-         case 
+    Grade_Adjust =
+         case
 	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-      end,
-    Rating_Date = null
+      end
 from Issuer_Rating
 where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}' 
+and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 -- update Guarantor_Rating(擔保者信評) 的設定
-update Bond_Rating_Info   
-set Rating = 
+update Bond_Rating_Info
+set Rating =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
 	     then Guarantor_Rating.S_And_P
@@ -810,7 +869,7 @@ set Rating =
 		 then Guarantor_Rating.TRC
 	  else Bond_Rating_Info.Rating
 	  end,
-    Rating_Date = 
+    Rating_Date =
       case
 	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
 	     then null
@@ -828,25 +887,25 @@ from Guarantor_Rating
 where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' 
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
 update Bond_Rating_Info
-set PD_Grade = 
+set PD_Grade =
        case
          when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
          then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
        end ,
-    Grade_Adjust =  
-         case 
+    Grade_Adjust =
+         case
 	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
 		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
 		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51 
+	       Grade_Moody_Info A51
 		   where A51.Effective = 'Y' and A51.PD_Grade =
 	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
       end
@@ -854,11 +913,15 @@ from Guarantor_Rating
 where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
 and Bond_Rating_Info.Report_Date = '{reportData}'
 and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}' 
+and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
 and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+
 ";
-                            #endregion
+
+                            #endregion 三張特殊表單更新 sql
+
                             #region A58 sql
+
                             sql2 = $@"
 WITH A57 AS
 (
@@ -897,9 +960,16 @@ Select BR_Info.Reference_Nbr,
        BR_Info.Portfolio_Name_Old,
        BR_Info.Origination_Date_Old
 From   A57 BR_Info
-LEFT JOIN  Bond_Rating_Parm BR_Parm
-on         BR_Info.Parm_ID = BR_Parm.Parm_ID
-AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
+LEFT JOIN (select * from  Bond_Rating_Parm where Status = '2' and IsActive = 'Y') BR_Parm
+ON      BR_Info.Rating_Object = BR_Parm.Rating_Object  
+AND     BR_Info.Parm_ID =  BR_Parm.Parm_ID
+AND     BR_Info.Rating_Org_Area =
+        CASE WHEN BR_Parm.Rating_Org_Area is null
+             THEN BR_Info.Rating_Org_Area
+             ELSE BR_Parm.Rating_Org_Area
+        END 
+--on         BR_Info.Parm_ID = BR_Parm.Parm_ID --2018/03/09 Parm_ID 改為流水號
+--AND        BR_Info.Rating_Object = BR_Parm.Rating_Object
 --AND        BR_Info.Rating_Org_Area = BR_Parm.Rating_Org_Area  --2017/11/01修改為不分國內外
 GROUP BY BR_Info.Reference_Nbr,
          BR_Info.Report_Date,
@@ -951,7 +1021,7 @@ Insert Into Bond_Rating_Summary
               Portfolio_Name_Old,
               Origination_Date_Old
 			)
-select 
+select
 			  Reference_Nbr,
               Report_Date,
               Parm_ID,
@@ -975,10 +1045,12 @@ select
               Bond_Number_Old,
               Lots_Old,
               Portfolio_Name_Old,
-              Origination_Date_Old			
+              Origination_Date_Old
  from T4;
-                            ";
-                            #endregion
+                        ";
+
+                            #endregion A58 sql
+
                             #endregion
                             db.Database.CommandTimeout = 300;
                             //insert A57 原始日
@@ -993,14 +1065,15 @@ select
                             string Foreign = "國外";
                             Grade_Moody_Info A51 = null;
                             #endregion
-                            #region  新增3張特殊表單rating
+                            #region 新增3張特殊表單rating
+
                             var _ratingType = Rating_Type.B.GetDescription();
-                            var _Bond_Ratings = db.Bond_Rating.AsNoTracking().ToList();                          
-                            var _Issuer_Ratings = db.Issuer_Rating.AsNoTracking().ToList();                            
+                            var _Bond_Ratings = db.Bond_Rating.AsNoTracking().ToList();
+                            var _Issuer_Ratings = db.Issuer_Rating.AsNoTracking().ToList();
                             var _Guarantor_Ratings = db.Guarantor_Rating.AsNoTracking().ToList();
                             List<insertRating> _data = new List<insertRating>();
                             RatingObject _Rating_Object = RatingObject.Bonds;
-                            string _RObject = string.Empty;                            
+                            string _RObject = string.Empty;
                             if (_Bond_Ratings.Any())
                             {
                                 _Rating_Object = RatingObject.Bonds;
@@ -1082,7 +1155,7 @@ select
                                               _RTG_Bloomberg_Field = "RTG_TRC"
                                           });
                                       }
-                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s, parmIDs);
                                   });
                             }
                             if (_Issuer_Ratings.Any())
@@ -1166,7 +1239,7 @@ select
                                               _RTG_Bloomberg_Field = "RTG_TRC_LONG_TERM"
                                           });
                                       }
-                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s,parmIDs);
                                   });
                             }
                             if (_Guarantor_Ratings.Any())
@@ -1242,22 +1315,25 @@ select
                                           });
                                       }
 
-                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s);
+                                      insertA57Rating(_data, _first, sql_A, _Rating_Object, A52s, A51s, parmIDs);
                                   });
                             }
                             if (sql_A.Length > 0)
                                 db.Database.ExecuteSqlCommand(sql_A.ToString());
-                            #endregion
+
+                            #endregion 新增3張特殊表單rating
                             //刪除A57 預設
                             db.Database.ExecuteSqlCommand(sql_D);
                             //三張特殊表單更新
                             db.Database.ExecuteSqlCommand(sql1_3);
-                            #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
+
+                            #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等(PS:發行人的評等複製一份給債項評等)
+
                             var ISSUERstr = RatingObject.ISSUER.GetDescription();
                             var Bondstr = RatingObject.Bonds.GetDescription();
                             List<string> ISSUERs = new List<string>() { "GOV-TW-CEN", "GOV-Kaohsiung", "GOV-TAIPEI" };
                             StringBuilder sb2 = new StringBuilder();
-                            var D60 = db.Bond_Rating_Parm.AsNoTracking().ToList();
+                            var D60 = db.Bond_Rating_Parm.AsNoTracking().Where(x => x.IsActive == "Y" && x.Status == "2").ToList();
                             var A57ISSUERs =
                                 db.Bond_Rating_Info.AsNoTracking().Where(x =>
                                  x.Report_Date == dt &&
@@ -1306,7 +1382,7 @@ select
                             {
                                 var q = A57group;
                                 var first = A57group.First();
-                                var _D60 = D60.FirstOrDefault(z => z.Parm_ID == first.Parm_ID &&
+                                var _D60 = D60.FirstOrDefault(z => z.Parm_ID.ToString() == first.Parm_ID &&
                                                             z.Rating_Object == first.Rating_Object);
                                 int? _PD_Grade = null;
                                 if (_D60 != null)
@@ -1337,18 +1413,22 @@ select
                                                 RTGFiled = "RTG_SP";
                                                 RatingOrgArea = Foreign;
                                                 break;
+
                                             case "Moody":
                                                 RTGFiled = "RTG_MOODY";
                                                 RatingOrgArea = Foreign;
                                                 break;
+
                                             case "Fitch":
                                                 RTGFiled = "RTG_FITCH";
                                                 RatingOrgArea = Foreign;
                                                 break;
+
                                             case "Fitch(twn)":
                                                 RTGFiled = "RTG_FITCH_NATIONAL";
                                                 RatingOrgArea = Domestic;
                                                 break;
+
                                             case "CW":
                                                 RTGFiled = "RTG_TRC";
                                                 RatingOrgArea = Domestic;
@@ -1356,6 +1436,8 @@ select
                                         }
                                         if (!RTGFiled.IsNullOrWhiteSpace())
                                         {
+                                            var _parm = getParmID(parmIDs, Bondstr, RatingOrgArea);
+                                            _A57ISSUERcopy.Parm_ID = _parm?.Parm_ID.ToString();
                                             _A57ISSUERcopy.Rating_Object = Bondstr;
                                             _A57ISSUERcopy.Rating_Org_Area = RatingOrgArea;
                                             _A57ISSUERcopy.Fill_up_YN = null;
@@ -1370,8 +1452,11 @@ select
                             {
                                 db.Database.ExecuteSqlCommand(sb2.ToString());
                             }
-                            #endregion
+
+                            #endregion issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等(PS:發行人的評等複製一份給債項評等)
+
                             #region 複寫前一版本已補登之信評
+
                             if (complement == "Y")
                             {
                                 StringBuilder sb = new StringBuilder();
@@ -1394,7 +1479,7 @@ select
                                                                x.Fill_up_YN == "Y").ToList();
                                     //上一次最後一版
                                     var datas = A57s
-                                    .GroupBy(x => new
+                                        .GroupBy(x => new
                                         {
                                             x.Reference_Nbr,
                                             x.Bond_Number,
@@ -1429,7 +1514,7 @@ select
                                                        y.Lots_Old == first.Lots_Old &&
                                                        y.Portfolio_Name_Old == first.Portfolio_Name_Old
                                         ).ToList();
-                                        if (A57ns.Any()) //目前版本沒有不需要繼續
+                                        if (A57ns.Any()) //目前版本沒有比對到符合資料不需要繼續
                                         {
                                             var A57n = A57ns.First();
                                             //上一版有修改過的A57
@@ -1448,14 +1533,16 @@ select
                                                     if (A52 != null)
                                                         A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
                                                 }
-                                                //找尋目前版本存不存在相同的資料
-                                                var A57o = new Bond_Rating_Info();
+                                                    //找尋目前版本存不存在相同的資料
+                                                    var A57o = new Bond_Rating_Info();
                                                 A57o = A57ns.FirstOrDefault(y =>
                                                 y.Rating_Object == x.Rating_Object &&
                                                 y.RTG_Bloomberg_Field == x.RTG_Bloomberg_Field);
-                                                //不存在新增 防呆
-                                                if (A57o == null)
+                                                    //不存在新增 防呆
+                                                    if (A57o == null)
                                                 {
+                                                    var _parm = getParmID(parmIDs, x.Rating_Object, x.Rating_Org_Area);
+                                                    A57n.Parm_ID = _parm?.Parm_ID.ToString();
                                                     A57n.Rating_Date = x.Rating_Date;
                                                     A57n.Rating_Object = x.Rating_Object;
                                                     A57n.Rating_Org = x.Rating_Org;
@@ -1470,8 +1557,8 @@ select
                                                     if (A51 != null)
                                                         deleteSqlFlag = true;
                                                 }
-                                                //存在修改
-                                                else if (A57o != null)
+                                                    //存在修改
+                                                    else if (A57o != null)
                                                 {
                                                     sb.Append($@"
                                                     UPDATE [Bond_Rating_Info]
@@ -1510,10 +1597,14 @@ select
                                         }
                                     }
                                     if (sb.Length > 0)
+                                    {
                                         db.Database.ExecuteSqlCommand(sb.ToString());
+                                    }
                                 }
                             }
-                            #endregion
+
+                            #endregion 複寫前一版本已補登之信評
+
                             //insert A58
                             db.Database.ExecuteSqlCommand(sql2);
                             dbContextTransaction.Commit();
@@ -1868,7 +1959,8 @@ INSERT INTO [Bond_Rating_Info]
             StringBuilder sb,
             RatingObject _Rating_Object,
             List<Grade_Mapping_Info> A52s,
-            List<Grade_Moody_Info> A51s)
+            List<Grade_Moody_Info> A51s,
+            List<Bond_Rating_Parm> parmIDs)
         {
             foreach (var item in _data)
             {
@@ -1885,11 +1977,13 @@ INSERT INTO [Bond_Rating_Info]
                     if (A52 != null)
                         A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
                 }
+                var _parm = getParmID(parmIDs, _copy.Rating_Object, _copy.Rating_Org_Area);
                 _copy.Rating_Object = _Rating_Object.GetDescription();
                 _copy.Rating_Org_Area = item._RatingOrgArea;
                 _copy.Rating = item._Rating;
                 _copy.Rating_Org = item._Rating_Org.GetDescription();
                 _copy.RTG_Bloomberg_Field = item._RTG_Bloomberg_Field;
+                _copy.Parm_ID = _parm?.Parm_ID.ToString();
                 _copy.Fill_up_YN = null;
                 _copy.Fill_up_Date = null;
                 _copy.PD_Grade = A51?.PD_Grade;
@@ -1899,21 +1993,36 @@ INSERT INTO [Bond_Rating_Info]
         }
 
         /// <summary>
+        /// get ParmIDs
+        /// </summary>
+        /// <returns></returns>
+        private List<Bond_Rating_Parm> getParmIDs()
+        {
+            List<Bond_Rating_Parm> parmIDs = new List<Bond_Rating_Parm>();
+            using (IFRS9Entities db = new IFRS9Entities())
+            {
+                var parms = db.Bond_Rating_Parm.AsNoTracking()
+                    .Where(j => j.IsActive == "Y" && j.Status == "2").ToList(); //抓取所有有效資料
+                foreach (var item in parms.GroupBy(x => new { x.Rating_Object, x.Rating_Org_Area }))
+                {
+                    if (item.Any(y => y.Rating_Org_Area == null) && item.Count() >= 2) //國內/外類別 兩種設定(1.單筆null,2.一筆國內一筆國外)
+                        return parmIDs;
+                }
+                parmIDs = parms;
+            }
+            return parmIDs;
+        }
+
+        /// <summary>
         /// get ParmID
         /// </summary>
         /// <returns></returns>
-        private string getParmID()
+        private Bond_Rating_Parm getParmID(List<Bond_Rating_Parm> datas, string Rating_Object,string Rating_Org_Area)
         {
-            string parmID = string.Empty;
-            DateTime dt = DateTime.Now;
-            var parms = db.Bond_Rating_Parm
-            .Where(j => j.Processing_Date != null &&
-                   dt > j.Processing_Date);
-            Bond_Rating_Parm parmf =
-            parms.FirstOrDefault(q => q.Processing_Date == parms.Max(w => w.Processing_Date));
-            if (parmf != null) // 參數編號
-                parmID = parmf.Parm_ID;
-            return parmID;
+            Bond_Rating_Parm _parm = datas.FirstOrDefault(m => m.Rating_Org_Area != null && m.Rating_Object == Rating_Object && m.Rating_Org_Area == Rating_Org_Area);
+            if (_parm == null)
+                _parm = datas.FirstOrDefault(m => m.Rating_Object == Rating_Object);
+            return _parm;
         }
 
         private class insertRating

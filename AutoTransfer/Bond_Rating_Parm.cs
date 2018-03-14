@@ -14,12 +14,16 @@ namespace AutoTransfer
     
     public partial class Bond_Rating_Parm
     {
-        public int Id { get; set; }
-        public string Parm_ID { get; set; }
-        public Nullable<int> Rating_Priority { get; set; }
+        public int Parm_ID { get; set; }
+        public int Rating_Priority { get; set; }
         public string Rating_Object { get; set; }
         public string Rating_Org_Area { get; set; }
         public string Rating_Selection { get; set; }
-        public Nullable<System.DateTime> Processing_Date { get; set; }
+        public string Rule_setter { get; set; }
+        public System.DateTime Rule_setting_Date { get; set; }
+        public string Auditor { get; set; }
+        public Nullable<System.DateTime> Audit_Date { get; set; }
+        public string Status { get; set; }
+        public string IsActive { get; set; }
     }
 }
