@@ -1333,7 +1333,6 @@ select
                             var Bondstr = RatingObject.Bonds.GetDescription();
                             List<string> ISSUERs = new List<string>() { "GOV-TW-CEN", "GOV-Kaohsiung", "GOV-TAIPEI" };
                             StringBuilder sb2 = new StringBuilder();
-                            var D60 = db.Bond_Rating_Parm.AsNoTracking().Where(x => x.IsActive == "Y" && x.Status == "2").ToList();
                             var A57ISSUERs =
                                 db.Bond_Rating_Info.AsNoTracking().Where(x =>
                                  x.Report_Date == dt &&
@@ -1367,7 +1366,6 @@ select
                                 x.ISSUER_TICKER,
                                 x.GUARANTOR_NAME,
                                 x.GUARANTOR_EQY_TICKER,
-                                x.Parm_ID,
                                 x.Portfolio_Name,
                                 x.SMF,
                                 x.ISSUER,
@@ -1382,8 +1380,13 @@ select
                             {
                                 var q = A57group;
                                 var first = A57group.First();
-                                var _D60 = D60.FirstOrDefault(z => z.Parm_ID.ToString() == first.Parm_ID &&
-                                                            z.Rating_Object == first.Rating_Object);
+                                var _D60Foreign = getParmID(parmIDs, first.Rating_Object, Foreign); //國外
+                                var _D60Domestic = getParmID(parmIDs, first.Rating_Object, Domestic); //國內
+                                var _D60 = new Bond_Rating_Parm();
+                                if (_D60Foreign.Rating_Selection == _D60Domestic.Rating_Selection)
+                                    _D60 = _D60Foreign;
+                                else
+                                    _D60 = _D60Foreign.Rating_Priority <= _D60Domestic.Rating_Priority ? _D60Foreign : _D60Domestic;
                                 int? _PD_Grade = null;
                                 if (_D60 != null)
                                 {
@@ -1469,7 +1472,6 @@ select
                                 var _ver = A57.Where(x => x.Version != version).Max(x => x.Version);
                                 if (_ver != null)
                                 {
-                                    var D60s = db.Bond_Rating_Parm.AsNoTracking().ToList();
                                     //目前版本
                                     var A57n1 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == "Y").ToList();
                                     var A57n2 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == null).ToList();
