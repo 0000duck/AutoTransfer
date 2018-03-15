@@ -152,6 +152,12 @@
           <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
           <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
           <Property Name="Origination_Date_Old" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Rating_Parm">
           <Key>
@@ -204,6 +210,12 @@
           <Property Name="Lots_Old" Type="varchar" MaxLength="4" />
           <Property Name="Portfolio_Name_Old" Type="varchar" MaxLength="30" />
           <Property Name="Origination_Date_Old" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Spread_Info">
           <Key>
@@ -1203,6 +1215,12 @@
           <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
           <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="Origination_Date_Old" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Rating_Summary">
           <Key>
@@ -1239,6 +1257,12 @@
           <Property Name="Lots_Old" Type="String" MaxLength="4" FixedLength="false" Unicode="false" />
           <Property Name="Portfolio_Name_Old" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="Origination_Date_Old" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Grade_Moody_Info">
           <Key>
@@ -1970,6 +1994,12 @@
           <EntitySetMapping Name="Bond_Rating_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Info">
               <MappingFragment StoreEntitySet="Bond_Rating_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Origination_Date_Old" ColumnName="Origination_Date_Old" />
                 <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
                 <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
@@ -2010,6 +2040,12 @@
           <EntitySetMapping Name="Bond_Rating_Summary">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Rating_Summary">
               <MappingFragment StoreEntitySet="Bond_Rating_Summary">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Origination_Date_Old" ColumnName="Origination_Date_Old" />
                 <ScalarProperty Name="Portfolio_Name_Old" ColumnName="Portfolio_Name_Old" />
                 <ScalarProperty Name="Lots_Old" ColumnName="Lots_Old" />
