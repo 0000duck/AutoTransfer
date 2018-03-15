@@ -48,5 +48,11 @@ namespace AutoTransfer
         public string Lots_Old { get; set; }
         public string Portfolio_Name_Old { get; set; }
         public Nullable<System.DateTime> Origination_Date_Old { get; set; }
+        public string Create_User { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.TimeSpan> Create_Time { get; set; }
+        public string LastUpdate_User { get; set; }
+        public Nullable<System.DateTime> LastUpdate_Date { get; set; }
+        public Nullable<System.TimeSpan> LastUpdate_Time { get; set; }
     }
 }

@@ -176,6 +176,11 @@ namespace AutoTransfer.Utility
             return par.ToString("yyyy/MM/dd").stringToStrSql();
         }
 
+        public static string timeSpanToStrSql(this TimeSpan ts)
+        {
+            return ts.ToString(@"hh\:mm\:ss").stringToStrSql();
+        }
+
         public static string intNToStrSql(this int? par)
         {
             if (par.HasValue)

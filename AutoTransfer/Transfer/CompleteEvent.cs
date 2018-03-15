@@ -15,6 +15,9 @@ namespace AutoTransfer.Transfer
         private Log log = new Log();
         private string A57logPath = string.Empty;
         private string A58logPath = string.Empty;
+        private string _user = "System";
+        DateTime _date = DateTime.MinValue;
+        TimeSpan _time = TimeSpan.MinValue;
         /// <summary>
         /// A53 save 後續動作(save A57,A58)
         /// </summary>
@@ -27,6 +30,8 @@ namespace AutoTransfer.Transfer
             List<Bond_Rating_Parm> parmIDs = getParmIDs(); //選取有效的D60
 
             DateTime startTime = DateTime.Now;
+            _date = startTime.Date;
+            _time = startTime.TimeOfDay;
 
             if (log.checkTransferCheck(TableType.A57.ToString(), TableType.A53.ToString(), dt, version) &&
                 log.checkTransferCheck(TableType.A58.ToString(), TableType.A53.ToString(), dt, version))
@@ -418,7 +423,11 @@ INSERT INTO Bond_Rating_Info
            Bond_Number_Old,
            Lots_Old,
            Portfolio_Name_Old,
-           Origination_Date_Old)
+           Origination_Date_Old,
+           Create_User,
+           Create_Date,
+           Create_Time
+)
 SELECT     Reference_Nbr,
 		   Bond_Number,
 		   Lots,
@@ -450,7 +459,10 @@ SELECT     Reference_Nbr,
            Bond_Number_Old,
            Lots_Old,
            Portfolio_Name_Old,
-           Origination_Date_Old
+           Origination_Date_Old,
+           {_user.stringToStrSql()},
+           {_date.dateTimeToStrSql()},
+           {_time.timeSpanToStrSql()}
 		   From
 		   T1all ; ";
 
@@ -660,7 +672,10 @@ Insert into Bond_Rating_Info
            Bond_Number_Old,
            Lots_Old,
            Portfolio_Name_Old,
-           Origination_Date_Old)
+           Origination_Date_Old,
+           Create_User,
+           Create_Date,
+           Create_Time)
 SELECT     T0.Reference_Nbr,
 		   T0.Bond_Number,
 		   T0.Lots,
@@ -692,7 +707,10 @@ SELECT     T0.Reference_Nbr,
            T0.Bond_Number_Old,
            T0.Lots_Old,
            T0.Portfolio_Name_Old,
-           T0.Origination_Date_Old
+           T0.Origination_Date_Old,
+           {_user.stringToStrSql()},
+           {_date.dateTimeToStrSql()},
+           {_time.timeSpanToStrSql()}
 		   From T0
   left join
   (select * from Bond_Rating_Parm where Status = '2' and IsActive = 'Y') D60
@@ -1019,7 +1037,10 @@ Insert Into Bond_Rating_Summary
               Bond_Number_Old,
               Lots_Old,
               Portfolio_Name_Old,
-              Origination_Date_Old
+              Origination_Date_Old,
+              Create_User,
+              Create_Date,
+              Create_Time
 			)
 select
 			  Reference_Nbr,
@@ -1045,7 +1066,10 @@ select
               Bond_Number_Old,
               Lots_Old,
               Portfolio_Name_Old,
-              Origination_Date_Old
+              Origination_Date_Old,
+              {_user.stringToStrSql()},
+              {_date.dateTimeToStrSql()},
+              {_time.timeSpanToStrSql()}
  from T4;
                         ";
 
@@ -1917,7 +1941,11 @@ INSERT INTO [Bond_Rating_Info]
            ,[Bond_Number_Old]
            ,[Lots_Old]
            ,[Portfolio_Name_Old]
-           ,[Origination_Date_Old])
+           ,[Origination_Date_Old]
+           ,[Create_User]
+           ,[Create_Date]
+           ,[Create_Time]
+)
      VALUES
            ({A57.Reference_Nbr.stringToStrSql()}
            ,{A57.Bond_Number.stringToStrSql()}
@@ -1952,7 +1980,10 @@ INSERT INTO [Bond_Rating_Info]
            ,{A57.Bond_Number_Old.stringToStrSql()}
            ,{A57.Lots_Old.stringToStrSql()}
            ,{A57.Portfolio_Name_Old.stringToStrSql()}
-           ,{A57.Origination_Date_Old.dateTimeNToStrSql()} ); ";
+           ,{A57.Origination_Date_Old.dateTimeNToStrSql()}
+           ,{_user.stringToStrSql()}
+           ,{_date.dateTimeToStrSql()}
+           ,{_time.timeSpanToStrSql()} ); ";
         }
 
         private void insertA57Rating(
