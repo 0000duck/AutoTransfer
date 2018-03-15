@@ -57,6 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assessment_Sub_Kind_Ticker.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Bond_Account_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -150,6 +153,9 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Rating_Info_SampleInfo.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Rating_Update_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="StartTransferA91.cs" />

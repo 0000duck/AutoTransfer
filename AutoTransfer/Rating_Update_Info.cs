@@ -12,21 +12,14 @@ namespace AutoTransfer
     using System;
     using System.Collections.Generic;
     
-    public partial class Bond_Ticker_Info
+    public partial class Rating_Update_Info
     {
-        public System.DateTime Report_Date { get; set; }
-        public int Version { get; set; }
-        public string Bond_Number { get; set; }
-        public string Lots { get; set; }
-        public string Portfolio_Name { get; set; }
-        public string PRODUCT { get; set; }
-        public string Lien_position { get; set; }
-        public string Security_Ticker { get; set; }
-        public string Security_Des { get; set; }
-        public string Bloomberg_Ticker { get; set; }
-        public string Bond_Type { get; set; }
-        public string Assessment_Sub_Kind { get; set; }
-        public Nullable<System.DateTime> Processing_Date { get; set; }
+        public int ID { get; set; }
+        public string IsActive { get; set; }
+        public string Replace_Object { get; set; }
+        public string Update_Method { get; set; }
+        public string Method_MEMO { get; set; }
+        public string Replace_Word { get; set; }
         public string Create_User { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public Nullable<System.TimeSpan> Create_Time { get; set; }

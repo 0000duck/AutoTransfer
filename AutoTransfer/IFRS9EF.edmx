@@ -5,6 +5,20 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="IFRS9Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Assessment_Sub_Kind_Ticker">
+          <Key>
+            <PropertyRef Name="Bond_Number" />
+          </Key>
+          <Property Name="Bond_Number" Type="varchar" MaxLength="40" Nullable="false" />
+          <Property Name="Security_Des" Type="varchar" MaxLength="40" />
+          <Property Name="Bloomberg_Ticker" Type="varchar" MaxLength="20" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
+        </EntityType>
         <EntityType Name="Bond_Account_Info">
           <Key>
             <PropertyRef Name="Reference_Nbr" />
@@ -262,6 +276,12 @@
           <Property Name="Bond_Type" Type="varchar" MaxLength="30" />
           <Property Name="Assessment_Sub_Kind" Type="varchar" MaxLength="50" />
           <Property Name="Processing_Date" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Econ_D_YYYYMMDD">
           <Key>
@@ -802,6 +822,23 @@
           <Property Name="BS_TOT_ASSET" Type="float" />
           <Property Name="SHORT_AND_LONG_TERM_DEBT" Type="float" />
         </EntityType>
+        <EntityType Name="Rating_Update_Info">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="IsActive" Type="varchar" MaxLength="1" />
+          <Property Name="Replace_Object" Type="varchar" MaxLength="50" />
+          <Property Name="Update_Method" Type="varchar" MaxLength="2" />
+          <Property Name="Method_MEMO" Type="varchar" MaxLength="100" />
+          <Property Name="Replace_Word" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
+        </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
             <PropertyRef Name="Id" />
@@ -830,6 +867,7 @@
           </ReferentialConstraint>
         </Association>
         <EntityContainer Name="IFRS9ModelStoreContainer">
+          <EntitySet Name="Assessment_Sub_Kind_Ticker" EntityType="Self.Assessment_Sub_Kind_Ticker" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Account_Info" EntityType="Self.Bond_Account_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Category_Info" EntityType="Self.Bond_Category_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating" EntityType="Self.Bond_Rating" Schema="dbo" store:Type="Tables" />
@@ -856,6 +894,7 @@
           <EntitySet Name="Moody_Quartly_PD_Info" EntityType="Self.Moody_Quartly_PD_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Rating_Info" EntityType="Self.Rating_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="Self.Rating_Info_SampleInfo" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Rating_Update_Info" EntityType="Self.Rating_Update_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Transfer_CheckTable" EntityType="Self.Transfer_CheckTable" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" Association="Self.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
             <End Role="Econ_Domestic" EntitySet="Econ_Domestic" />
@@ -898,6 +937,8 @@
           <EntitySet Name="Econ_Foreign" EntityType="IFRS9Model.Econ_Foreign" />
           <EntitySet Name="Loan_default_Info" EntityType="IFRS9Model.Loan_default_Info" />
           <EntitySet Name="Bond_Rating_Parm" EntityType="IFRS9Model.Bond_Rating_Parm" />
+          <EntitySet Name="Assessment_Sub_Kind_Ticker" EntityType="IFRS9Model.Assessment_Sub_Kind_Ticker" />
+          <EntitySet Name="Rating_Update_Info" EntityType="IFRS9Model.Rating_Update_Info" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1145,6 +1186,12 @@
           <Property Name="Bond_Type" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
           <Property Name="Assessment_Sub_Kind" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
         <EntityType Name="Bond_Category_Info">
           <Key>
@@ -1725,6 +1772,37 @@
           <Property Name="Status" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
           <Property Name="IsActive" Type="String" Nullable="false" MaxLength="1" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Assessment_Sub_Kind_Ticker">
+          <Key>
+            <PropertyRef Name="Bond_Number" />
+          </Key>
+          <Property Name="Bond_Number" Type="String" Nullable="false" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Security_Des" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="Bloomberg_Ticker" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
+        <EntityType Name="Rating_Update_Info">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="IsActive" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Replace_Object" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Update_Method" Type="String" MaxLength="2" FixedLength="false" Unicode="false" />
+          <Property Name="Method_MEMO" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Replace_Word" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -1950,6 +2028,12 @@
           <EntitySetMapping Name="Bond_Ticker_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Bond_Ticker_Info">
               <MappingFragment StoreEntitySet="Bond_Ticker_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
                 <ScalarProperty Name="Assessment_Sub_Kind" ColumnName="Assessment_Sub_Kind" />
                 <ScalarProperty Name="Bond_Type" ColumnName="Bond_Type" />
@@ -2540,6 +2624,39 @@
                 <ScalarProperty Name="Rating_Object" ColumnName="Rating_Object" />
                 <ScalarProperty Name="Rating_Priority" ColumnName="Rating_Priority" />
                 <ScalarProperty Name="Parm_ID" ColumnName="Parm_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Assessment_Sub_Kind_Ticker">
+            <EntityTypeMapping TypeName="IFRS9Model.Assessment_Sub_Kind_Ticker">
+              <MappingFragment StoreEntitySet="Assessment_Sub_Kind_Ticker">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Bloomberg_Ticker" ColumnName="Bloomberg_Ticker" />
+                <ScalarProperty Name="Security_Des" ColumnName="Security_Des" />
+                <ScalarProperty Name="Bond_Number" ColumnName="Bond_Number" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Rating_Update_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Rating_Update_Info">
+              <MappingFragment StoreEntitySet="Rating_Update_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Replace_Word" ColumnName="Replace_Word" />
+                <ScalarProperty Name="Method_MEMO" ColumnName="Method_MEMO" />
+                <ScalarProperty Name="Update_Method" ColumnName="Update_Method" />
+                <ScalarProperty Name="Replace_Object" ColumnName="Replace_Object" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

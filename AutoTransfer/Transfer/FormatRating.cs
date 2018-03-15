@@ -10,48 +10,54 @@ namespace AutoTransfer.Transfer
         /// <summary>
         /// 修正 錯誤資料
         /// </summary>
-        /// <param name="rating"></param>
+        /// <param name="rating">評等</param>
+        /// <param name="org">RatingOrg</param>
+        /// <param name="rule_1">規則01 : 置換特殊字元成空值</param>
+        /// <param name="rule_2">規則02 : 以新值取代舊值 </param>
         /// <returns></returns>
-        public string forRating(string rating, RatingOrg org)
+        public string forRating(string rating, RatingOrg org,List<string> rule_1, List<Tuple<string, string>> rule_2)
         {
             if (rating.IsNullOrWhiteSpace())
                 return string.Empty;
-            if (rating.IndexOf("N.A.") > -1)
-                return string.Empty;
-            if (rating.IndexOf("N.S.") > -1)
-                return string.Empty;
-            if (rating.IndexOf("N/A") > -1)
-                return string.Empty;
-            string value = rating.Trim();       
-            //if (value.IndexOf("u") > -1)
-            //    return value.Split('u')[0].Trim();
-            //if (value.IndexOf("e") > -1)
-            //    return value.Split('e')[0].Trim();
-            if (value.IndexOf("NR") > -1)
-                return string.Empty;
-            if (value.IndexOf("twNR") > -1)
-                return string.Empty;
-            if (value.IndexOf("WD") > -1)
-                return string.Empty;
+            string value = rating.Trim();
+            //if (rating.IndexOf("N.A.") > -1)
+            //    return string.Empty;
+            //if (rating.IndexOf("N.S.") > -1)
+            //    return string.Empty;
+            //if (rating.IndexOf("N/A") > -1)
+            //    return string.Empty;
+            //if (value.IndexOf("NR") > -1)
+            //    return string.Empty;
+            //if (value.IndexOf("twNR") > -1)
+            //    return string.Empty;
+            //if (value.IndexOf("WD") > -1)
+            //    return string.Empty;
             if (((org & RatingOrg.Moody) != RatingOrg.Moody) && (value.IndexOf("WR") > -1))
                 return string.Empty;
-            if (value.IndexOf("twWR") > -1)
-                return string.Empty;
+            //if (value.IndexOf("twWR") > -1)
+            //    return string.Empty;
 
-            List<string> splitGetFirst = new List<string>()
-            {
-                "u","e","/*-","/*+","*-","*+",
-                "(bra)","(cl)","(col)","(mex)",
-                "(P)","/*","*"
-            };
-            splitGetFirst.ForEach(x =>
+            //List<string> splitGetFirst = new List<string>()
+            //{
+            //    "u","e","/*-","/*+","*-","*+",
+            //    "(bra)","(cl)","(col)","(mex)",
+            //    "(P)","/*","*"
+            //};
+            rule_1.ForEach(x =>
             {
                 if (value.Contains(x))
                 {
                     value = SplitFirst(value, x);
                 }
             });
-            return value;
+            rule_2.ForEach(x =>
+            {
+                if (value.Contains(x.Item1) && !x.Item2.IsNullOrWhiteSpace())
+                {
+                    value = value.Replace(x.Item1, x.Item2);
+                }
+            });
+            return value.Trim();
         }
 
         /// <summary>
