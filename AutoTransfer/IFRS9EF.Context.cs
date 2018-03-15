@@ -53,5 +53,7 @@ namespace AutoTransfer
         public virtual DbSet<Econ_Foreign> Econ_Foreign { get; set; }
         public virtual DbSet<Loan_default_Info> Loan_default_Info { get; set; }
         public virtual DbSet<Bond_Rating_Parm> Bond_Rating_Parm { get; set; }
+        public virtual DbSet<Assessment_Sub_Kind_Ticker> Assessment_Sub_Kind_Ticker { get; set; }
+        public virtual DbSet<Rating_Update_Info> Rating_Update_Info { get; set; }
     }
 }

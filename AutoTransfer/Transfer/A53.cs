@@ -36,7 +36,13 @@ namespace AutoTransfer.Transfer
         private ThreadTask t = new ThreadTask();
         private TableType tableType = TableType.A53;
         private string type = TableType.A53.ToString();
-
+        private string _user = "System";
+        private DateTime _date = DateTime.MinValue;
+        private TimeSpan _time = TimeSpan.MinValue;
+        //補正方式代碼 01:置換特殊字元成空值
+        private List<string> rule_1s = new List<string>();
+        //補正方式代碼 02:以新值取代舊值 item1 = 特殊字元 ex:(mx),item2 = 新取代字元 ex:(twn)
+        private List<Tuple<string, string>> rule_2s = new List<Tuple<string, string>>();
         #region 處理參數
         private List<Rating_Info_SampleInfo> sampleInfos = new List<Rating_Info_SampleInfo>();
         #endregion
@@ -729,6 +735,15 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
             A53Sample a53Sample = new A53Sample();
             A53Commpany a53Commpany = new A53Commpany();
             List<StringBuilder> sbs = new List<StringBuilder>();
+            List<Rating_Update_Info> A56s = db.Rating_Update_Info.AsNoTracking()
+                .Where(x => x.IsActive == "Y").ToList();
+            //補正方式代碼 01:置換特殊字元成空值
+            rule_1s = A56s.Where(x => x.Update_Method == "01").Select(x => x.Replace_Object).ToList();
+            //補正方式代碼 02:以新值取代舊值 item1 = 特殊字元 ex:(mx),item2 = 新取代字元 ex:(twn)
+            rule_2s = A56s.Where(x => x.Update_Method == "02")
+                .Select(x => new Tuple<string, string>(x.Replace_Object, x.Replace_Word)).ToList();
+            _date = startTime.Date;
+            _time = startTime.TimeOfDay;
             #region sample Data
 
             using (StreamReader sr = new StreamReader(Path.Combine(
@@ -1069,6 +1084,8 @@ INSERT INTO Rating_Info
                 #region update A95 Security_Des & Bloomberg_Ticker AND A41 & A95 Bond_Type & Assessment_Sub_Kind
                 //A45
                 var A45Datas = db.Bond_Category_Info.AsNoTracking().ToList();
+                //A95_1
+                var A95_1s = db.Assessment_Sub_Kind_Ticker.AsNoTracking().ToList();
                 //A95
                 db.Bond_Ticker_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt &&
                 x.Version == verInt && 
@@ -1079,12 +1096,23 @@ INSERT INTO Rating_Info
                 {
                     //obj => Rating_Info_SampleInfo
                     var obj = sampleInfos.FirstOrDefault(y => y.Bond_Number == x.Bond_Number);
-                    if (obj != null)
+                    //obj2 => Assessment_Sub_Kind_Ticker
+                    var obj2 = A95_1s.FirstOrDefault(y => y.Bond_Number == x.Bond_Number);
+                    if (obj != null || obj2 != null)
                     {
-                        if (!obj.Security_Des.IsNullOrWhiteSpace() && obj.Security_Des != x.Security_Des)
+                        if ((!obj.Security_Des.IsNullOrWhiteSpace() && obj.Security_Des != x.Security_Des ) ||
+                            (obj == null && obj2.Security_Des.IsNullOrWhiteSpace() && obj2.Security_Des != x.Security_Des))
                         {
-                            x.Security_Des = obj.Security_Des;
-                            x.Bloomberg_Ticker = obj.Bloomberg_Ticker;
+                            if (obj != null)
+                            {
+                                x.Security_Des = obj.Security_Des;
+                                x.Bloomberg_Ticker = obj.Bloomberg_Ticker;
+                            }
+                            else
+                            {
+                                x.Security_Des = obj2.Security_Des;
+                                x.Bloomberg_Ticker = obj2.Bloomberg_Ticker;
+                            }
                             x.Processing_Date = startTime;
                             var A45Data = A45Datas.FirstOrDefault(z =>
                             z.Bloomberg_Ticker == x.Bloomberg_Ticker);
@@ -1094,34 +1122,43 @@ INSERT INTO Rating_Info
                                 var Bond_Type = formateBondType(A45Data.Bond_Type);
                                 sbs.Add(new StringBuilder($@"
 UPDATE  Bond_Ticker_Info
-SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
-    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
-    Processing_Date = {startTime.dateTimeToStrSql()} ,
+SET Security_Des = {x.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {x.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()},
     Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
-    Bond_Type = {Bond_Type.stringToStrSql()}
+    Bond_Type = {Bond_Type.stringToStrSql()},
+    LastUpdate_User = {_user.stringToStrSql()},
+    LastUpdate_Date = {_date.dateTimeToStrSql()},
+    LastUpdate_Time = {_time.timeSpanToStrSql()}
 WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
 AND  Version = {verInt.ToString()}
-AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+AND  Bond_Number = {x.Bond_Number.stringToStrSql()} ;
 
 UPDATE Bond_Account_Info
 SET Assessment_Sub_Kind = {Assessment_Sub_Kind.stringToStrSql()},
     Bond_Type = {Bond_Type.stringToStrSql()} ,
-    Processing_Date = {startTime.dateTimeToStrSql()} 
+    Processing_Date = {startTime.dateTimeToStrSql()},
+    LastUpdate_User = {_user.stringToStrSql()},
+    LastUpdate_Date = {_date.dateTimeToStrSql()},
+    LastUpdate_Time = {_time.timeSpanToStrSql()}   
 WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
 AND  Version = {verInt.ToString()}
-AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+AND  Bond_Number = {x.Bond_Number.stringToStrSql()} ;
 "));
                             }
                             else
                             {
                                 sbs.Add(new StringBuilder($@"
 UPDATE  Bond_Ticker_Info
-SET Security_Des = {obj.Security_Des.stringToStrSql()} ,
-    Bloomberg_Ticker = {obj.Bloomberg_Ticker.stringToStrSql()} ,
-    Processing_Date = {startTime.dateTimeToStrSql()}
+SET Security_Des = {x.Security_Des.stringToStrSql()} ,
+    Bloomberg_Ticker = {x.Bloomberg_Ticker.stringToStrSql()} ,
+    Processing_Date = {startTime.dateTimeToStrSql()} ,
+    LastUpdate_User = {_user.stringToStrSql()},
+    LastUpdate_Date = {_date.dateTimeToStrSql()},
+    LastUpdate_Time = {_time.timeSpanToStrSql()}  
 WHERE Report_Date = {reportDateDt.dateTimeToStrSql()}
 AND  Version = {verInt.ToString()}
-AND  Bond_Number = {obj.Bond_Number.stringToStrSql()} ;
+AND  Bond_Number = {x.Bond_Number.stringToStrSql()} ;
 "));
                             }
                         }
@@ -1186,23 +1223,27 @@ CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A95.Lien_position = '次順
 	 ELSE A45.Assessment_Sub_Kind
 	 END AS Assessment_Sub_Kind
 from  
-Bond_Ticker_Info A95
+(select * from Bond_Ticker_Info 
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and   version = {verInt.ToString()}
+and   Security_Des is null
+and   Bloomberg_Ticker is null
+and   Bond_Type is null
+and   Assessment_Sub_Kind is null
+) AS A95
 JOIN TEMP T1
 ON A95.Lots = T1.Lots
 AND A95.Bond_Number = T1.Bond_Number
 AND A95.Portfolio_Name = T1.Portfolio_Name
 JOIN Bond_Category_Info A45
 ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
-where A95.Report_Date = {reportDateDt.dateTimeToStrSql()}
-and A95.version = {verInt.ToString()}
-and A95.Security_Des is null
-and A95.Bloomberg_Ticker is null
-and A95.Bond_Type is null
-and A95.Assessment_Sub_Kind is null
 )
 update Bond_Ticker_Info 
 set Assessment_Sub_Kind = A95TEMP.Assessment_Sub_Kind,
-    Bond_Type = A95TEMP.Bond_Type
+    Bond_Type = A95TEMP.Bond_Type,
+    LastUpdate_User = {_user.stringToStrSql()},
+    LastUpdate_Date = {_date.dateTimeToStrSql()},
+    LastUpdate_Time = {_time.timeSpanToStrSql()}  
 from Bond_Ticker_Info A95, A95TEMP 
 where A95.Report_Date = A95TEMP.Report_Date
 and A95.Version = A95TEMP.Version
@@ -1230,21 +1271,25 @@ CASE WHEN (A45.Assessment_Sub_Kind = '金融債' AND A41.Lien_position = '次順
 	 THEN '金融債主順位債券'
 	 ELSE A45.Assessment_Sub_Kind
 	 END AS Assessment_Sub_Kind
-from Bond_Account_Info A41
+from (select * from Bond_Account_Info 
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and   version = {verInt.ToString()}
+and   Bond_Type is null
+and   Assessment_Sub_Kind is null
+) AS A41
 JOIN TEMP T1
 ON A41.Lots = T1.Lots
 AND A41.Bond_Number = T1.Bond_Number
 AND A41.Portfolio_Name = T1.Portfolio_Name
 JOIN Bond_Category_Info A45
 ON T1.Bloomberg_Ticker = A45.Bloomberg_Ticker
-where A41.Report_Date = {reportDateDt.dateTimeToStrSql()}
-and A41.version = {verInt.ToString()}
-and A41.Bond_Type is null
-and A41.Assessment_Sub_Kind is null
 )
 update Bond_Account_Info
 set Assessment_Sub_Kind = A41TEMP.Assessment_Sub_Kind,
-    Bond_Type = A41TEMP.Bond_Type
+    Bond_Type = A41TEMP.Bond_Type ,
+    LastUpdate_User = {_user.stringToStrSql()},
+    LastUpdate_Date = {_date.dateTimeToStrSql()},
+    LastUpdate_Time = {_time.timeSpanToStrSql()}  
 FROM Bond_Account_Info A41,  A41TEMP
 where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
 "
@@ -1397,7 +1442,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             List<Rating_Info> sampleData
             )
         {
-            rating = fr.forRating(rating,org); //ForMate Rating
+            rating = fr.forRating(rating,org, rule_1s, rule_2s); //ForMate Rating
             rating = fr.forRating2(rating,org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Sample評等判斷
@@ -1430,7 +1475,7 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
             List<Rating_Info> commpanyData
             )
         {
-            rating = fr.forRating(rating, org); //ForMate Rating
+            rating = fr.forRating(rating, org, rule_1s, rule_2s); //ForMate Rating
             rating = fr.forRating2(rating, org); //formate 惠譽(台灣)
             if (!rating.IsNullOrWhiteSpace() &&
                 !nullarr.Contains(rating.Trim())) //Commpany評等判斷

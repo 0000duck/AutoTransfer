@@ -33,6 +33,8 @@
         <EntityTypeShape EntityType="IFRS9Model.Econ_Foreign" Width="1.5" PointX="19.375" PointY="6.75" />
         <EntityTypeShape EntityType="IFRS9Model.Loan_default_Info" Width="1.5" PointX="9.375" PointY="6.75" />
         <EntityTypeShape EntityType="IFRS9Model.Bond_Rating_Parm" Width="1.5" PointX="7.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Assessment_Sub_Kind_Ticker" Width="1.5" PointX="13.375" PointY="19.75" />
+        <EntityTypeShape EntityType="IFRS9Model.Rating_Update_Info" Width="1.5" PointX="21.375" PointY="0.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
