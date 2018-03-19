@@ -1,4 +1,5 @@
-﻿using AutoTransfer.Utility;
+﻿using AutoTransfer.Transfer;
+using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -1634,13 +1635,23 @@ select
                             //insert A58
                             db.Database.ExecuteSqlCommand(sql2);
                             dbContextTransaction.Commit();
+
+                            DateTime endTime = DateTime.Now;
+
+                            new BondsCheckRepository<Bond_Rating_Summary>(
+                                db.Bond_Rating_Summary.AsNoTracking()
+                                .Where(x => x.Report_Date == dt &&
+                                x.Version == version).AsEnumerable(), 
+                                Check_Table_Type.Bonds_A58_Transfer_Check);
+
                             db.Dispose();
+
                             log.bothLog(
                                 TableType.A57.ToString(),
                                 true,
                                 dt,
                                 startTime,
-                                DateTime.Now,
+                                endTime,
                                 version,
                                 A57logPath,
                                 MessageType.Success.GetDescription()
@@ -1650,11 +1661,11 @@ select
                                 true,
                                 dt,
                                 startTime,
-                                DateTime.Now,
+                                endTime,
                                 version,
                                 A58logPath,
                                 MessageType.Success.GetDescription()
-                                );
+                                );                            
                         }
                         catch (Exception ex)
                         {
