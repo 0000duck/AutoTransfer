@@ -108,8 +108,7 @@ namespace AutoTransfer.Transfer
                 db.Dispose();
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
-                //createSampleFile();
-                new CompleteEvent().saveDb(reportDateDt, verInt);
+                createSampleFile();
             }
         }
 
