@@ -839,6 +839,22 @@
           <Property Name="LastUpdate_Date" Type="date" />
           <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
+        <EntityType Name="Scheduling_Report">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Scheduling_Type" Type="varchar" MaxLength="30" />
+          <Property Name="Content_memo" Type="varchar" MaxLength="30" />
+          <Property Name="Report_Date" Type="date" />
+          <Property Name="Version" Type="int" />
+          <Property Name="File_Name" Type="varchar" MaxLength="50" />
+          <Property Name="File_path" Type="varchar" MaxLength="100" />
+          <Property Name="Create_Date" Type="date" Nullable="false" />
+          <Property Name="Delete_YN" Type="varchar" MaxLength="1" />
+          <Property Name="Delete_Date" Type="date" />
+          <Property Name="Processing_User" Type="varchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="Transfer_CheckTable">
           <Key>
             <PropertyRef Name="Id" />
@@ -895,6 +911,7 @@
           <EntitySet Name="Rating_Info" EntityType="Self.Rating_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="Self.Rating_Info_SampleInfo" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Rating_Update_Info" EntityType="Self.Rating_Update_Info" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Scheduling_Report" EntityType="Self.Scheduling_Report" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Transfer_CheckTable" EntityType="Self.Transfer_CheckTable" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD" Association="Self.FK_Econ_D_YYYYMMDD_Econ_D_YYYYMMDD">
             <End Role="Econ_Domestic" EntitySet="Econ_Domestic" />
@@ -939,6 +956,7 @@
           <EntitySet Name="Bond_Rating_Parm" EntityType="IFRS9Model.Bond_Rating_Parm" />
           <EntitySet Name="Assessment_Sub_Kind_Ticker" EntityType="IFRS9Model.Assessment_Sub_Kind_Ticker" />
           <EntitySet Name="Rating_Update_Info" EntityType="IFRS9Model.Rating_Update_Info" />
+          <EntitySet Name="Scheduling_Report" EntityType="IFRS9Model.Scheduling_Report" />
           </EntityContainer>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
@@ -1803,6 +1821,22 @@
           <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
           <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
+        <EntityType Name="Scheduling_Report">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Scheduling_Type" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Content_memo" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="Report_Date" Type="DateTime" Precision="0" />
+          <Property Name="Version" Type="Int32" />
+          <Property Name="File_Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="File_path" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Delete_YN" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Delete_Date" Type="DateTime" Precision="0" />
+          <Property Name="Processing_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2656,6 +2690,23 @@
                 <ScalarProperty Name="Update_Method" ColumnName="Update_Method" />
                 <ScalarProperty Name="Replace_Object" ColumnName="Replace_Object" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Scheduling_Report">
+            <EntityTypeMapping TypeName="IFRS9Model.Scheduling_Report">
+              <MappingFragment StoreEntitySet="Scheduling_Report">
+                <ScalarProperty Name="Processing_User" ColumnName="Processing_User" />
+                <ScalarProperty Name="Delete_Date" ColumnName="Delete_Date" />
+                <ScalarProperty Name="Delete_YN" ColumnName="Delete_YN" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="File_path" ColumnName="File_path" />
+                <ScalarProperty Name="File_Name" ColumnName="File_Name" />
+                <ScalarProperty Name="Version" ColumnName="Version" />
+                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
+                <ScalarProperty Name="Content_memo" ColumnName="Content_memo" />
+                <ScalarProperty Name="Scheduling_Type" ColumnName="Scheduling_Type" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
               </MappingFragment>
             </EntityTypeMapping>

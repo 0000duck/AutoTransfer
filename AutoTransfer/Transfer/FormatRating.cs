@@ -47,7 +47,8 @@ namespace AutoTransfer.Transfer
             {
                 if (value.Contains(x))
                 {
-                    value = SplitFirst(value, x);
+                    //value = SplitFirst(value, x);
+                    value = value.Replace(x,string.Empty);
                 }
             });
             rule_2.ForEach(x =>

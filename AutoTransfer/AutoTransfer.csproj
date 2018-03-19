@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstract\CheckDataAbstract.cs" />
     <Compile Include="Assessment_Sub_Kind_Ticker.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -109,6 +110,7 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="Enum\A53CommpanyBloombergField.cs" />
+    <Compile Include="Enum\CheckTableType.cs" />
     <Compile Include="Enum\GroupProductCode.cs" />
     <Compile Include="Enum\RatingOrg.cs" />
     <Compile Include="Enum\A53SampleBloombergField.cs" />
@@ -158,6 +160,9 @@
     <Compile Include="Rating_Update_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Scheduling_Report.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="StartTransferA91.cs" />
     <Compile Include="StartTransferA92.cs" />
     <Compile Include="StartTransferA93.cs" />
@@ -172,6 +177,7 @@
     <Compile Include="Transfer\A93.cs" />
     <Compile Include="Transfer\A961.cs" />
     <Compile Include="Transfer\A962.cs" />
+    <Compile Include="Transfer\BondsCheckRepository.cs" />
     <Compile Include="Transfer\C04.cs" />
     <Compile Include="Transfer\A53.cs" />
     <Compile Include="StartTransfer.cs" />
@@ -184,6 +190,7 @@
     <Compile Include="Enum\MessageType.cs" />
     <Compile Include="Enum\RatingObject.cs" />
     <Compile Include="Enum\TableType.cs" />
+    <Compile Include="Transfer\D73.cs" />
     <Compile Include="Transfer_CheckTable.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
