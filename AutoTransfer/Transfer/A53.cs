@@ -1101,7 +1101,7 @@ INSERT INTO Rating_Info
                     if (obj != null || obj2 != null)
                     {
                         if ((!obj.Security_Des.IsNullOrWhiteSpace() && obj.Security_Des != x.Security_Des ) ||
-                            (obj == null && obj2.Security_Des.IsNullOrWhiteSpace() && obj2.Security_Des != x.Security_Des))
+                            (obj == null && !obj2.Security_Des.IsNullOrWhiteSpace() && obj2.Security_Des != x.Security_Des))
                         {
                             if (obj != null)
                             {
