@@ -87,7 +87,12 @@ namespace AutoTransfer.CreateFile
                     .ToList().ForEach(x =>
                     {
                         if (!x.IsNullOrWhiteSpace())
-                            data.Add(string.Format("{0}|ISIN", x));
+                        {
+                            if (x.StartsWith("EJ"))
+                                data.Add(string.Format("{0} Corp", x));
+                            else
+                                data.Add(string.Format("{0}|ISIN", x));
+                        }
                     });
                 db.Dispose();
                 data.Add("END-OF-DATA");
