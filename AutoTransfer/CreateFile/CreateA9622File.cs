@@ -1,5 +1,6 @@
 ﻿using AutoTransfer.Utility;
 using System.Collections.Generic;
+using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.CreateFile
@@ -48,14 +49,18 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
-                datas.ForEach(x =>
-                {
-                    if (x.ID_CUSIP.IsNullOrWhiteSpace() == false)
-                    {
-                        data.Add(string.Format("{0}@BGN Govt|CUSIP|", x.ID_CUSIP));
-                    }
-                }
-                            );
+
+                datas.Select(x => x.ID_CUSIP).Distinct()
+                     .ToList()
+                     .ForEach(x =>
+                                 {
+                                     if (!x.IsNullOrWhiteSpace())
+                                     {
+                                         data.Add(string.Format("{0}@BGN Govt|CUSIP|", x));
+                                     }
+                                 }
+                             );
+
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
 

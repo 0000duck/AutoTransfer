@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.CreateFile
@@ -48,7 +49,7 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-DATA
                 data.Add("START-OF-DATA");
-                datas.ForEach(x => data.Add(string.Format("{0}|CUSIP|", x)));
+                datas.Select(x => x).Distinct().ToList().ForEach(x => data.Add(string.Format("{0}|CUSIP|", x)));
                 data.Add("END-OF-DATA");
                 #endregion START-OF-DATA
 

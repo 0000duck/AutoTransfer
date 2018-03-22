@@ -37,6 +37,8 @@ namespace AutoTransfer.Transfer
         {
             logPath = log.txtLocation(type);
 
+            reportDateStr = dateTime;
+
             IFRS9Entities db = new IFRS9Entities();
             startTime = DateTime.Now;
 
@@ -59,9 +61,6 @@ namespace AutoTransfer.Transfer
             }
 
             A96Data = db.Bond_Spread_Info.AsNoTracking().Where(x=>x.Report_Date == reportDateDt).ToList();
-            verInt = db.Bond_Spread_Info.AsNoTracking()
-                       .Where(x => x.Report_Date == reportDateDt)
-                       .DefaultIfEmpty().Max(x => x.Version);
 
             if (A96Data.Any() == false)
             {
@@ -69,12 +68,7 @@ namespace AutoTransfer.Transfer
 
                 List<string> errs = new List<string>();
 
-                errs.Add("Bond_Spread_Info 無資料，請先執行 A961");
-
-                if (verInt == 0)
-                {
-                    errs.Add(MessageType.transferError.GetDescription());
-                }
+                errs.Add($"資料表 Bond_Spread_Info 無 {reportDateStr} 的資料，請先執行 A961");
 
                 log.bothLog(
                     type,
@@ -89,9 +83,10 @@ namespace AutoTransfer.Transfer
             }
             else
             {
+                verInt = A96Data.FirstOrDefault().Version;
+
                 db.Dispose();
 
-                reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
 
                 createA9621File();
