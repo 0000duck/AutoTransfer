@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoTransfer.Sample;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +44,10 @@ namespace AutoTransfer.CreateFile
 
                 data.Add("START-OF-FIELDS");
 
-                data.Add("Security_Des");
+                new A53Sample().GetType()
+                   .GetProperties()
+                   .ToList()
+                   .ForEach(x => data.Add(x.Name));
 
                 data.Add("END-OF-FIELDS");
 

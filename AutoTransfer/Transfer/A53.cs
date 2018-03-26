@@ -565,14 +565,14 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
             }
             else
             {
-                updateSecurityDes();
+                updateCorp();
             }
         }
 
         /// <summary>
         /// update Rating_Info_SampleInfo SecurityDes
         /// </summary>
-        protected void updateSecurityDes()
+        protected void updateCorp()
         {
             List<string> data = new List<string>();
             using (StreamReader sr = new StreamReader(Path.Combine(
@@ -594,21 +594,93 @@ and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
                         if (flag) //找到的資料
                         {
                             var arr = line.Split('|');
-                            //arr[0]  ex: EI994034 Corp (債券編號)
+                            //arr[0]  ex: US00206RDH21 Corp(債券編號)
                             //arr[1]  ex: 0
-                            //arr[2]  ex: 1
-                            //arr[3]  CHGRID 5.14 12/08/21 (Security_Des)
-
-                            if (arr.Length >= 4)
+                            //arr[2]  ex: 20
+                            //arr[3]  ISSUER_EQUITY_TICKER (發行人)
+                            //arr[4]  ISSUE_DT (債券評等日期)
+                            //arr[5]  ISSUER (債券名稱)
+                            //arr[6]  GUARANTOR_EQY_TICKER (擔保人)
+                            //arr[7]  GUARANTOR_NAME (擔保人名稱)
+                            //--標普(S&P)
+                            //arr[8]  (國外)RTG_SP (SP國外評等)
+                            //arr[9] (國外)SP_EFF_DT (SP國外評等日期)
+                            //--穆迪(Moody's)
+                            //arr[10] (國外)RTG_MOODY (Moody's國外評等)
+                            //arr[11] (國外)MOODY_EFF_DT (Moody's國外評等日期)
+                            //--惠譽台灣(Fitch(twn))
+                            //arr[12] (國內)RTG_FITCH_NATIONAL (惠譽國內評等)
+                            //arr[13] (國內)RTG_FITCH_NATIONAL_DT (惠譽國內評等日期)
+                            //--惠譽(Fitch)
+                            //arr[14] (國外)RTG_FITCH (惠譽評等)
+                            //arr[15] (國外)FITCH_EFF_DT (惠譽評等日期)
+                            //--TRC(中華信評)
+                            //arr[16] (國內)RTG_TRC (TRC 評等)
+                            //arr[17] (國內)TRC_EFF_DT (TRC 評等日期)
+                            //--A95 Security_Des (與A53 一起抓資料)
+                            //arr[18] A95 Security_Des
+                            //--SMF 條件符合取代使用
+                            //arr[19] PARENT_TICKER_EXCHANGE
+                            //--COLLAT_TYP
+                            //arr[20] COLLAT_TYP
+                            //--D63.Net_Debt
+                            //arr[21] NET_DEBT
+                            //--D63.Total_Asset & D63.BS_TOT_ASSET
+                            //arr[22] BS_TOT_ASSET
+                            //--D63.CFO
+                            //arr[23] TRAIL_12M_CASH_FROM_OPER
+                            //--D63.Total_Equity
+                            //arr[24] TOTAL_EQUITY
+                            //--D63.SHORT_AND_LONG_TERM_DEBT
+                            //arr[25] SHORT_AND_LONG_TERM_DEBT
+                            //--D63.Int_Expense (1)
+                            //arr[26] TRAIL_12M_INT_EXP
+                            //--D63.Int_Expense (2)
+                            //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                            if (arr.Length >= 28)
                             {
                                 var bond_Number = arr[0].Trim().Split(' ')[0];
-                                var Security_Des = arr[3];
+                                var ISSUER_EQUITY_TICKER = arr[3]?.Trim(); //ISSUER_EQUITY_TICKER
+                                var GUARANTOR_EQY_TICKER = arr[6]?.Trim(); //GUARANTOR_EQY_TICKER
+                                var GUARANTOR_NAME = arr[7]?.Trim(); //GUARANTOR_NAME
+                                var Security_Des = arr[18];
                                 var Bloomberg_Ticker = Security_Des.IsNullOrWhiteSpace() ? null : Security_Des.Split(' ')[0];
-                                // update Rating_Info_SampleInfo
+                                var PARENT_TICKER_EXCHANGE = arr[19]?.Trim(); //PARENT_TICKER_EXCHANGE 
+                                var COLLAT_TYP = arr[20]?.Trim();
+                                if (nullarr.Contains(ISSUER_EQUITY_TICKER))
+                                    ISSUER_EQUITY_TICKER = null;
+                                if (nullarr.Contains(GUARANTOR_EQY_TICKER))
+                                    GUARANTOR_EQY_TICKER = null;
+                                if (nullarr.Contains(GUARANTOR_NAME))
+                                    GUARANTOR_NAME = null;
+                                var Net_Debt = arr[21];
+                                var Total_Asset = arr[22];
+                                var BS_TOT_ASSET = arr[22];
+                                var CFO = arr[23];
+                                var Total_Equity = arr[24];
+                                var SHORT_AND_LONG_TERM_DEBT = arr[25];
+                                string Int_Expense = null;
+                                double d = 0d;
+                                if (double.TryParse(arr[26], out d))
+                                    Int_Expense = d.ToString();
+                                else if (double.TryParse(arr[27], out d))
+                                    Int_Expense = d.ToString();
+                                // insert Rating_Info_SampleInfo
                                 sb.Append($@"
 update Rating_Info_SampleInfo
 set Security_Des = {Security_Des.stringToStrSql()} ,
-    Bloomberg_Ticker = {Bloomberg_Ticker.stringToStrSql()}
+    Bloomberg_Ticker = {Bloomberg_Ticker.stringToStrSql()} ,
+    ISSUER_TICKER = {ISSUER_EQUITY_TICKER.stringToStrSql()} ,
+    GUARANTOR_EQY_TICKER = {GUARANTOR_EQY_TICKER.stringToStrSql()} ,
+    GUARANTOR_NAME = {GUARANTOR_NAME.stringToStrSql()} ,
+    PARENT_TICKER_EXCHANGE = {PARENT_TICKER_EXCHANGE.stringToStrSql()} ,
+    COLLAT_TYP = {COLLAT_TYP.stringToStrSql()} ,
+    Net_Debt = {Net_Debt.stringTofloatSql()} ,
+    BS_TOT_ASSET = {BS_TOT_ASSET.stringTofloatSql()} ,
+    CFO = {CFO.stringTofloatSql()} ,
+    Total_Equity = {Total_Equity.stringTofloatSql()} ,
+    SHORT_AND_LONG_TERM_DEBT = {SHORT_AND_LONG_TERM_DEBT.stringTofloatSql()} ,
+    Int_Expense = {Int_Expense.stringTofloatSql()}
 where Report_Date = {reportDateDt.dateTimeToStrSql()}
 and Bond_Number = {bond_Number.stringToStrSql()}; ");
                             }
