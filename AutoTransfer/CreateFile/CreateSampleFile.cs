@@ -88,9 +88,9 @@ namespace AutoTransfer.CreateFile
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            if (x.StartsWith("EJ"))
-                                data.Add(string.Format("{0} Corp", x));
-                            else
+                            //if (x.StartsWith("EJ"))
+                            //    data.Add(string.Format("{0} Corp", x));
+                            //else
                                 data.Add(string.Format("{0}|ISIN", x));
                         }
                     });
