@@ -1,6 +1,7 @@
 ﻿using AutoTransfer.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.Transfer
@@ -43,14 +44,26 @@ namespace AutoTransfer.Transfer
             //    "(bra)","(cl)","(col)","(mex)",
             //    "(P)","/*","*"
             //};
+
+            
+            List<string> Liststrs = new List<string>();
             rule_1.ForEach(x =>
             {
                 if (value.Contains(x))
                 {
-                    //value = SplitFirst(value, x);
-                    value = value.Replace(x,string.Empty);
+                    Liststrs.Add(x);
+                    //value = value.Replace(x,string.Empty);
                 }
             });
+            if (Liststrs.Count > 0)
+            {
+                string[] strs = Liststrs.ToArray();
+                ExchangeSort(strs);
+                strs.Reverse().ToList().ForEach(x =>
+                {
+                    value = value.Replace(x, string.Empty);
+                });
+            }
             rule_2.ForEach(x =>
             {
                 if (value.Contains(x.Item1) && !x.Item2.IsNullOrWhiteSpace())
@@ -59,6 +72,25 @@ namespace AutoTransfer.Transfer
                 }
             });
             return value.Trim();
+        }
+
+        //Exchange Sort(交換排序法)
+        public static void ExchangeSort(string[] list)
+        {
+            int n = list.Length;
+            string temp;
+            for (int i = 0; i <= n - 1; i++)
+            {
+                for (int j = i + 1; j < n; j++)
+                {
+                    if (list[i].Contains(list[j]))
+                    {  // 比較鄰近兩個物件，左邊包含右邊時就互換。	       
+                        temp = list[j];
+                        list[j] = list[i];
+                        list[i] = temp;
+                    }
+                }
+            }
         }
 
         /// <summary>
