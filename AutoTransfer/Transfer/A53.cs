@@ -78,7 +78,7 @@ namespace AutoTransfer.Transfer
             
             var A41 = db.Bond_Account_Info.AsNoTracking()
                .Any(x => x.Report_Date == reportDateDt);
-            verInt = db.Bond_Account_Info
+            verInt = db.Bond_Account_Info.AsNoTracking()
                 .Where(x => x.Report_Date == reportDateDt && x.Version != null)
                 .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
             var check = log.checkTransferCheck(TableType.A53.ToString(), "A41", reportDateDt, verInt);
@@ -110,6 +110,17 @@ namespace AutoTransfer.Transfer
                 setFile = new SetFile(tableType, dateTime);
                 createSampleFile();
             }
+        }
+
+        public void onlyA57_A58Transfer(string dateTime)
+        {
+            DateTime.TryParseExact(dateTime, "yyyyMMdd", null,System.Globalization.DateTimeStyles.AllowWhiteSpaces,out reportDateDt);
+            using (IFRS9Entities db = new IFRS9Entities())
+            {
+                verInt = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version != null)
+                           .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
+            }
+            new CompleteEvent().saveDb(reportDateDt, verInt);
         }
 
         /// <summary>
