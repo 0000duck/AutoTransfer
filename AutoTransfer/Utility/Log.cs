@@ -72,6 +72,8 @@ namespace AutoTransfer.Utility
 
         public string txtLocation(string fileName)
         {
+            new FileRelated().createFile(@"D:\IFRS9Log");
+
             string startupPath = Directory.GetCurrentDirectory();
 
             string txtLog = "txtLog";
