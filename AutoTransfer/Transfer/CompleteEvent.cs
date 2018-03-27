@@ -68,7 +68,7 @@ WITH temp2 AS
   SELECT
   CASE WHEN ((SELECT TOP 1 Report_Date FROM Bond_Rating_Info WHERE Report_Date = '{reportData}' and Rating_Type = '{Rating_Type.A.GetDescription()}') is not null )
        THEN '{reportData}'
-	   ELSE (SELECT TOP 1 Report_Date from Bond_Rating_Info order by Report_Date desc)
+	   ELSE (SELECT TOP 1 Report_Date from Bond_Rating_Info WHERE Report_Date < '{reportData}' order by Report_Date desc)
   END AS Report_Date
 ), --最後一版A57
 temp AS
@@ -102,23 +102,19 @@ tempA57t AS (
 SELECT _A57.*,
        _A51.Grade_Adjust,
        _A51.PD_Grade
-FROM   temp _A57
+FROM   (select * from temp where Rating_Org <> '{RatingOrg.Moody.GetDescription()}') AS _A57
 left Join   A52 _A52
-ON     _A57.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
-AND    _A57.Rating = _A52.Rating
+ON     _A57.Rating = _A52.Rating
 AND    _A57.Rating_Org = _A52.Rating_Org
 left JOIN   A51 _A51
 ON     _A52.PD_Grade = _A51.PD_Grade
-WHERE  _A57.Rating_Org <> '{RatingOrg.Moody.GetDescription()}'
   UNION ALL
 SELECT _A57.*,
        _A51_2.Grade_Adjust,
        _A51_2.PD_Grade
-FROM   temp _A57
+FROM   (select * from temp where Rating_Org = '{RatingOrg.Moody.GetDescription()}' ) AS _A57
 left JOIN   A51 _A51_2
-ON     _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-AND    _A57.Rating = _A51_2.Rating
-WHERE  _A57.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+ON     _A57.Rating = _A51_2.Rating
 ),
 --最後一版A57(原始投資信評) 加入信評
 tempA AS(
@@ -148,9 +144,8 @@ tempA AS(
    where Report_Date = '{reportData}'
    and   Version =  {ver})
    AS A41
-   LEFT JOIN Rating_Info_SampleInfo _A53Sample
+   LEFT JOIN (select * from Rating_Info_SampleInfo where Report_Date = '{reportData}') AS _A53Sample
    ON  A41.Bond_Number = _A53Sample.Bond_Number
-   AND _A53Sample.Report_Date = '{reportData}'
 ), --全部的A41
 T1 AS (
    SELECT BA_Info.Reference_Nbr AS Reference_Nbr ,
@@ -242,9 +237,8 @@ UNION ALL
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
    FROM  (select * from tempA where ISIN_Changed_Ind is null) AS BA_Info --沒換券的A41
-   JOIN  tempA57t oldA57 --oldA57
-   ON    oldA57.Bond_Number_Old is not null
-   AND   BA_Info.Bond_Number =  oldA57.Bond_Number_Old
+   JOIN  (select * from tempA57t where Bond_Number_Old is not null) AS oldA57 --oldA57
+   ON    BA_Info.Bond_Number =  oldA57.Bond_Number_Old
    AND   BA_Info.Lots = oldA57.Lots_Old
    AND   BA_Info.Portfolio_Name = oldA57.Portfolio_Name_Old
 UNION ALL
@@ -337,9 +331,8 @@ UNION ALL
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
    FROM  (select * from tempA where ISIN_Changed_Ind = 'Y') AS BA_Info --換券的A41
-   JOIN  tempA57t oldA57 --oldA57
-   ON    oldA57.Bond_Number_Old is not null
-   AND   BA_Info.Bond_Number_Old =  oldA57.Bond_Number_Old
+   JOIN  (select * from tempA57t where Bond_Number_Old is not null) AS oldA57 --oldA57
+   ON    BA_Info.Bond_Number_Old =  oldA57.Bond_Number_Old
    AND   BA_Info.Lots_Old = oldA57.Lots_Old
    AND   BA_Info.Portfolio_Name_Old = oldA57.Portfolio_Name_Old
 ),

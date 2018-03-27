@@ -57,7 +57,7 @@ namespace AutoTransfer.Transfer
         {
             IFRS9Entities db = new IFRS9Entities();
             startTime = DateTime.Now;
-
+            logPath = log.txtLocation(type);
             if (dateTime.Length != 8 ||
                !DateTime.TryParseExact(dateTime, "yyyyMMdd", null,
                System.Globalization.DateTimeStyles.AllowWhiteSpaces,
@@ -82,7 +82,7 @@ namespace AutoTransfer.Transfer
                 .Where(x => x.Report_Date == reportDateDt && x.Version != null)
                 .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
             var check = log.checkTransferCheck(TableType.A53.ToString(), "A41", reportDateDt, verInt);
-            logPath = log.txtLocation(type);
+            
             if (!A41 ||
                !check || verInt == 0)
             {
