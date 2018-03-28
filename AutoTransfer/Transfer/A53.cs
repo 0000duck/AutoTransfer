@@ -366,92 +366,7 @@ INSERT INTO [Rating_Info_SampleInfo]
                             flag = true;
                     }
                     //特別處理
-                    sb.Append($@"
---select issuer from Rating_Info_SampleInfo
-
---公債類：
---1. If left(SMF,3)='411' then 從BBG撈<ISSUER_EQUITY_TICKER>的欄位參數改為<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
-update Rating_Info_SampleInfo
-    set ISSUER_TICKER = PARENT_TICKER_EXCHANGE
-where LEFT(SMF, 3) = '411'
-and Report_Date = {reportDateDt.dateTimeToStrSql()};
-
---2.If left(SMF, 3) = '421' and(Issuer = 'GOV-Kaohsiung' or Issuer = 'GOV-TAIPEI') 
---then<ISSUER_EQUITY_TICKER> 的欄位內容放剛剛抓的<GOV-TW-CEN> 的 <PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
-with TEMP421 as
-(
-select TOP 1
-PARENT_TICKER_EXCHANGE
-from Rating_Info_SampleInfo
-where ISSUER = 'GOV-TW-CEN'
-and PARENT_TICKER_EXCHANGE is not null
-and Report_Date = {reportDateDt.dateTimeToStrSql()}
-)
-update Rating_Info_SampleInfo
-    set ISSUER_TICKER = TEMP421.PARENT_TICKER_EXCHANGE
-from TEMP421
-where LEFT(SMF, 3) = '421'
-and ISSUER IN('GOV-Kaohsiung', 'GOV-TAIPEI')
-and Report_Date = {reportDateDt.dateTimeToStrSql()};
-
---3.If issuer = 'GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
---ps(在A58做調整)
-
---SMF的C開頭
-
---1.Left(SMF, 1) = 'C'此類的商品會串不出 <ISSUER_EQUITY_TICKER>，但其它種類債券有一樣的Issuer，
---且有串出他的Ticker及信評，所以要找其它Left(SMF, 1) <> 'C'的商品，
---有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER> 再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
-with TEMPC as
-(
-   select Issuer_Ticker, ISSUER
-   from Rating_Info_SampleInfo
-   where Report_Date = {reportDateDt.dateTimeToStrSql()}
-   and SMF is not null
-   and LEFT(SMF,1) <> 'C'
-   and Issuer_Ticker is not null
-   group by Issuer_Ticker,ISSUER
-)
-update Rating_Info_SampleInfo
-    set ISSUER_TICKER = TEMPC.ISSUER_TICKER
-from TEMPC
-where Rating_Info_SampleInfo.ISSUER = TEMPC.ISSUER
-and Report_Date = {reportDateDt.dateTimeToStrSql()}
-and LEFT(SMF,1) = 'C';
-
---2.但目前有一個Issuer也沒有出現在Left(SMF, 1) <> 'C'的商品中：FUBON銀，
---所以需將他的<ISSUER_EQUITY_TICKER>(2830 TT Equity)維護在下方<發行者Ticker> 表格
---ps=>(Issuer_Ticker)
-update Rating_Info_SampleInfo
-    set ISSUER_TICKER = Issuer_Ticker.ISSUER_EQUITY_TICKER
-from Issuer_Ticker
-where Rating_Info_SampleInfo.ISSUER = Issuer_Ticker.Issuer
-and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
-
-
---補充擔保者Ticker(債項、發行者及擔保者皆無信評才需採用)
-
---2.還有部分Issuer的 <GUARANTOR_EQY_TICKER> 是串不出來的，需指定給 <GUARANTOR_EQY_TICKER>，再去抓擔保者信評
---ps => (Guarantor_Ticker)
-update Rating_Info_SampleInfo
-    set GUARANTOR_EQY_TICKER = Guarantor_Ticker.GUARANTOR_EQY_TICKER,
-        GUARANTOR_NAME = Guarantor_Ticker.GUARANTOR_NAME
-from Guarantor_Ticker
-where Rating_Info_SampleInfo.ISSUER = Guarantor_Ticker.Issuer
-and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
-
--- 1與2 順序互換 2017/11/29 
---1.If Left(SMF, 3) = 'A11' and(Issuer = 'FREDDIE MAC' or 'FANNIE MAE' or 'GNMA') 
---then<GUARANTOR_EQY_TICKER> 固定放'3352Z US'，再用這個Ticker去串擔保者信評
-update Rating_Info_SampleInfo
-    set GUARANTOR_EQY_TICKER = '3352Z US'
-where Report_Date = {reportDateDt.dateTimeToStrSql()}
-and LEFT(SMF,3) = 'A11'
-and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
-
---3.此類狀況有維護一個表格，凡是表格中的Issuer，他的<GUARANTOR_NAME> 跟<GUARANTOR_EQY_TICKER> 就都給表格內容，再去串他的擔保者信評
---ps(在A57做調整)
-");
+                    Rating_Info_SampleInfoFixed(sb);
                     try
                     {
                         db.Database.ExecuteSqlCommand(sb.ToString());
@@ -700,6 +615,8 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                         if ("START-OF-DATA".Equals(line))
                             flag = true;
                     }
+                    //特別處理
+                    Rating_Info_SampleInfoFixed(sb);
                     try
                     {
                         db.Database.ExecuteSqlCommand(sb.ToString());
@@ -1460,6 +1377,96 @@ where A41.Reference_Nbr = A41TEMP.Reference_Nbr ;
         }
 
         #region private function
+
+        private void Rating_Info_SampleInfoFixed(StringBuilder sb)
+        {
+            sb.Append($@"
+--select issuer from Rating_Info_SampleInfo
+
+--公債類：
+--1. If left(SMF,3)='411' then 從BBG撈<ISSUER_EQUITY_TICKER>的欄位參數改為<PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = PARENT_TICKER_EXCHANGE
+where LEFT(SMF, 3) = '411'
+and Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+--2.If left(SMF, 3) = '421' and(Issuer = 'GOV-Kaohsiung' or Issuer = 'GOV-TAIPEI') 
+--then<ISSUER_EQUITY_TICKER> 的欄位內容放剛剛抓的<GOV-TW-CEN> 的 <PARENT_TICKER_EXCHANGE>，再用這個Ticker去串發行人信評
+with TEMP421 as
+(
+select TOP 1
+PARENT_TICKER_EXCHANGE
+from Rating_Info_SampleInfo
+where ISSUER = 'GOV-TW-CEN'
+and PARENT_TICKER_EXCHANGE is not null
+and Report_Date = {reportDateDt.dateTimeToStrSql()}
+)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = TEMP421.PARENT_TICKER_EXCHANGE
+from TEMP421
+where LEFT(SMF, 3) = '421'
+and ISSUER IN('GOV-Kaohsiung', 'GOV-TAIPEI')
+and Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+--3.If issuer = 'GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等
+--ps(在A58做調整)
+
+--SMF的C開頭
+
+--1.Left(SMF, 1) = 'C'此類的商品會串不出 <ISSUER_EQUITY_TICKER>，但其它種類債券有一樣的Issuer，
+--且有串出他的Ticker及信評，所以要找其它Left(SMF, 1) <> 'C'的商品，
+--有一樣Issuer的Ticker來覆蓋他的<ISSUER_EQUITY_TICKER> 再來串信評，或直接把Ticker跟信評欄位覆蓋過來。
+with TEMPC as
+(
+   select Issuer_Ticker, ISSUER
+   from Rating_Info_SampleInfo
+   where Report_Date = {reportDateDt.dateTimeToStrSql()}
+   and SMF is not null
+   and LEFT(SMF,1) <> 'C'
+   and Issuer_Ticker is not null
+   group by Issuer_Ticker,ISSUER
+)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = TEMPC.ISSUER_TICKER
+from TEMPC
+where Rating_Info_SampleInfo.ISSUER = TEMPC.ISSUER
+and Report_Date = {reportDateDt.dateTimeToStrSql()}
+and LEFT(SMF,1) = 'C';
+
+--2.但目前有一個Issuer也沒有出現在Left(SMF, 1) <> 'C'的商品中：FUBON銀，
+--所以需將他的<ISSUER_EQUITY_TICKER>(2830 TT Equity)維護在下方<發行者Ticker> 表格
+--ps=>(Issuer_Ticker)
+update Rating_Info_SampleInfo
+    set ISSUER_TICKER = Issuer_Ticker.ISSUER_EQUITY_TICKER
+from Issuer_Ticker
+where Rating_Info_SampleInfo.ISSUER = Issuer_Ticker.Issuer
+and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+
+--補充擔保者Ticker(債項、發行者及擔保者皆無信評才需採用)
+
+--2.還有部分Issuer的 <GUARANTOR_EQY_TICKER> 是串不出來的，需指定給 <GUARANTOR_EQY_TICKER>，再去抓擔保者信評
+--ps => (Guarantor_Ticker)
+update Rating_Info_SampleInfo
+    set GUARANTOR_EQY_TICKER = Guarantor_Ticker.GUARANTOR_EQY_TICKER,
+        GUARANTOR_NAME = Guarantor_Ticker.GUARANTOR_NAME
+from Guarantor_Ticker
+where Rating_Info_SampleInfo.ISSUER = Guarantor_Ticker.Issuer
+and Rating_Info_SampleInfo.Report_Date = {reportDateDt.dateTimeToStrSql()};
+
+-- 1與2 順序互換 2017/11/29 
+--1.If Left(SMF, 3) = 'A11' and(Issuer = 'FREDDIE MAC' or 'FANNIE MAE' or 'GNMA') 
+--then<GUARANTOR_EQY_TICKER> 固定放'3352Z US'，再用這個Ticker去串擔保者信評
+update Rating_Info_SampleInfo
+    set GUARANTOR_EQY_TICKER = '3352Z US'
+where Report_Date = {reportDateDt.dateTimeToStrSql()}
+and LEFT(SMF,3) = 'A11'
+and ISSUER IN('FREDDIE MAC', 'FANNIE MAE', 'GNMA') ;
+
+--3.此類狀況有維護一個表格，凡是表格中的Issuer，他的<GUARANTOR_NAME> 跟<GUARANTOR_EQY_TICKER> 就都給表格內容，再去串他的擔保者信評
+--ps(在A57做調整)
+");
+        }
 
         private List<string> setCommpanyParams(List<Rating_Info_SampleInfo> sampleInfos)
         {

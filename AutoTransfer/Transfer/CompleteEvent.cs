@@ -2016,9 +2016,9 @@ INSERT INTO [Bond_Rating_Info]
                     if (A52 != null)
                         A51 = A51s.FirstOrDefault(z => z.PD_Grade == A52.PD_Grade);
                 }
-                var _parm = getParmID(parmIDs, _copy.Rating_Object, _copy.Rating_Org_Area);
                 _copy.Rating_Object = _Rating_Object.GetDescription();
                 _copy.Rating_Org_Area = item._RatingOrgArea;
+                var _parm = getParmID(parmIDs, _copy.Rating_Object, _copy.Rating_Org_Area);
                 _copy.Rating = item._Rating;
                 _copy.Rating_Org = item._Rating_Org.GetDescription();
                 _copy.RTG_Bloomberg_Field = item._RTG_Bloomberg_Field;
