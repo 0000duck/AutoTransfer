@@ -77,9 +77,9 @@ namespace AutoTransfer.Transfer
                 else
                     sb.AppendLine(@"所有債券均有報導日最近信評資料");
                 sb.AppendLine(string.Empty);
-                sb.AppendLine($@"3.進行券種類與評估次分類 內容值的統計");
-                sb.AppendLine(@"債券種類 統計");
-                groupData(data.GroupBy(x => x.Bond_Type).OrderBy(x => x.Key), sb);
+                //sb.AppendLine($@"3.進行券種類與評估次分類 內容值的統計");
+                //sb.AppendLine(@"債券種類 統計");
+                //groupData(data.GroupBy(x => x.Bond_Type).OrderBy(x => x.Key), sb);
                 //sb.AppendLine(@"評估次分類 統計");
                 //PS: A58 無評估次分類
 
