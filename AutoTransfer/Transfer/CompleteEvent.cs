@@ -1538,7 +1538,7 @@ select
                                         ).ToList();
                                         if (A57ns.Any()) //目前版本沒有比對到符合資料不需要繼續
                                         {
-                                            var A57n = A57ns.First();
+                                            var A57n = A57ns.First().ModelConvert<Bond_Rating_Info,Bond_Rating_Info>();
                                             //上一版有修改過的A57
                                             item.ToList().ForEach(
                                             x =>
