@@ -27,6 +27,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("START-OF-FILE");
 
                 #region Title
+                data.Add("SPECIALCHAR=altdecimal");
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getdata");
                 data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
