@@ -83,6 +83,12 @@ namespace AutoTransfer.Enum
             /// </summary>
             [Description("Econ_D_YYYYMMDD")]
             C03Mortgage,
+
+            /// <summary>
+            /// IFRS9Log
+            /// </summary>
+            [Description("IFRS9Log")]
+            IFRS9Log,
         }
     }
 }

@@ -46,6 +46,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web.Extensions" />
@@ -193,6 +194,7 @@
     <Compile Include="Enum\RatingObject.cs" />
     <Compile Include="Enum\TableType.cs" />
     <Compile Include="Transfer\D73.cs" />
+    <Compile Include="Transfer\IFRS9Log.cs" />
     <Compile Include="Transfer_CheckTable.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -220,6 +222,7 @@
     <Compile Include="Sample\A53Sample.cs" />
     <Compile Include="SFTP\SFTP.cs" />
     <Compile Include="SFTP\SFTPInfo.cs" />
+    <Compile Include="Utility\EmailRelated.cs" />
     <Compile Include="Utility\ThreadTask.cs" />
     <Compile Include="Utility\Log.cs" />
     <Compile Include="Utility\TypeTransfer.cs" />
