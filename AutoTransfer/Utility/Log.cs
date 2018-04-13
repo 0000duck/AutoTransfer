@@ -166,7 +166,8 @@ namespace AutoTransfer.Utility
                 TableType.A92.ToString(),
                 TableType.A93.ToString(),
                 TableType.A961.ToString(),
-                TableType.A962.ToString()
+                TableType.A962.ToString(),
+                TableType.IFRS9Log.ToString()
             };
             using (IFRS9Entities db = new IFRS9Entities())
             {
@@ -207,7 +208,7 @@ namespace AutoTransfer.Utility
                         db.SaveChanges();
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         return false;
                     }
