@@ -7,7 +7,7 @@ using static AutoTransfer.Enum.Ref;
 
 namespace AutoTransfer.CreateFile
 {
-    public class CreateSampleFile
+    public class CreateOtherSampleFile
     {
         /// <summary>
         /// create Put Sample File
@@ -24,8 +24,8 @@ namespace AutoTransfer.CreateFile
 
                 SetFile f = new SetFile(type, dateTime);
 
-                //ex: sampleA53_20170803
-                string getFileName = f.getSampleFileName();
+                //ex: sampleOther_20170803.csv
+                string getFileName = f.getSampleOtherFileName();
 
                 #region File
 
@@ -33,7 +33,6 @@ namespace AutoTransfer.CreateFile
 
                 #region Title
 
-                data.Add("SPECIALCHAR=altdecimal");
                 data.Add($"REPLYFILENAME={getFileName}");
                 data.Add("PROGRAMNAME=getdata");
                 data.Add("PROGRAMFLAG="+f.getPROGRAMFLAG());
@@ -55,7 +54,7 @@ namespace AutoTransfer.CreateFile
                 bool findFlag = false;
                 if (TableType.A53.ToString().Equals(type.ToString()))
                 {
-                    obj = new A53Sample();
+                    obj = new D63OtherSample();
                     findFlag = true;
                 }
                 if (findFlag)
@@ -102,12 +101,12 @@ namespace AutoTransfer.CreateFile
 
                 //ex: ../samplePut 資料夾
                 //f.putCommpanyFilePath();
-                //ex: sampleA53_20170803
+                //ex: sampleOther_20170803
                 //f.putSampleFileName();
                 //建立 scv 檔案
                 flag = new CreatePutFile().create(
                     f.putSampleFilePath(),
-                    f.putSampleFileName(),
+                    f.putSampleOtherFileName(),
                     data);
             }
             catch

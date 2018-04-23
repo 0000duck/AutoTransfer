@@ -21,7 +21,7 @@ namespace AutoTransfer.Transfer
         /// </summary>
         /// <param name="data"></param>
         /// <param name="_event"></param>
-        public BondsCheckRepository(IEnumerable<T> data, Check_Table_Type _event) : base(data, _event)
+        public BondsCheckRepository(IEnumerable<T> data, Check_Table_Type _event, DateTime? reportDate = null, int? version = null) : base(data, _event, reportDate, version)
         {
         }
 
@@ -99,10 +99,10 @@ namespace AutoTransfer.Transfer
                                                  x.Version == _first.Version);
                     A57Data = A57Datas.Where(x => x.ISIN_Changed_Ind == "Y").GroupBy(x => x.Reference_Nbr).ToList();
                     var A57s = A57Datas.Where(x => x.Rating != null && x.PD_Grade == null)
-                                       .GroupBy(x => new { x.Bond_Number, x.RTG_Bloomberg_Field, x.Rating }).ToList();
+                                       .GroupBy(x => new { x.Bond_Number, x.RTG_Bloomberg_Field, x.Rating,x.Rating_Type }).ToList();
                     A57s.ForEach(x =>
                     {
-                        var _parameter = $@"Bond_Number : {x.Key.Bond_Number} , RTG_Bloomberg_Field : {x.Key.RTG_Bloomberg_Field} , Rating : {x.Key.Rating}";
+                        var _parameter = $@"Bond_Number : {x.Key.Bond_Number} , Rating_Type : {x.Key.Rating_Type} , RTG_Bloomberg_Field : {x.Key.RTG_Bloomberg_Field} , Rating : {x.Key.Rating}";
                         setCheckMsg(A57_1,
                             @"信評內容有未處理到的特殊值",
                             _parameter,
