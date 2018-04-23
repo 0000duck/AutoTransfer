@@ -66,7 +66,7 @@ namespace AutoTransfer.Abstract
         /// </summary>
         /// <param name="data">檢核資料</param>
         /// <param name="_event">執行方法</param>
-        public CheckDataAbstract(IEnumerable<T> data, Check_Table_Type _event)
+        public CheckDataAbstract(IEnumerable<T> data, Check_Table_Type _event, DateTime? reportDate = null, int? version = null)
         {
             this._data = data;
             this._event = _event;
@@ -76,7 +76,13 @@ namespace AutoTransfer.Abstract
             Set();
             try
             {
-                this.Message = getCheckMessage(GetMethod(_event).Invoke());
+                StringBuilder sb = new StringBuilder();
+                if (reportDate.HasValue && version.HasValue)
+                {
+                    sb.AppendLine($@"報導日:{reportDate.Value.ToString("yyyy/MM/dd")}  版本:{version}");
+                }
+                sb.AppendLine(getCheckMessage(GetMethod(_event).Invoke()));
+                this.Message = sb.ToString();
                 ErrorFlag = _checkFlag;
                 CreateScheduling_Report(D73, Message);
             }

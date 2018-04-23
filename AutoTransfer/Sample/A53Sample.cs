@@ -126,7 +126,7 @@
         /// <summary>
         /// D63.Total_Asset & D63.BS_TOT_ASSET
         /// </summary>
-        public string BS_TOT_ASSET { get; set; }
+        //public string BS_TOT_ASSET { get; set; } //移到D63OtherSample
 
         /// <summary>
         /// D63.CFO
@@ -136,7 +136,7 @@
         /// <summary>
         /// D63.Total_Equity
         /// </summary>
-        public string TOTAL_EQUITY { get; set; }
+        //public string TOTAL_EQUITY { get; set; } //移到D63OtherSample
 
         /// <summary>
         /// D63.SHORT_AND_LONG_TERM_DEBT

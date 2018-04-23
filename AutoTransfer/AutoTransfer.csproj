@@ -98,6 +98,7 @@
     <Compile Include="CreateFile\CreateGetC04File.cs" />
     <Compile Include="CreateFile\CreateA07File.cs" />
     <Compile Include="CreateFile\CreateMissSecurityDesFile.cs" />
+    <Compile Include="CreateFile\CreateOtherSampleFile.cs" />
     <Compile Include="Econ_Domestic.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -161,6 +162,7 @@
     <Compile Include="Rating_Update_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="Sample\D63OtherSample.cs" />
     <Compile Include="Scheduling_Report.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>

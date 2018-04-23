@@ -91,7 +91,8 @@ FROM   Bond_Rating_Info A57,temp2
 WHERE  A57.Report_Date = temp2.Report_Date 
 AND    A57.Version = temp2.Version
 AND    A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
-AND    A57.Grade_Adjust is not null
+AND    A57.Rating is not null
+--AND    A57.Grade_Adjust is not null  --排程 要全加 2018/4/11
 ), --最後一版A57(原始投資信評)
 A52 AS (
    SELECT * FROM Grade_Mapping_Info
@@ -1637,7 +1638,8 @@ select
                                 db.Bond_Rating_Summary.AsNoTracking()
                                 .Where(x => x.Report_Date == dt &&
                                 x.Version == version).AsEnumerable(), 
-                                Check_Table_Type.Bonds_A58_Transfer_Check);
+                                Check_Table_Type.Bonds_A58_Transfer_Check,
+                                dt,version);
 
                             db.Dispose();
 

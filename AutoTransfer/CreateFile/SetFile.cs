@@ -98,6 +98,12 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "C04Get") : getC04Get;
         }
 
+        public string getSampleOtherFileName()
+        {
+            return string.Format("sampleOther_{0}.csv",
+                _dateTime);
+        }
+
         public string getSecurityDesFileName()
         {
             return string.Format("securityDes_{0}.csv",
@@ -148,6 +154,12 @@ namespace AutoTransfer.CreateFile
         {
             return getC04Put.IsNullOrWhiteSpace() ?
                 Path.Combine(startupPath, "C04Put") : getC04Put;
+        }
+
+        public string putSampleOtherFileName()
+        {
+            return string.Format("sampleOther_{0}.req",
+                _dateTime);
         }
 
         public string putSecurityDesFileName()

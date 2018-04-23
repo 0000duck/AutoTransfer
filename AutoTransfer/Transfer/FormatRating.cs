@@ -21,30 +21,8 @@ namespace AutoTransfer.Transfer
             if (rating.IsNullOrWhiteSpace())
                 return string.Empty;
             string value = rating.Trim();
-            //if (rating.IndexOf("N.A.") > -1)
-            //    return string.Empty;
-            //if (rating.IndexOf("N.S.") > -1)
-            //    return string.Empty;
-            //if (rating.IndexOf("N/A") > -1)
-            //    return string.Empty;
-            //if (value.IndexOf("NR") > -1)
-            //    return string.Empty;
-            //if (value.IndexOf("twNR") > -1)
-            //    return string.Empty;
-            //if (value.IndexOf("WD") > -1)
-            //    return string.Empty;
             if (((org & RatingOrg.Moody) != RatingOrg.Moody) && (value.IndexOf("WR") > -1))
                 return string.Empty;
-            //if (value.IndexOf("twWR") > -1)
-            //    return string.Empty;
-
-            //List<string> splitGetFirst = new List<string>()
-            //{
-            //    "u","e","/*-","/*+","*-","*+",
-            //    "(bra)","(cl)","(col)","(mex)",
-            //    "(P)","/*","*"
-            //};
-
             
             List<string> Liststrs = new List<string>();
             rule_1.ForEach(x =>
@@ -52,7 +30,6 @@ namespace AutoTransfer.Transfer
                 if (value.Contains(x))
                 {
                     Liststrs.Add(x);
-                    //value = value.Replace(x,string.Empty);
                 }
             });
             if (Liststrs.Count > 0)
@@ -62,6 +39,8 @@ namespace AutoTransfer.Transfer
                 strs.Reverse().ToList().ForEach(x =>
                 {
                     value = value.Replace(x, string.Empty);
+                    if (!value.IsNullOrWhiteSpace())
+                        value = value.Trim();
                 });
             }
             rule_2.ForEach(x =>
@@ -69,6 +48,8 @@ namespace AutoTransfer.Transfer
                 if (value.Contains(x.Item1) && !x.Item2.IsNullOrWhiteSpace())
                 {
                     value = value.Replace(x.Item1, x.Item2);
+                    if (!value.IsNullOrWhiteSpace())
+                        value = value.Trim();
                 }
             });
             return value.Trim();
