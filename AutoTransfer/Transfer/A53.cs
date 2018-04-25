@@ -123,6 +123,24 @@ namespace AutoTransfer.Transfer
             new CompleteEvent().saveDb(reportDateDt, verInt);
         }
 
+        public void onlyA53_A57_A58Transfer(string dateTime)
+        {
+            DateTime.TryParseExact(dateTime, "yyyyMMdd", null, System.Globalization.DateTimeStyles.AllowWhiteSpaces, out reportDateDt);
+            using (IFRS9Entities db = new IFRS9Entities())
+            {
+                verInt = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version != null)
+                           .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
+                sampleInfos = new List<Rating_Info_SampleInfo>();
+                sampleInfos = db.Rating_Info_SampleInfo.AsNoTracking()
+                    .Where(x => x.Report_Date == reportDateDt).ToList();
+            }
+            startTime = DateTime.Now;
+            setFile = new SetFile(tableType, dateTime);
+            logPath = log.txtLocation(type);
+            setCommpanyParams(sampleInfos);
+            DataToDb();
+        }
+
         /// <summary>
         /// 建立 Sample 要Put的檔案
         /// </summary>
@@ -833,19 +851,15 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                         //arr[20] COLLAT_TYP
                         //--D63.Net_Debt
                         //arr[21] NET_DEBT
-                        //--D63.Total_Asset & D63.BS_TOT_ASSET
-                        //arr[22] BS_TOT_ASSET
                         //--D63.CFO
-                        //arr[23] TRAIL_12M_CASH_FROM_OPER
-                        //--D63.Total_Equity
-                        //arr[24] TOTAL_EQUITY
+                        //arr[22] TRAIL_12M_CASH_FROM_OPER
                         //--D63.SHORT_AND_LONG_TERM_DEBT
-                        //arr[25] SHORT_AND_LONG_TERM_DEBT
+                        //arr[23] SHORT_AND_LONG_TERM_DEBT
                         //--D63.Int_Expense (1)
-                        //arr[26] TRAIL_12M_INT_EXP
+                        //arr[24] TRAIL_12M_INT_EXP
                         //--D63.Int_Expense (2)
-                        //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
-                        if (arr.Length >= 28)
+                        //arr[25] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                        if (arr.Length >= 26)
                         {
                             //S&P國外評等
                             validateSample(
@@ -1139,7 +1153,7 @@ INSERT INTO Rating_Info
                                 !products.Contains(x.PRODUCT) || //排除特殊PRODUCT
                                 !x.PRODUCT.StartsWith("4"))) //排除國際債券
                 .GroupBy(x=>x.Bond_Number)
-                .Select(x=>x.First()).ToList()
+                .Select(x=>x.FirstOrDefault()).ToList()
                 .ForEach(x =>
                 {
                     //obj => Rating_Info_SampleInfo
