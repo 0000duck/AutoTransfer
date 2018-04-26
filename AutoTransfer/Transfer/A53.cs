@@ -148,8 +148,7 @@ namespace AutoTransfer.Transfer
         {
             //建立  2個檔案
             // create ex:sampleA53_20170807 && sampleOther_20170807
-            if (new CreateSampleFile().create(tableType, reportDateStr, verInt) &&
-                new CreateOtherSampleFile().create(tableType, reportDateStr, verInt))
+            if (new CreateSampleFile().create(tableType, reportDateStr, verInt))
             {
                 //把資料送給SFTP
                 putSampleSFTP();
@@ -175,22 +174,13 @@ namespace AutoTransfer.Transfer
         protected override void putSampleSFTP()
         {
             string error = string.Empty;
-            string error2 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
                 .Put(string.Empty,
                  setFile.putSampleFilePath(),
                  setFile.putSampleFileName(),
                  out error);
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Put(string.Empty,
-                 setFile.putSampleFilePath(),
-                 setFile.putSampleOtherFileName(),
-                 out error2);
-            if (!error.IsNullOrWhiteSpace() ||
-                !error2.IsNullOrWhiteSpace()) //fail
+            if (!error.IsNullOrWhiteSpace()) //fail
             {
-                string _error =
-                    !error.IsNullOrWhiteSpace() ? error : error2;
                 log.bothLog(
                     type,
                     false,
@@ -199,7 +189,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now,
                     verInt,
                     logPath,
-                    MessageType.Put_Sample_File_Fail.GetDescription(null, _error)
+                    MessageType.Put_Sample_File_Fail.GetDescription()
                     );
             }
             else //success (wait 20 min and get data)
@@ -219,22 +209,13 @@ namespace AutoTransfer.Transfer
         {
             new FileRelated().createFile(setFile.getSampleFilePath());
             string error = string.Empty;
-            string error2 = string.Empty;
             new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
                 .Get(string.Empty,
                 setFile.getSampleFilePath(),
                 setFile.getSampleFileName(),
                 out error);
-            new SFTP(SFTPInfo.ip, SFTPInfo.account, SFTPInfo.password)
-                .Get(string.Empty,
-                setFile.getSampleFilePath(),
-                setFile.getSampleOtherFileName(),
-                out error2);
-            if (!error.IsNullOrWhiteSpace() ||
-                !error2.IsNullOrWhiteSpace())
+            if (!error.IsNullOrWhiteSpace())
             {
-                string _error =
-                    !error.IsNullOrWhiteSpace() ? error : error2;
                 log.bothLog(
                     type,
                     false,
@@ -243,7 +224,7 @@ namespace AutoTransfer.Transfer
                     DateTime.Now,
                     verInt,
                     logPath,
-                    MessageType.Get_Sample_File_Fail.GetDescription(null, _error)
+                    MessageType.Get_Sample_File_Fail.GetDescription()
                     );
             }
             else
@@ -257,17 +238,19 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected override void createCommpanyFile()
         {
-            using (IFRS9Entities db = new IFRS9Entities())
+            List<string> data = new List<string>();
+            using (StreamReader sr = new StreamReader(Path.Combine(
+                setFile.getSampleFilePath(), setFile.getSampleFileName())))
             {
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+
                 #region save Rating_Info_SampleInfo
-                StringBuilder sb = new StringBuilder();
-                using (StreamReader sr = new StreamReader(Path.Combine(
-                    setFile.getSampleFilePath(), setFile.getSampleFileName())))
+
+                using (IFRS9Entities db = new IFRS9Entities())
                 {
-                    bool flag = false; //判斷是否為要讀取的資料行數
-                    string line = string.Empty;
-                                
-                    List<Bond_Account_Info> A41s = new List<Bond_Account_Info>();                  
+                    List<Bond_Account_Info> A41s = new List<Bond_Account_Info>();
+                    StringBuilder sb = new StringBuilder();
                     sb.Append($@"
 delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql()} ;");
                     A41s = db.Bond_Account_Info.AsNoTracking()
@@ -278,7 +261,7 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                         if ("END-OF-DATA".Equals(line))
                             flag = false;
                         if (flag) //找到的資料
-                        {                           
+                        {
                             var arr = line.Split('|');
                             //arr[0]  ex: US00206RDH21 (債券編號)
                             //arr[1]  ex: 0
@@ -311,15 +294,19 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                             //arr[20] COLLAT_TYP
                             //--D63.Net_Debt
                             //arr[21] NET_DEBT
+                            //--D63.Total_Asset & D63.BS_TOT_ASSET
+                            //arr[22] BS_TOT_ASSET
                             //--D63.CFO
-                            //arr[22] TRAIL_12M_CASH_FROM_OPER
+                            //arr[23] TRAIL_12M_CASH_FROM_OPER
+                            //--D63.Total_Equity
+                            //arr[24] TOTAL_EQUITY
                             //--D63.SHORT_AND_LONG_TERM_DEBT
-                            //arr[23] SHORT_AND_LONG_TERM_DEBT
+                            //arr[25] SHORT_AND_LONG_TERM_DEBT
                             //--D63.Int_Expense (1)
-                            //arr[24] TRAIL_12M_INT_EXP
+                            //arr[26] TRAIL_12M_INT_EXP
                             //--D63.Int_Expense (2)
-                            //arr[25] TRAIL_12M_ACT_CASH_PAID_FOR_INT
-                            if (arr.Length >= 26)
+                            //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                            if (arr.Length >= 28)
                             {
                                 var bond_Number = arr[0].Trim();
                                 var A41 = A41s.First(x => x.Bond_Number == bond_Number);
@@ -340,13 +327,16 @@ delete Rating_Info_SampleInfo where Report_Date = {reportDateDt.dateTimeToStrSql
                                 if (nullarr.Contains(GUARANTOR_NAME))
                                     GUARANTOR_NAME = null;
                                 var Net_Debt = arr[21];
-                                var CFO = arr[22];
-                                var SHORT_AND_LONG_TERM_DEBT = arr[23];
+                                var Total_Asset = arr[22];
+                                var BS_TOT_ASSET = arr[22];
+                                var CFO = arr[23];
+                                var Total_Equity = arr[24];
+                                var SHORT_AND_LONG_TERM_DEBT = arr[25];
                                 string Int_Expense = null;
                                 double d = 0d;
-                                if (double.TryParse(arr[24], out d))
+                                if (double.TryParse(arr[26], out d))
                                     Int_Expense = d.ToString();
-                                else if(double.TryParse(arr[25], out d))
+                                else if (double.TryParse(arr[27], out d))
                                     Int_Expense = d.ToString();
                                 // insert Rating_Info_SampleInfo
                                 sb.Append($@"
@@ -363,8 +353,11 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,[Bloomberg_Ticker]
            ,[ISSUER]
            ,[Net_Debt]
+           ,[Total_Asset]
            ,[CFO]
            ,[Int_Expense]
+           ,[Total_Equity]
+           ,[BS_TOT_ASSET]
            ,[SHORT_AND_LONG_TERM_DEBT])
      VALUES
            ({bond_Number.stringToStrSql()}
@@ -379,8 +372,11 @@ INSERT INTO [Rating_Info_SampleInfo]
            ,{Bloomberg_Ticker.stringToStrSql()}
            ,{ISSUER.stringToStrSql()}  
            ,{Net_Debt.stringTofloatSql()} 
+           ,{Total_Asset.stringTofloatSql()} 
            ,{CFO.stringTofloatSql()} 
            ,{Int_Expense.stringTofloatSql()} 
+           ,{Total_Equity.stringTofloatSql()} 
+           ,{BS_TOT_ASSET.stringTofloatSql()} 
            ,{SHORT_AND_LONG_TERM_DEBT.stringTofloatSql()} ); ");
                             }
                         }
@@ -389,56 +385,9 @@ INSERT INTO [Rating_Info_SampleInfo]
                     }
                     //特別處理
                     Rating_Info_SampleInfoFixed(sb);
-
-                }
-                #endregion
-                #region update D63 Total_Asset & BS_TOT_ASSET & TOTAL_EQUITY
-                StringBuilder sb2 = new StringBuilder();
-                using (StreamReader sr = new StreamReader(Path.Combine(
-                    setFile.getSampleFilePath(), setFile.getSampleOtherFileName())))
-                {
-                    bool flag = false; //判斷是否為要讀取的資料行數
-                    string line = string.Empty;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        if ("END-OF-DATA".Equals(line))
-                            flag = false;
-                        if (flag)
-                        {
-                            var arr = line.Split('|');
-                            //arr[0]  ex: US00206RDH21 (債券編號)
-                            //arr[1]  ex: 0
-                            //arr[2]  ex: 20
-                            //arr[3]  BS_TOT_ASSET (Total_Asset,BS_TOT_ASSET)
-                            //arr[4]  TOTAL_EQUITY (Total_Equity)
-                            if (arr.Length >= 5)
-                            {
-                                var bond_Number = arr[0].Trim();
-                                var Total_Asset = arr[3];
-                                var BS_TOT_ASSET = arr[3];
-                                var Total_Equity = arr[4];
-                                sb2.Append($@"
-update Rating_Info_SampleInfo
-set Total_Asset = {Total_Asset.stringTofloatSql()} ,
-    BS_TOT_ASSET = {BS_TOT_ASSET.stringTofloatSql()} ,
-    Total_Equity = {Total_Equity.stringTofloatSql()}
-where Report_Date = {reportDateDt.dateTimeToStrSql()}
-and Bond_Number = {bond_Number.stringToStrSql()}; ");
-                            }
-                        }
-                        if ("START-OF-DATA".Equals(line))
-                            flag = true;
-                    }
-                }
-                using (var dbContextTransaction = db.Database.BeginTransaction())
-                {
                     try
                     {
                         db.Database.ExecuteSqlCommand(sb.ToString());
-                        db.Database.ExecuteSqlCommand(sb2.ToString());
-                        dbContextTransaction.Commit();
-
-                        #region 完成後續動作
                         sampleInfos = new List<Rating_Info_SampleInfo>();
                         sampleInfos = db.Rating_Info_SampleInfo.AsNoTracking()
                             .Where(x => x.Report_Date == reportDateDt).ToList();
@@ -484,7 +433,6 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                                     );
                             }
                         }
-                        #endregion
                     }
                     catch (Exception ex)
                     {
@@ -503,7 +451,6 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                 }
                 #endregion
             }
-
         }
 
         /// <summary>
@@ -622,15 +569,19 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                             //arr[20] COLLAT_TYP
                             //--D63.Net_Debt
                             //arr[21] NET_DEBT
+                            //--D63.Total_Asset & D63.BS_TOT_ASSET
+                            //arr[22] BS_TOT_ASSET
                             //--D63.CFO
-                            //arr[22] TRAIL_12M_CASH_FROM_OPER
+                            //arr[23] TRAIL_12M_CASH_FROM_OPER
+                            //--D63.Total_Equity
+                            //arr[24] TOTAL_EQUITY
                             //--D63.SHORT_AND_LONG_TERM_DEBT
-                            //arr[23] SHORT_AND_LONG_TERM_DEBT
+                            //arr[25] SHORT_AND_LONG_TERM_DEBT
                             //--D63.Int_Expense (1)
-                            //arr[24] TRAIL_12M_INT_EXP
+                            //arr[26] TRAIL_12M_INT_EXP
                             //--D63.Int_Expense (2)
-                            //arr[25] TRAIL_12M_ACT_CASH_PAID_FOR_INT
-                            if (arr.Length >= 26)
+                            //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                            if (arr.Length >= 28)
                             {
                                 var bond_Number = arr[0].Trim().Split(' ')[0];
                                 var ISSUER_EQUITY_TICKER = arr[3]?.Trim(); //ISSUER_EQUITY_TICKER
@@ -647,13 +598,16 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                                 if (nullarr.Contains(GUARANTOR_NAME))
                                     GUARANTOR_NAME = null;
                                 var Net_Debt = arr[21];
-                                var CFO = arr[22];
-                                var SHORT_AND_LONG_TERM_DEBT = arr[23];
+                                var Total_Asset = arr[22];
+                                var BS_TOT_ASSET = arr[22];
+                                var CFO = arr[23];
+                                var Total_Equity = arr[24];
+                                var SHORT_AND_LONG_TERM_DEBT = arr[25];
                                 string Int_Expense = null;
                                 double d = 0d;
-                                if (double.TryParse(arr[24], out d))
+                                if (double.TryParse(arr[26], out d))
                                     Int_Expense = d.ToString();
-                                else if (double.TryParse(arr[25], out d))
+                                else if (double.TryParse(arr[27], out d))
                                     Int_Expense = d.ToString();
                                 // insert Rating_Info_SampleInfo
                                 sb.Append($@"
@@ -666,7 +620,10 @@ set Security_Des = {Security_Des.stringToStrSql()} ,
     PARENT_TICKER_EXCHANGE = {PARENT_TICKER_EXCHANGE.stringToStrSql()} ,
     COLLAT_TYP = {COLLAT_TYP.stringToStrSql()} ,
     Net_Debt = {Net_Debt.stringTofloatSql()} ,
+    Total_Asset = {Total_Asset.stringTofloatSql()} ,
+    BS_TOT_ASSET = {BS_TOT_ASSET.stringTofloatSql()} ,
     CFO = {CFO.stringTofloatSql()} ,
+    Total_Equity = {Total_Equity.stringTofloatSql()} ,
     SHORT_AND_LONG_TERM_DEBT = {SHORT_AND_LONG_TERM_DEBT.stringTofloatSql()} ,
     Int_Expense = {Int_Expense.stringTofloatSql()}
 where Report_Date = {reportDateDt.dateTimeToStrSql()}
@@ -700,7 +657,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                                 logPath,
                                 MessageType.Create_Commpany_File_Fail.GetDescription()
                                 );
-                        }                      
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -851,15 +808,19 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
                         //arr[20] COLLAT_TYP
                         //--D63.Net_Debt
                         //arr[21] NET_DEBT
+                        //--D63.Total_Asset & D63.BS_TOT_ASSET
+                        //arr[22] BS_TOT_ASSET
                         //--D63.CFO
-                        //arr[22] TRAIL_12M_CASH_FROM_OPER
+                        //arr[23] TRAIL_12M_CASH_FROM_OPER
+                        //--D63.Total_Equity
+                        //arr[24] TOTAL_EQUITY
                         //--D63.SHORT_AND_LONG_TERM_DEBT
-                        //arr[23] SHORT_AND_LONG_TERM_DEBT
+                        //arr[25] SHORT_AND_LONG_TERM_DEBT
                         //--D63.Int_Expense (1)
-                        //arr[24] TRAIL_12M_INT_EXP
+                        //arr[26] TRAIL_12M_INT_EXP
                         //--D63.Int_Expense (2)
-                        //arr[25] TRAIL_12M_ACT_CASH_PAID_FOR_INT
-                        if (arr.Length >= 26)
+                        //arr[27] TRAIL_12M_ACT_CASH_PAID_FOR_INT
+                        if (arr.Length >= 28)
                         {
                             //S&P國外評等
                             validateSample(
