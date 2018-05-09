@@ -18,15 +18,13 @@ namespace AutoTransfer
         public IFRS9Entities()
             : base("name=IFRS9Entities")
         {
-            ((IObjectContextAdapter)this).ObjectContext.CommandTimeout = 300;
         }
-
+    
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Grade_Mapping_Info> Grade_Mapping_Info { get; set; }
         public virtual DbSet<Rating_Info> Rating_Info { get; set; }
         public virtual DbSet<Transfer_CheckTable> Transfer_CheckTable { get; set; }
         public virtual DbSet<Rating_Info_SampleInfo> Rating_Info_SampleInfo { get; set; }
@@ -39,7 +37,6 @@ namespace AutoTransfer
         public virtual DbSet<Group_Product_Code_Mapping> Group_Product_Code_Mapping { get; set; }
         public virtual DbSet<Bond_Rating_Info> Bond_Rating_Info { get; set; }
         public virtual DbSet<Bond_Rating_Summary> Bond_Rating_Summary { get; set; }
-        public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
         public virtual DbSet<Gov_Info_Ticker> Gov_Info_Ticker { get; set; }
         public virtual DbSet<Loan_Account_Info> Loan_Account_Info { get; set; }
         public virtual DbSet<Gov_Info_Monthly> Gov_Info_Monthly { get; set; }
@@ -56,5 +53,7 @@ namespace AutoTransfer
         public virtual DbSet<Assessment_Sub_Kind_Ticker> Assessment_Sub_Kind_Ticker { get; set; }
         public virtual DbSet<Rating_Update_Info> Rating_Update_Info { get; set; }
         public virtual DbSet<Scheduling_Report> Scheduling_Report { get; set; }
+        public virtual DbSet<Grade_Mapping_Info> Grade_Mapping_Info { get; set; }
+        public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
     }
 }

@@ -122,63 +122,64 @@ namespace AutoTransfer.Transfer
                 var A58Data = data.Where(x => x.ISIN_Changed_Ind == "Y").GroupBy(x => x.Reference_Nbr).ToList();
                 StringBuilder sb2 = new StringBuilder();
                 sb2.AppendLine(@"C.來源資料與產出資料的比較");
-                sb2.AppendLine(@"1.相同版本A41的是否為換券ISIN_Changed_Ind='Y' 的資料數與A57,A58的ISIN_Changed_Ind='Y'資料數是否一致");
-                if (A41Data.Count == A57Data.Count && A41Data.Count == A58Data.Count)
-                {
-                    sb2.AppendLine(@" 相同版本A41與A57,A58換券資料筆數一致");
-                }
-                else
-                {
-                    sb2.AppendLine(@" 相同版本A41與A58(A57)換券資料筆數不一致");
-                    if (A41Data.Count != A57Data.Count)
-                        sb2.AppendLine($@" A41資料筆數: {A41Data.Count}筆  A57資料筆數: {A57Data.Count}筆");
-                    if (A41Data.Count != A58Data.Count)
-                        sb2.AppendLine($@" A41資料筆數: {A41Data.Count}筆  A58資料筆數: {A58Data.Count}筆");
-                }
-                sb2.AppendLine(@"2.相同版本A41的是否為換券ISIN_Changed_Ind='Y' 的購入日(Origination_Date & Origination_Date_Old)與A57,A58的債券購入(認列)日期是否一致");
-                bool _Origination_Date_Flag = true;
-                StringBuilder sb3 = new StringBuilder();
-                foreach (var item in A41Data)
-                {
-                    var _A57Data = A57Data.FirstOrDefault(x => x.Key == item.Reference_Nbr);
-                    if (_A57Data != null)
-                    {
-                        if (_A57Data.Any(x => x.Origination_Date != item.Origination_Date ||
-                                            x.Origination_Date_Old != item.Origination_Date_Old))
-                        {
-                            _Origination_Date_Flag = false;
-                            sb3.AppendLine($@" A41與A57 不一致  Reference_Nbr {item.Reference_Nbr}");
-                        }
-                    }
-                    else
-                    {
-                        _Origination_Date_Flag = false;
-                        sb3.AppendLine($@" A41 Reference_Nbr {item.Reference_Nbr} , A57 null");
-                    }
-                    var _A58Data = A58Data.FirstOrDefault(x => x.Key == item.Reference_Nbr);
-                    if (_A58Data != null)
-                    {
-                        if (_A58Data.Any(x => x.Origination_Date != item.Origination_Date ||
-                                              x.Origination_Date_Old != item.Origination_Date_Old))
-                        {
-                            _Origination_Date_Flag = false;
-                            sb3.AppendLine($@" A41與A58 不一致  Reference_Nbr {item.Reference_Nbr}");
-                        }
-                    }
-                    else
-                    {
-                        _Origination_Date_Flag = false;
-                        sb3.AppendLine($@" A41 Reference_Nbr {item.Reference_Nbr} , A58 null");
-                    }
-                }
-                if (!_Origination_Date_Flag)
-                {
-                    sb2.AppendLine(@" 不一致債券清單");
-                    sb2.AppendLine(sb3.ToString());
-                }
-                else
-                    sb2.AppendLine(@" 相同版本A57,A58換券資訊與A41比對結果一致");
-                sb2.AppendLine(@"3.相同版本A41的債券種類資料數與A57,A58的債券種類資料數是否一致");
+                //sb2.AppendLine(@"1.相同版本A41的是否為換券ISIN_Changed_Ind='Y' 的資料數與A57,A58的ISIN_Changed_Ind='Y'資料數是否一致");
+                //if (A41Data.Count == A57Data.Count && A41Data.Count == A58Data.Count)
+                //{
+                //    sb2.AppendLine(@" 相同版本A41與A57,A58換券資料筆數一致");
+                //}
+                //else
+                //{
+                //    sb2.AppendLine(@" 相同版本A41與A58(A57)換券資料筆數不一致");
+                //    if (A41Data.Count != A57Data.Count)
+                //        sb2.AppendLine($@" A41資料筆數: {A41Data.Count}筆  A57資料筆數: {A57Data.Count}筆");
+                //    if (A41Data.Count != A58Data.Count)
+                //        sb2.AppendLine($@" A41資料筆數: {A41Data.Count}筆  A58資料筆數: {A58Data.Count}筆");
+                //}
+                //sb2.AppendLine(@"2.相同版本A41的是否為換券ISIN_Changed_Ind='Y' 的購入日(Origination_Date & Origination_Date_Old)與A57,A58的債券購入(認列)日期是否一致");
+                //bool _Origination_Date_Flag = true;
+                //StringBuilder sb3 = new StringBuilder();
+                //foreach (var item in A41Data)
+                //{
+                //    var _A57Data = A57Data.FirstOrDefault(x => x.Key == item.Reference_Nbr);
+                //    if (_A57Data != null)
+                //    {
+                //        if (_A57Data.Any(x => x.Origination_Date != item.Origination_Date ||
+                //                            x.Origination_Date_Old != item.Origination_Date_Old))
+                //        {
+                //            _Origination_Date_Flag = false;
+                //            sb3.AppendLine($@" A41與A57 不一致  Reference_Nbr {item.Reference_Nbr}");
+                //        }
+                //    }
+                //    else
+                //    {
+                //        _Origination_Date_Flag = false;
+                //        sb3.AppendLine($@" A41 Reference_Nbr {item.Reference_Nbr} , A57 null");
+                //    }
+                //    var _A58Data = A58Data.FirstOrDefault(x => x.Key == item.Reference_Nbr);
+                //    if (_A58Data != null)
+                //    {
+                //        if (_A58Data.Any(x => x.Origination_Date != item.Origination_Date ||
+                //                              x.Origination_Date_Old != item.Origination_Date_Old))
+                //        {
+                //            _Origination_Date_Flag = false;
+                //            sb3.AppendLine($@" A41與A58 不一致  Reference_Nbr {item.Reference_Nbr}");
+                //        }
+                //    }
+                //    else
+                //    {
+                //        _Origination_Date_Flag = false;
+                //        sb3.AppendLine($@" A41 Reference_Nbr {item.Reference_Nbr} , A58 null");
+                //    }
+                //}
+                //if (!_Origination_Date_Flag)
+                //{
+                //    sb2.AppendLine(@" 不一致債券清單");
+                //    sb2.AppendLine(sb3.ToString());
+                //}
+                //else
+                //    sb2.AppendLine(@" 相同版本A57,A58換券資訊與A41比對結果一致");
+                //sb2.AppendLine(@"3.相同版本A41的債券種類資料數與A57,A58的債券種類資料數是否一致");
+                sb2.AppendLine(@"1.相同版本A41的債券種類資料數與A57,A58的債券種類資料數是否一致");
                 var _bond_types = _A41Data.GroupBy(x => x.Bond_Type).OrderBy(x => x.Key).ToList();
                 StringBuilder sb4 = new StringBuilder();
                 sb4 = compare(
