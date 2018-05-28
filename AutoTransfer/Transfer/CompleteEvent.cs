@@ -96,10 +96,11 @@ AND    A57.Rating is not null
 ), --最後一版A57(原始投資信評)
 A52 AS (
    SELECT * FROM Grade_Mapping_Info
+   Where IsActive = 'Y'
 ),
 A51 AS (
    SELECT * FROM Grade_Moody_Info
-   WHERE Effective = 'Y'
+   WHERE Status = '1'
 ),
 tempA57t AS (
 SELECT _A57.*,
@@ -489,10 +490,11 @@ and Reference_Nbr in (select Reference_Nbr from tempDeleA); ";
 
 WITH A52 AS (
    SELECT * FROM Grade_Mapping_Info
+   Where IsActive = 'Y'
 ),
 A51 AS (
    SELECT * FROM Grade_Moody_Info
-   WHERE Effective = 'Y'
+   WHERE Status = '1'
 ),
 A53 AS (
   SELECT  Bond_Number,
@@ -599,7 +601,7 @@ T0 AS (
           BA_Info.Lots_Old AS Lots_Old,
           BA_Info.Portfolio_Name_Old AS Portfolio_Name_Old,
           BA_Info.Origination_Date_Old AS Origination_Date_Old
-   FROM  tempC BA_Info --A41
+   FROM  ( Select * from tempC ) BA_Info --A41  
    JOIN A53t RA_Info --A53
    ON BA_Info.Bond_Number = RA_Info.Bond_Number
    UNION ALL
@@ -742,196 +744,157 @@ and Reference_Nbr in (select Reference_Nbr from tempDeleB);
                             #region 三張特殊表單更新 sql
 
                             sql1_3 = $@"
--- update Bond_Rating(債項信評) 的設定
-update Bond_Rating_Info
-set Rating =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
-	     then Bond_Rating.S_And_P
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Bond_Rating.Moodys is not null
-	     then Bond_Rating.Moodys
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Bond_Rating.Fitch is not null
-		 then Bond_Rating.Fitch
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Bond_Rating.Fitch_TW is not null
-		 then Bond_Rating.Fitch_TW
-		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
-		 then Bond_Rating.TRC
-	  else Bond_Rating_Info.Rating
-	  end,
-    Rating_Date =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Bond_Rating.S_And_P is not null
-	     then null
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Bond_Rating.Moodys is not null
-	     then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Bond_Rating.Fitch is not null
-		 then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Bond_Rating.Fitch_TW is not null
-		 then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Bond_Rating.TRC is not null
-		 then null
-	  else Bond_Rating_Info.Rating_Date
-      end
-from Bond_Rating
-where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            -- update Bond_Rating(債項信評) 的設定
+                            update Bond_Rating_Info
+                            set Rating =
+                                  case
+                            	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}'
+                            	     then Bond_Rating.S_And_P
+                                    when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                            	     then Bond_Rating.Moodys
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}'
+                            		 then Bond_Rating.Fitch
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}'
+                            		 then Bond_Rating.Fitch_TW
+                            		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}'
+                            		 then Bond_Rating.TRC
+                            	  else Bond_Rating_Info.Rating
+                            	  end,
+                                Rating_Date = null
+                            from Bond_Rating
+                            where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
-update Bond_Rating_Info
-set PD_Grade =
-       case
-         when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-         then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-       end ,
-    Grade_Adjust =
-         case
-	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-      end
-from Bond_Rating
-where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            update Bond_Rating_Info
+                            set PD_Grade =
+                                   case
+                                     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                                     then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            	     else (select top 1 PD_Grade from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                   end ,
+                                Grade_Adjust =
+                                     case
+                            	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                            		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            		 else (select top 1 Grade_Adjust from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                  end
+                            from Bond_Rating
+                            where  Bond_Rating_Info.Bond_Number = Bond_Rating.Bond_Number
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.Bonds.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
--- update Issuer_Rating(發行者信評) 的設定
-update Bond_Rating_Info
-set Rating =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
-	     then Issuer_Rating.S_And_P
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Issuer_Rating.Moodys is not null
-	     then Issuer_Rating.Moodys
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Issuer_Rating.Fitch is not null
-		 then Issuer_Rating.Fitch
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Issuer_Rating.Fitch_TW is not null
-		 then Issuer_Rating.Fitch_TW
-		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
-		 then Issuer_Rating.TRC
-	  else Bond_Rating_Info.Rating
-	  end,
-    Rating_Date =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Issuer_Rating.S_And_P is not null
-	     then null
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Issuer_Rating.Moodys is not null
-	     then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Issuer_Rating.Fitch is not null
-		 then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Issuer_Rating.Fitch_TW is not null
-		 then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Issuer_Rating.TRC is not null
-		 then null
-	  else Bond_Rating_Info.Rating_Date
-      end
-from Issuer_Rating
-where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            -- update Issuer_Rating(發行者信評) 的設定
+                            update Bond_Rating_Info
+                            set Rating =
+                                  case
+                            	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}'
+                            	     then Issuer_Rating.S_And_P
+                                    when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                            	     then Issuer_Rating.Moodys
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}'
+                            		 then Issuer_Rating.Fitch
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}'
+                            		 then Issuer_Rating.Fitch_TW
+                            		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}'
+                            		 then Issuer_Rating.TRC
+                            	  else Bond_Rating_Info.Rating
+                            	  end,
+                                Rating_Date = null
+                            from Issuer_Rating
+                            where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
-update Bond_Rating_Info
-set PD_Grade =
-       case
-         when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-         then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-       end ,
-    Grade_Adjust =
-         case
-	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-      end
-from Issuer_Rating
-where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            update Bond_Rating_Info
+                            set PD_Grade =
+                                   case
+                                     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                                     then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            	     else (select top 1 PD_Grade from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                   end ,
+                                Grade_Adjust =
+                                     case
+                            	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                            		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            		 else (select top 1 Grade_Adjust from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                  end
+                            from Issuer_Rating
+                            where  Bond_Rating_Info.ISSUER = Issuer_Rating.Issuer
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.ISSUER.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
--- update Guarantor_Rating(擔保者信評) 的設定
-update Bond_Rating_Info
-set Rating =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
-	     then Guarantor_Rating.S_And_P
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Guarantor_Rating.Moodys is not null
-	     then Guarantor_Rating.Moodys
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Guarantor_Rating.Fitch is not null
-		 then Guarantor_Rating.Fitch
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Guarantor_Rating.Fitch_TW is not null
-		 then Guarantor_Rating.Fitch_TW
-		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
-		 then Guarantor_Rating.TRC
-	  else Bond_Rating_Info.Rating
-	  end,
-    Rating_Date =
-      case
-	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' and Guarantor_Rating.S_And_P is not null
-	     then null
-        when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' and Guarantor_Rating.Moodys is not null
-	     then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' and Guarantor_Rating.Fitch is not null
-		 then null
-		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' and Guarantor_Rating.Fitch_TW is not null
-		 then null
-		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' and Guarantor_Rating.TRC is not null
-		 then null
-	  else Bond_Rating_Info.Rating_Date
-      end
-from Guarantor_Rating
-where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            -- update Guarantor_Rating(擔保者信評) 的設定
+                            update Bond_Rating_Info
+                            set Rating =
+                                  case
+                            	    when Bond_Rating_Info.Rating_Org = '{RatingOrg.SP.GetDescription()}' 
+                            	     then Guarantor_Rating.S_And_P
+                                    when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}' 
+                            	     then Guarantor_Rating.Moodys
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.Fitch.GetDescription()}' 
+                            		 then Guarantor_Rating.Fitch
+                            		when Bond_Rating_Info.Rating_Org = '{RatingOrg.FitchTwn.GetDescription()}' 
+                            		 then Guarantor_Rating.Fitch_TW
+                            		when  Bond_Rating_Info.Rating_Org = '{RatingOrg.CW.GetDescription()}' 
+                            		 then Guarantor_Rating.TRC
+                            	  else Bond_Rating_Info.Rating
+                            	  end,
+                                Rating_Date = null
+                            from Guarantor_Rating
+                            where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
-update Bond_Rating_Info
-set PD_Grade =
-       case
-         when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-         then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-	     else (select top 1 PD_Grade from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-       end ,
-    Grade_Adjust =
-         case
-	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
-		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Effective = 'Y' and A51.Rating = Bond_Rating_Info.Rating)
-		 else (select top 1 Grade_Adjust from
-	       Grade_Moody_Info A51
-		   where A51.Effective = 'Y' and A51.PD_Grade =
-	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating))
-      end
-from Guarantor_Rating
-where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
-and Bond_Rating_Info.Report_Date = '{reportData}'
-and Bond_Rating_Info.Version = {ver}
-and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
-and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
+                            update Bond_Rating_Info
+                            set PD_Grade =
+                                   case
+                                     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                                     then (select top 1 PD_Grade from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            	     else (select top 1 PD_Grade from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                   end ,
+                                Grade_Adjust =
+                                     case
+                            	     when Bond_Rating_Info.Rating_Org = '{RatingOrg.Moody.GetDescription()}'
+                            		 then (select top 1 Grade_Adjust from Grade_Moody_Info A51 where A51.Status = '1' and A51.Rating = Bond_Rating_Info.Rating)
+                            		 else (select top 1 Grade_Adjust from
+                            	       Grade_Moody_Info A51
+                            		   where A51.Status = '1' and A51.PD_Grade =
+                            	    (select top 1 PD_Grade from Grade_Mapping_Info A52 where A52.Rating_Org = Bond_Rating_Info.Rating_Org and A52.Rating = Bond_Rating_Info.Rating and A52.IsActive = 'Y'))
+                                  end
+                            from Guarantor_Rating
+                            where  Bond_Rating_Info.ISSUER = Guarantor_Rating.Issuer
+                            and Bond_Rating_Info.Report_Date = '{reportData}'
+                            and Bond_Rating_Info.Version = {ver}
+                            and Bond_Rating_Info.Rating_Object = '{RatingObject.GUARANTOR.GetDescription()}'
+                            and Bond_Rating_Info.Rating_Type = '{Rating_Type.B.GetDescription()}' ;
 
-";
+                            ";
 
                             #endregion 三張特殊表單更新 sql
 
@@ -1080,8 +1043,9 @@ select
                             db.Database.ExecuteSqlCommand(sql1_2);
                             #region 共用
                             var A51s = db.Grade_Moody_Info.AsNoTracking()
-                                         .Where(x => x.Effective == "Y").ToList();
-                            var A52s = db.Grade_Mapping_Info.AsNoTracking().ToList();
+                                         .Where(x => x.Status == "1").ToList();
+                            var A52s = db.Grade_Mapping_Info.AsNoTracking()
+                                         .Where(x => x.IsActive == "Y").ToList();
                             string Domestic = "國內";
                             string Foreign = "國外";
                             Grade_Moody_Info A51 = null;
@@ -1272,7 +1236,6 @@ select
                                   .Where(x => x.Report_Date == dt &&
                                              x.Version == version &&
                                              x.Rating_Type == _ratingType &&
-                                             x.Rating_Object == _RObject &&
                                              _Guarantors.Contains(x.ISSUER)).ToList()
                                              .GroupBy(x => new { x.Reference_Nbr, x.ISSUER })
                                   .ToList().ForEach(x =>
@@ -1281,7 +1244,9 @@ select
                                       var _first = x.First();
                                       var _Guarantor_Rating = _Guarantor_Ratings.First(y => y.Issuer == x.Key.ISSUER);
                                       if (!_Guarantor_Rating.S_And_P.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.SP.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.SP.GetDescription()))
                                       {
                                           _data.Add(new insertRating()
                                           {
@@ -1292,7 +1257,9 @@ select
                                           });
                                       }
                                       if (!_Guarantor_Rating.Moodys.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Moody.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Moody.GetDescription()))
                                       {
                                           _data.Add(new insertRating()
                                           {
@@ -1303,7 +1270,9 @@ select
                                           });
                                       }
                                       if (!_Guarantor_Rating.Fitch.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.Fitch.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.Fitch.GetDescription()))
                                       {
                                           _data.Add(new insertRating()
                                           {
@@ -1314,7 +1283,9 @@ select
                                           });
                                       }
                                       if (!_Guarantor_Rating.Fitch_TW.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.FitchTwn.GetDescription()))
                                       {
                                           _data.Add(new insertRating()
                                           {
@@ -1325,7 +1296,9 @@ select
                                           });
                                       }
                                       if (!_Guarantor_Rating.TRC.IsNullOrWhiteSpace() &&
-                                          !x.Any(z => z.Rating_Org == RatingOrg.CW.GetDescription()))
+                                          !x.Any(z =>
+                                          z.Rating_Object == _RObject &&
+                                          z.Rating_Org == RatingOrg.CW.GetDescription()))
                                       {
                                           _data.Add(new insertRating()
                                           {
@@ -1345,8 +1318,6 @@ select
                             #endregion 新增3張特殊表單rating
                             //刪除A57 預設
                             db.Database.ExecuteSqlCommand(sql_D);
-                            //三張特殊表單更新
-                            db.Database.ExecuteSqlCommand(sql1_3);
 
                             #region issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等(PS:發行人的評等複製一份給債項評等)
 
@@ -1478,6 +1449,9 @@ select
                             }
 
                             #endregion issuer='GOV-TW-CEN' or 'GOV-Kaohsiung' or 'GOV-TAIPEI' then他們的債項評等放他們發行人的評等(PS:發行人的評等複製一份給債項評等)
+
+                            //三張特殊表單更新
+                            db.Database.ExecuteSqlCommand(sql1_3);
 
                             #region 複寫前一版本已補登之信評
 
@@ -2007,7 +1981,7 @@ INSERT INTO [Bond_Rating_Info]
             {
                 Bond_Rating_Info _copy = _first.ModelConvert<Bond_Rating_Info, Bond_Rating_Info>();
                 Grade_Moody_Info A51 = null;
-                if ((item._Rating_Org & RatingOrg.Moody) == RatingOrg.Moody)
+                if (item._Rating_Org == RatingOrg.Moody)
                 {
                     A51 = A51s.FirstOrDefault(z => z.Rating == item._Rating);
                 }

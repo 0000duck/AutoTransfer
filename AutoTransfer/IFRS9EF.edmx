@@ -662,13 +662,26 @@
         </EntityType>
         <EntityType Name="Grade_Mapping_Info">
           <Key>
-            <PropertyRef Name="Rating_Org" />
-            <PropertyRef Name="PD_Grade" />
-            <PropertyRef Name="Rating" />
+            <PropertyRef Name="Id" />
           </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Rating_Org" Type="varchar" MaxLength="20" Nullable="false" />
           <Property Name="PD_Grade" Type="int" Nullable="false" />
           <Property Name="Rating" Type="varchar" MaxLength="10" Nullable="false" />
+          <Property Name="IsActive" Type="varchar" MaxLength="1" />
+          <Property Name="Change_Status" Type="varchar" MaxLength="1" />
+          <Property Name="Editor" Type="varchar" MaxLength="20" />
+          <Property Name="Processing_Date" Type="date" />
+          <Property Name="Auditor" Type="varchar" MaxLength="20" />
+          <Property Name="Status" Type="varchar" MaxLength="1" />
+          <Property Name="Auditor_Reply" Type="varchar" MaxLength="255" />
+          <Property Name="Audit_date" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Grade_Moody_Info">
           <Key>
@@ -681,7 +694,16 @@
           <Property Name="Rating_Adjust" Type="varchar" MaxLength="20" />
           <Property Name="Grade_Adjust" Type="int" />
           <Property Name="Moodys_PD" Type="float" />
-          <Property Name="Effective" Type="varchar" MaxLength="1" />
+          <Property Name="Status" Type="varchar" MaxLength="1" />
+          <Property Name="Auditor_Reply" Type="nvarchar" MaxLength="255" />
+          <Property Name="Auditor" Type="varchar" MaxLength="20" />
+          <Property Name="Audit_date" Type="date" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
         </EntityType>
         <EntityType Name="Group_Product_Code_Mapping">
           <Key>
@@ -923,7 +945,6 @@
     <edmx:ConceptualModels>
       <Schema Namespace="IFRS9Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="IFRS9Entities" annotation:LazyLoadingEnabled="true" >
-          <EntitySet Name="Grade_Mapping_Info" EntityType="IFRS9Model.Grade_Mapping_Info" />
           <EntitySet Name="Rating_Info" EntityType="IFRS9Model.Rating_Info" />
           <EntitySet Name="Transfer_CheckTable" EntityType="IFRS9Model.Transfer_CheckTable" />
           <EntitySet Name="Rating_Info_SampleInfo" EntityType="IFRS9Model.Rating_Info_SampleInfo" />
@@ -940,7 +961,6 @@
           <EntitySet Name="Group_Product_Code_Mapping" EntityType="IFRS9Model.Group_Product_Code_Mapping" />
           <EntitySet Name="Bond_Rating_Info" EntityType="IFRS9Model.Bond_Rating_Info" />
           <EntitySet Name="Bond_Rating_Summary" EntityType="IFRS9Model.Bond_Rating_Summary" />
-          <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
           <EntitySet Name="Gov_Info_Ticker" EntityType="IFRS9Model.Gov_Info_Ticker" />
           <EntitySet Name="Loan_Account_Info" EntityType="IFRS9Model.Loan_Account_Info" />
           <EntitySet Name="Gov_Info_Monthly" EntityType="IFRS9Model.Gov_Info_Monthly" />
@@ -957,17 +977,9 @@
           <EntitySet Name="Assessment_Sub_Kind_Ticker" EntityType="IFRS9Model.Assessment_Sub_Kind_Ticker" />
           <EntitySet Name="Rating_Update_Info" EntityType="IFRS9Model.Rating_Update_Info" />
           <EntitySet Name="Scheduling_Report" EntityType="IFRS9Model.Scheduling_Report" />
+          <EntitySet Name="Grade_Mapping_Info" EntityType="IFRS9Model.Grade_Mapping_Info" />
+          <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
           </EntityContainer>
-        <EntityType Name="Grade_Mapping_Info">
-          <Key>
-            <PropertyRef Name="Rating_Org" />
-            <PropertyRef Name="PD_Grade" />
-            <PropertyRef Name="Rating" />
-          </Key>
-          <Property Name="Rating_Org" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="PD_Grade" Type="Int32" Nullable="false" />
-          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-        </EntityType>
         <EntityType Name="Rating_Info">
           <Key>
             <PropertyRef Name="Record_ID" />
@@ -1328,19 +1340,6 @@
           <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
           <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
-        </EntityType>
-        <EntityType Name="Grade_Moody_Info">
-          <Key>
-            <PropertyRef Name="Data_Year" />
-            <PropertyRef Name="Rating" />
-          </Key>
-          <Property Name="Data_Year" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
-          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
-          <Property Name="PD_Grade" Type="Int32" />
-          <Property Name="Rating_Adjust" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="Grade_Adjust" Type="Int32" />
-          <Property Name="Moodys_PD" Type="Double" />
-          <Property Name="Effective" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Gov_Info_Ticker">
           <Key>
@@ -1837,21 +1836,57 @@
           <Property Name="Delete_Date" Type="DateTime" Precision="0" />
           <Property Name="Processing_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Grade_Mapping_Info">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Rating_Org" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="PD_Grade" Type="Int32" Nullable="false" />
+          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Change_Status" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Editor" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Processing_Date" Type="DateTime" Precision="0" />
+          <Property Name="Auditor" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Status" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Auditor_Reply" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="Audit_date" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
+        <EntityType Name="Grade_Moody_Info">
+          <Key>
+            <PropertyRef Name="Data_Year" />
+            <PropertyRef Name="Rating" />
+          </Key>
+          <Property Name="Data_Year" Type="String" Nullable="false" MaxLength="4" FixedLength="false" Unicode="false" />
+          <Property Name="Rating" Type="String" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="PD_Grade" Type="Int32" />
+          <Property Name="Rating_Adjust" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Grade_Adjust" Type="Int32" />
+          <Property Name="Moodys_PD" Type="Double" />
+          <Property Name="Status" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+          <Property Name="Auditor_Reply" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Auditor" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Audit_date" Type="DateTime" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="IFRS9ModelStoreContainer" CdmEntityContainer="IFRS9Entities" >
-          <EntitySetMapping Name="Grade_Mapping_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Grade_Mapping_Info">
-              <MappingFragment StoreEntitySet="Grade_Mapping_Info">
-                <ScalarProperty Name="Rating" ColumnName="Rating" />
-                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
-                <ScalarProperty Name="Rating_Org" ColumnName="Rating_Org" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Rating_Info">
             <EntityTypeMapping TypeName="IFRS9Model.Rating_Info">
               <MappingFragment StoreEntitySet="Rating_Info">
@@ -2188,19 +2223,6 @@
                 <ScalarProperty Name="Parm_ID" ColumnName="Parm_ID" />
                 <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
                 <ScalarProperty Name="Reference_Nbr" ColumnName="Reference_Nbr" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Grade_Moody_Info">
-            <EntityTypeMapping TypeName="IFRS9Model.Grade_Moody_Info">
-              <MappingFragment StoreEntitySet="Grade_Moody_Info">
-                <ScalarProperty Name="Effective" ColumnName="Effective" />
-                <ScalarProperty Name="Moodys_PD" ColumnName="Moodys_PD" />
-                <ScalarProperty Name="Grade_Adjust" ColumnName="Grade_Adjust" />
-                <ScalarProperty Name="Rating_Adjust" ColumnName="Rating_Adjust" />
-                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
-                <ScalarProperty Name="Rating" ColumnName="Rating" />
-                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -2708,6 +2730,52 @@
                 <ScalarProperty Name="Content_memo" ColumnName="Content_memo" />
                 <ScalarProperty Name="Scheduling_Type" ColumnName="Scheduling_Type" />
                 <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Grade_Mapping_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Grade_Mapping_Info">
+              <MappingFragment StoreEntitySet="Grade_Mapping_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Audit_date" ColumnName="Audit_date" />
+                <ScalarProperty Name="Auditor_Reply" ColumnName="Auditor_Reply" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Auditor" ColumnName="Auditor" />
+                <ScalarProperty Name="Processing_Date" ColumnName="Processing_Date" />
+                <ScalarProperty Name="Editor" ColumnName="Editor" />
+                <ScalarProperty Name="Change_Status" ColumnName="Change_Status" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Rating" ColumnName="Rating" />
+                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
+                <ScalarProperty Name="Rating_Org" ColumnName="Rating_Org" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Grade_Moody_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Grade_Moody_Info">
+              <MappingFragment StoreEntitySet="Grade_Moody_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Audit_date" ColumnName="Audit_date" />
+                <ScalarProperty Name="Auditor" ColumnName="Auditor" />
+                <ScalarProperty Name="Auditor_Reply" ColumnName="Auditor_Reply" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Moodys_PD" ColumnName="Moodys_PD" />
+                <ScalarProperty Name="Grade_Adjust" ColumnName="Grade_Adjust" />
+                <ScalarProperty Name="Rating_Adjust" ColumnName="Rating_Adjust" />
+                <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
+                <ScalarProperty Name="Rating" ColumnName="Rating" />
+                <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

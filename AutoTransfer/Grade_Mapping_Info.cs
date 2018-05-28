@@ -14,8 +14,23 @@ namespace AutoTransfer
     
     public partial class Grade_Mapping_Info
     {
+        public int Id { get; set; }
         public string Rating_Org { get; set; }
         public int PD_Grade { get; set; }
         public string Rating { get; set; }
+        public string IsActive { get; set; }
+        public string Change_Status { get; set; }
+        public string Editor { get; set; }
+        public Nullable<System.DateTime> Processing_Date { get; set; }
+        public string Auditor { get; set; }
+        public string Status { get; set; }
+        public string Auditor_Reply { get; set; }
+        public Nullable<System.DateTime> Audit_date { get; set; }
+        public string Create_User { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.TimeSpan> Create_Time { get; set; }
+        public string LastUpdate_User { get; set; }
+        public Nullable<System.DateTime> LastUpdate_Date { get; set; }
+        public Nullable<System.TimeSpan> LastUpdate_Time { get; set; }
     }
 }
