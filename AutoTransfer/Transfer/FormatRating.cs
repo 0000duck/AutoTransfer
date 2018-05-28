@@ -21,9 +21,17 @@ namespace AutoTransfer.Transfer
             if (rating.IsNullOrWhiteSpace())
                 return string.Empty;
             string value = rating.Trim();
-            if (((org & RatingOrg.Moody) != RatingOrg.Moody) && (value.IndexOf("WR") > -1))
+            if ((org != RatingOrg.Moody) && (value.IndexOf("WR") > -1))
                 return string.Empty;
-            
+            rule_2.ForEach(x =>
+            {
+                if (value.Contains(x.Item1) && !x.Item2.IsNullOrWhiteSpace())
+                {
+                    value = value.Replace(x.Item1, x.Item2);
+                    if (!value.IsNullOrWhiteSpace())
+                        value = value.Trim();
+                }
+            });
             List<string> Liststrs = new List<string>();
             rule_1.ForEach(x =>
             {
@@ -43,15 +51,6 @@ namespace AutoTransfer.Transfer
                         value = value.Trim();
                 });
             }
-            rule_2.ForEach(x =>
-            {
-                if (value.Contains(x.Item1) && !x.Item2.IsNullOrWhiteSpace())
-                {
-                    value = value.Replace(x.Item1, x.Item2);
-                    if (!value.IsNullOrWhiteSpace())
-                        value = value.Trim();
-                }
-            });
             return value.Trim();
         }
 
@@ -81,7 +80,7 @@ namespace AutoTransfer.Transfer
         /// <returns></returns>
         public string forRating2(string rating,RatingOrg org)
         {
-            if ((org & RatingOrg.FitchTwn) == RatingOrg.FitchTwn)
+            if (org == RatingOrg.FitchTwn)
             {
                 if (rating.IsNullOrWhiteSpace())
                     return string.Empty;

@@ -33,7 +33,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("SECID=ISIN");
                 data.Add($"DATERANGE={dateTime}|{dateTime}");
                 data.Add("HIST_PERIOD=d");
-
+                data.Add("HIST_FORMAT=horizontal");
                 #endregion Title
 
                 //空一行
@@ -41,7 +41,8 @@ namespace AutoTransfer.CreateFile
 
                 #region START-OF-FIELDS
                 data.Add("START-OF-FIELDS");
-                data.Add("YLD_YTM_MID");
+                //data.Add("YLD_YTM_MID");
+                data.Add("BVAL_MID_YTM");
                 data.Add("END-OF-FIELDS");
                 #endregion START-OF-FIELDS
 
@@ -65,7 +66,8 @@ namespace AutoTransfer.CreateFile
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            data.Add(string.Format("{0}@BGN Govt|ISIN", x));
+                            //data.Add(string.Format("{0}@BGN Govt|ISIN", x));
+                            data.Add(string.Format("{0}@BVAL Corp", x));
                         }
                     });
                 db.Dispose();
