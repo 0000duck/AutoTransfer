@@ -1468,8 +1468,7 @@ select
                                 if (_ver != null)
                                 {
                                     //目前版本
-                                    var A57n1 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == "Y").ToList();
-                                    var A57n2 = A57.Where(x => x.Version == version && x.ISIN_Changed_Ind == null).ToList();
+                                    var A57nAll = A57.Where(x => x.Version == version).ToList();  
                                     //目前版本
                                     //上一次最後一版
                                     var A57s = A57.Where(x => x.Version == _ver &&
@@ -1492,25 +1491,10 @@ select
                                         var deleteA57 = new Bond_Rating_Info();
                                         var first = item.First();
                                         //A57n => 這一版A57變更共用資料(新增A57用)
-                                        var A57ns = A57n2.Where(y =>
+                                        var A57ns = A57nAll.Where(y =>
                                                         y.Bond_Number == first.Bond_Number &&
                                                         y.Lots == first.Lots &&
-                                                        y.Portfolio_Name == first.Portfolio_Name ||
-                                                        !first.Bond_Number_Old.IsNullOrWhiteSpace() &&
-                                                        y.Bond_Number == first.Bond_Number_Old &&
-                                                        y.Lots == first.Lots_Old &&
-                                                        y.Portfolio_Name == first.Portfolio_Name_Old
-                                        ).ToList();
-                                        if (!A57ns.Any())
-                                            A57ns = A57n1.Where(y =>
-                                                       y.Bond_Number_Old == first.Bond_Number &&
-                                                       y.Lots_Old == first.Lots &&
-                                                       y.Portfolio_Name_Old == first.Portfolio_Name ||
-                                                       !first.Bond_Number_Old.IsNullOrWhiteSpace() &&
-                                                       y.Bond_Number_Old == first.Bond_Number_Old &&
-                                                       y.Lots_Old == first.Lots_Old &&
-                                                       y.Portfolio_Name_Old == first.Portfolio_Name_Old
-                                        ).ToList();
+                                                        y.Portfolio_Name == first.Portfolio_Name).ToList();
                                         if (A57ns.Any()) //目前版本沒有比對到符合資料不需要繼續
                                         {
                                             var A57n = A57ns.First().ModelConvert<Bond_Rating_Info,Bond_Rating_Info>();

@@ -61,12 +61,27 @@ namespace AutoTransfer.Transfer
             else
             {
                 var _dt2 = reportDateDt.AddMonths(-18).Year;
+                var _m = reportDateDt.AddMonths(-18).Month;
+                var _mq = _m.IntToYearQuartly();
                 var _dt = reportDateDt.Year;
                 List<string> years = new List<string>();
                 var _d = _dt - _dt2;
                 for (int i = 0; i <= _d; i++)
                 {
-                    years.Add((_dt2 + i).ToString());
+                    if (i == 0)
+                    {
+                        _mq.getQuartly().ForEach(x =>
+                        {
+                            years.Add((_dt2 + i).ToString() + x);
+                        });              
+                    }
+                    else
+                    {
+                        "Q1".getQuartly().ForEach(x =>
+                        {
+                            years.Add((_dt2 + i).ToString() + x);
+                        });
+                    }
                 }
                 IFRS9Entities db = new IFRS9Entities();
                 var A84datas = new List<Econ_Foreign>();

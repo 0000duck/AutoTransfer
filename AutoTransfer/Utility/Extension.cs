@@ -117,6 +117,27 @@ namespace AutoTransfer.Utility
             return result;
         }
 
+        public static List<string> getQuartly(this string val)
+        {
+            List<string> result = new List<string>();
+            switch (val)
+            {
+                case "Q1":
+                    result = new List<string>() { "Q1", "Q2", "Q3", "Q4" };
+                    break;
+                case "Q2":
+                    result = new List<string>() { "Q2", "Q3", "Q4" };
+                    break;
+                case "Q3":
+                    result = new List<string>() { "Q3", "Q4" };
+                    break;
+                case "Q4":
+                    result = new List<string>() { "Q4" };
+                    break;
+            }
+            return result;
+        }
+
         public static void Decompress(string sourceFileName, string destFileName)
         {
             try
