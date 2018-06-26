@@ -217,7 +217,7 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void DataToDb()
         {
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 List<Econ_Foreign> A84Datas = new List<Econ_Foreign>();
                 string date = startTime.ToString("yyyyMMdd");

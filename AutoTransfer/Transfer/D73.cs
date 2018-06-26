@@ -9,7 +9,7 @@ namespace AutoTransfer.Transfer
         {
             try
             {
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     string txtPath = @"D:\IFRS9CheckTable";
                     string configFileName = System.Configuration.ConfigurationManager.AppSettings["checkTable"];

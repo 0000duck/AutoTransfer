@@ -12,7 +12,7 @@ namespace AutoTransfer.Transfer
 {
     public class CompleteEvent
     {
-        private IFRS9Entities db = new IFRS9Entities();
+        private IFRS9DBEntities db = new IFRS9DBEntities();
         private Log log = new Log();
         private string A57logPath = string.Empty;
         private string A58logPath = string.Empty;
@@ -1998,7 +1998,7 @@ INSERT INTO [Bond_Rating_Info]
         private List<Bond_Rating_Parm> getParmIDs()
         {
             List<Bond_Rating_Parm> parmIDs = new List<Bond_Rating_Parm>();
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 var parms = db.Bond_Rating_Parm.AsNoTracking()
                     .Where(j => j.IsActive == "Y" && j.Status == "2").ToList(); //抓取所有有效資料

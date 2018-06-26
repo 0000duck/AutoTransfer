@@ -255,6 +255,19 @@
           <Property Name="Chg_In_Spread" Type="float" />
           <Property Name="Chg_In_Treasury" Type="float" />
         </EntityType>
+        <EntityType Name="Bond_Spread_Trade_Info">
+          <Key>
+            <PropertyRef Name="Report_Date" />
+          </Key>
+          <Property Name="Report_Date" Type="date" Nullable="false" />
+          <Property Name="Last_Date" Type="date" Nullable="false" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="date" />
+          <Property Name="Create_Time" Type="time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="varchar" MaxLength="50" />
+          <Property Name="LastUpdate_Date" Type="date" />
+          <Property Name="LastUpdate_Time" Type="time" Precision="7" />
+        </EntityType>
         <EntityType Name="Bond_Ticker_Info">
           <Key>
             <PropertyRef Name="Report_Date" />
@@ -913,6 +926,7 @@
           <EntitySet Name="Bond_Rating_Parm" EntityType="Self.Bond_Rating_Parm" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Rating_Summary" EntityType="Self.Bond_Rating_Summary" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Spread_Info" EntityType="Self.Bond_Spread_Info" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Bond_Spread_Trade_Info" EntityType="Self.Bond_Spread_Trade_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Bond_Ticker_Info" EntityType="Self.Bond_Ticker_Info" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_D_YYYYMMDD" EntityType="Self.Econ_D_YYYYMMDD" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Econ_Domestic" EntityType="Self.Econ_Domestic" Schema="dbo" store:Type="Tables" />
@@ -979,6 +993,7 @@
           <EntitySet Name="Scheduling_Report" EntityType="IFRS9Model.Scheduling_Report" />
           <EntitySet Name="Grade_Mapping_Info" EntityType="IFRS9Model.Grade_Mapping_Info" />
           <EntitySet Name="Grade_Moody_Info" EntityType="IFRS9Model.Grade_Moody_Info" />
+          <EntitySet Name="Bond_Spread_Trade_Info" EntityType="IFRS9Model.Bond_Spread_Trade_Info" />
           </EntityContainer>
         <EntityType Name="Rating_Info">
           <Key>
@@ -1881,6 +1896,19 @@
           <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
           <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
         </EntityType>
+        <EntityType Name="Bond_Spread_Trade_Info">
+          <Key>
+            <PropertyRef Name="Report_Date" />
+          </Key>
+          <Property Name="Report_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Last_Date" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="0" />
+          <Property Name="Create_Time" Type="Time" Precision="7" />
+          <Property Name="LastUpdate_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="LastUpdate_Date" Type="DateTime" Precision="0" />
+          <Property Name="LastUpdate_Time" Type="Time" Precision="7" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -2776,6 +2804,20 @@
                 <ScalarProperty Name="PD_Grade" ColumnName="PD_Grade" />
                 <ScalarProperty Name="Rating" ColumnName="Rating" />
                 <ScalarProperty Name="Data_Year" ColumnName="Data_Year" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bond_Spread_Trade_Info">
+            <EntityTypeMapping TypeName="IFRS9Model.Bond_Spread_Trade_Info">
+              <MappingFragment StoreEntitySet="Bond_Spread_Trade_Info">
+                <ScalarProperty Name="LastUpdate_Time" ColumnName="LastUpdate_Time" />
+                <ScalarProperty Name="LastUpdate_Date" ColumnName="LastUpdate_Date" />
+                <ScalarProperty Name="LastUpdate_User" ColumnName="LastUpdate_User" />
+                <ScalarProperty Name="Create_Time" ColumnName="Create_Time" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Last_Date" ColumnName="Last_Date" />
+                <ScalarProperty Name="Report_Date" ColumnName="Report_Date" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

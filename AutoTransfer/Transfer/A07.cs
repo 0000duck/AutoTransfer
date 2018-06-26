@@ -172,7 +172,7 @@ namespace AutoTransfer.Transfer
         /// </summary>
         protected void DataToDb()
         {
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
             List<Econ_Domestic> A07Datas = new List<Econ_Domestic>();
             string date = startTime.ToString("yyyyMMdd");
             

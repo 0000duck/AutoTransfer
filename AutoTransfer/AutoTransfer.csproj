@@ -84,6 +84,9 @@
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
     <Compile Include="BondSpreadInfo\A96_Bond_Spread_Info.cs" />
+    <Compile Include="Bond_Spread_Trade_Info.cs">
+      <DependentUpon>IFRS9EF.tt</DependentUpon>
+    </Compile>
     <Compile Include="Bond_Ticker_Info.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
@@ -140,6 +143,7 @@
     <Compile Include="Guarantor_Rating.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>
+    <Compile Include="IFRS9DBEntities.cs" />
     <Compile Include="Issuer_Rating.cs">
       <DependentUpon>IFRS9EF.tt</DependentUpon>
     </Compile>

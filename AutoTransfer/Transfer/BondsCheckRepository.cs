@@ -92,7 +92,7 @@ namespace AutoTransfer.Transfer
                     successStr = @"信評資料如常,未有異常信評內容"
                 };
                 var A57Data = new List<IGrouping<string, Bond_Rating_Info>>();
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     var A57Datas = db.Bond_Rating_Info.AsNoTracking()
                                      .Where(x => x.Report_Date == _first.Report_Date &&
@@ -112,7 +112,7 @@ namespace AutoTransfer.Transfer
                 result.Add(A57_1);
                 var _A41Data = new List<Bond_Account_Info>();
                 var A41Data = new List<Bond_Account_Info>();
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     _A41Data = db.Bond_Account_Info.AsNoTracking()
                                 .Where(x => x.Report_Date == _first.Report_Date &&

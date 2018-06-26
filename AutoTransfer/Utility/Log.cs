@@ -106,7 +106,7 @@ namespace AutoTransfer.Utility
         {
             if (fileName.IsNullOrWhiteSpace() || checkName.IsNullOrWhiteSpace())
                 return false;
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 var checkTable = db.Transfer_CheckTable.AsNoTracking();
                 var _A53Version = 0;
@@ -169,7 +169,7 @@ namespace AutoTransfer.Utility
                 TableType.A962.ToString(),
                 TableType.IFRS9Log.ToString()
             };
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 if (flag && db.Transfer_CheckTable.AsNoTracking().Any(x =>
                                !resetTable.Contains(fileName) &&

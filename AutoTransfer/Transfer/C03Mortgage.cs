@@ -25,7 +25,7 @@ namespace AutoTransfer.Transfer
         {
             logPath = log.txtLocation(type);
 
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
             startTime = DateTime.Now;
 
             if (dateTime.Length != 8 ||

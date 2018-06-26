@@ -62,7 +62,7 @@ namespace AutoTransfer.Transfer
         {
             List<Gov_Info_Ticker> A94;
 
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 A94 = db.Gov_Info_Ticker.AsNoTracking()
                                         .Where(x => x.Foreign_Exchange_Map.ToString() != "")
@@ -221,7 +221,7 @@ namespace AutoTransfer.Transfer
             {
                 DateTime processingDate = DateTime.Parse(startTime.ToString("yyyy/MM/dd"));
 
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     List<Gov_Info_Ticker> listA94 = db.Gov_Info_Ticker.ToList();
                     List<Gov_Info_Monthly> listA93 = db.Gov_Info_Monthly.Where(x=>x.Processing_Date == processingDate).ToList();

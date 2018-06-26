@@ -37,7 +37,7 @@ namespace AutoTransfer.Transfer
         {
             logPath = log.txtLocation(type);
 
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
             startTime = DateTime.Now;
 
             if (dateTime.Length != 8 ||
@@ -268,7 +268,7 @@ namespace AutoTransfer.Transfer
 
         protected void DataMidYieldToA96(string path1, string path2)
         {
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
 
             #region
             using (StreamReader sr = new StreamReader(Path.Combine(path1, path2)))
@@ -473,7 +473,7 @@ namespace AutoTransfer.Transfer
 
         protected void DataToDb()
         {
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
 
             #region saveDb
             try

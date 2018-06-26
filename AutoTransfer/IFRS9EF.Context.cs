@@ -55,5 +55,6 @@ namespace AutoTransfer
         public virtual DbSet<Scheduling_Report> Scheduling_Report { get; set; }
         public virtual DbSet<Grade_Mapping_Info> Grade_Mapping_Info { get; set; }
         public virtual DbSet<Grade_Moody_Info> Grade_Moody_Info { get; set; }
+        public virtual DbSet<Bond_Spread_Trade_Info> Bond_Spread_Trade_Info { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoTransfer.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static AutoTransfer.Enum.Ref;
@@ -18,7 +19,19 @@ namespace AutoTransfer.CreateFile
 
                 //ex: GetA9622_20180131
                 string getFileName = f.getA9622FileName();
-
+                int year = Int32.Parse(dateTime.Substring(0, 4));
+                int month = Int32.Parse(dateTime.Substring(4, 2));
+                int day = Int32.Parse(dateTime.Substring(6, 2));
+                DateTime date = new DateTime(year, month, day);
+                string tradeDate = dateTime;
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
+                {
+                    var trade = db.Bond_Spread_Trade_Info.FirstOrDefault(x => x.Report_Date == date);
+                    if (trade != null)
+                    {
+                        tradeDate = trade.Last_Date.ToString("yyyyMMdd");
+                    }
+                }
                 #region File
 
                 data.Add("START-OF-FILE");
@@ -30,7 +43,7 @@ namespace AutoTransfer.CreateFile
                 data.Add("PROGRAMFLAG=" + f.getPROGRAMFLAG());
                 data.Add("FIRMNAME=" + f.getFIRMNAME());
                 data.Add("SECID=ISIN");
-                data.Add($"DATERANGE={dateTime}|{dateTime}");
+                data.Add($"DATERANGE={tradeDate}|{tradeDate}");
                 data.Add("HIST_PERIOD=d");
 
                 #endregion Title

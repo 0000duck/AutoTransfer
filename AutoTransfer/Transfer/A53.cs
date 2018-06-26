@@ -55,7 +55,7 @@ namespace AutoTransfer.Transfer
         /// <param name="dateTime"></param>
         public override void startTransfer(string dateTime)
         {
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
             startTime = DateTime.Now;
             logPath = log.txtLocation(type);
             if (dateTime.Length != 8 ||
@@ -115,7 +115,7 @@ namespace AutoTransfer.Transfer
         public void onlyA57_A58Transfer(string dateTime)
         {
             DateTime.TryParseExact(dateTime, "yyyyMMdd", null,System.Globalization.DateTimeStyles.AllowWhiteSpaces,out reportDateDt);
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 verInt = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version != null)
                            .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
@@ -126,7 +126,7 @@ namespace AutoTransfer.Transfer
         public void onlyA53_A57_A58Transfer(string dateTime)
         {
             DateTime.TryParseExact(dateTime, "yyyyMMdd", null, System.Globalization.DateTimeStyles.AllowWhiteSpaces, out reportDateDt);
-            using (IFRS9Entities db = new IFRS9Entities())
+            using (IFRS9DBEntities db = new IFRS9DBEntities())
             {
                 verInt = db.Bond_Account_Info.AsNoTracking().Where(x => x.Report_Date == reportDateDt && x.Version != null)
                            .DefaultIfEmpty().Max(x => x.Version == null ? 0 : x.Version.Value);
@@ -247,7 +247,7 @@ namespace AutoTransfer.Transfer
 
                 #region save Rating_Info_SampleInfo
 
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     List<Bond_Account_Info> A41s = new List<Bond_Account_Info>();
                     StringBuilder sb = new StringBuilder();
@@ -527,7 +527,7 @@ INSERT INTO [Rating_Info_SampleInfo]
 
                 #region save Rating_Info_SampleInfo
 
-                using (IFRS9Entities db = new IFRS9Entities())
+                using (IFRS9DBEntities db = new IFRS9DBEntities())
                 {
                     StringBuilder sb = new StringBuilder();
 
@@ -748,7 +748,7 @@ and Bond_Number = {bond_Number.stringToStrSql()}; ");
         /// </summary>
         protected override void DataToDb()
         {
-            IFRS9Entities db = new IFRS9Entities();
+            IFRS9DBEntities db = new IFRS9DBEntities();
             List<Rating_Info> sampleData = new List<Rating_Info>();
             List<Rating_Info> commpanyData = new List<Rating_Info>();
             A53Sample a53Sample = new A53Sample();

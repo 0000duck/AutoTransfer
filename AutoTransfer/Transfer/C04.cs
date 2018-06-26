@@ -83,7 +83,7 @@ namespace AutoTransfer.Transfer
                         });
                     }
                 }
-                IFRS9Entities db = new IFRS9Entities();
+                IFRS9DBEntities db = new IFRS9DBEntities();
                 var A84datas = new List<Econ_Foreign>();
                 foreach (var year in years)
                 {

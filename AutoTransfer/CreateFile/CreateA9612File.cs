@@ -55,7 +55,7 @@ namespace AutoTransfer.CreateFile
                 int month = Int32.Parse(dateTime.Substring(4, 2));
                 int day = Int32.Parse(dateTime.Substring(6, 2));
                 DateTime date = new DateTime(year, month, day);
-                IFRS9Entities db = new IFRS9Entities();
+                IFRS9DBEntities db = new IFRS9DBEntities();
                 db.Bond_Account_Info.AsNoTracking()
                     .Where(x => x.Report_Date.HasValue &&
                                 x.Report_Date.Value == date &&
