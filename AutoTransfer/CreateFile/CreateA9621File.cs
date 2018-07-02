@@ -32,6 +32,9 @@ namespace AutoTransfer.CreateFile
                 data.Add("SECID=ISIN");
                 data.Add($"DATERANGE={dateRageStart}|{dateRageEnd}");
                 data.Add("HIST_PERIOD=d");
+                data.Add("PRICING_SOURCE=BGN");
+                data.Add("EXCLUSIVE_PRICING_SRC=yes");
+                
 
                 #endregion Title
 

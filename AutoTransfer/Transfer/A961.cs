@@ -116,15 +116,15 @@ namespace AutoTransfer.Transfer
                 reportDateStr = dateTime;
                 setFile = new SetFile(tableType, dateTime);
 
-                createA9611File();
+                createA9611_1File();
             }
         }
 
-        protected void createA9611File()
+        protected void createA9611_1File()
         {
-            if (new CreateA9611File().create(tableType, reportDateStr, verInt))
+            if (new CreateA96111File().create(tableType, reportDateStr, verInt))
             {
-                putSFTP("1", setFile.putA9611FilePath(), setFile.putA9611FileName());
+                putSFTP("11", setFile.putA9611FilePath(), setFile.putA9611FileName("1"));
             }
             else
             {
@@ -173,9 +173,13 @@ namespace AutoTransfer.Transfer
 
                 switch (fileNumber)
                 {
-                    case "1":
+                    case "11":
                         getFilePath = setFile.getA9611FilePath();
-                        getFileName = setFile.getA9611GZFileName();
+                        getFileName = setFile.getA9611GZFileName("1");
+                        break;
+                    case "12":
+                        getFilePath = setFile.getA9611FilePath();
+                        getFileName = setFile.getA9611GZFileName("2");
                         break;
                     case "2":
                         getFilePath = setFile.getA9612FilePath();
@@ -225,11 +229,18 @@ namespace AutoTransfer.Transfer
 
                 switch (fileNumber)
                 {
-                    case "1":
+                    case "11":
                         sourceFileName = Path.Combine(getFilePath, getFileName);
-                        destFileName = Path.Combine(getFilePath, setFile.getA9611FileName());
+                        destFileName = Path.Combine(getFilePath, setFile.getA9611FileName("1"));
                         Extension.Decompress(sourceFileName, destFileName);
-                        DataMidYieldToA96(setFile.getA9611FilePath(), setFile.getA9611FileName());
+                        DataMidYieldToA96_1(setFile.getA9611FilePath(), setFile.getA9611FileName("1"));
+                        createA96112File();
+                        break;
+                    case "12":
+                        sourceFileName = Path.Combine(getFilePath, getFileName);
+                        destFileName = Path.Combine(getFilePath, setFile.getA9611FileName("2"));
+                        Extension.Decompress(sourceFileName, destFileName);
+                        DataMidYieldToA96_2(setFile.getA9611FilePath(), setFile.getA9611FileName("2"));
                         createA9612File();
                         break;
                     case "2":
@@ -242,6 +253,27 @@ namespace AutoTransfer.Transfer
                     default:
                         break;
                 }
+            }
+        }
+
+        protected void createA96112File()
+        {
+            if (new CreateA96112File().create(tableType, reportDateStr, verInt))
+            {
+                putSFTP("12", setFile.putA9611FilePath(), setFile.putA9611FileName("2"));
+            }
+            else
+            {
+                log.bothLog(
+                    type,
+                    false,
+                    reportDateDt,
+                    startTime,
+                    DateTime.Now,
+                    verInt,
+                    logPath,
+                    MessageType.Create_File_Fail.GetDescription(type)
+                );
             }
         }
 
@@ -266,7 +298,62 @@ namespace AutoTransfer.Transfer
             }
         }
 
-        protected void DataMidYieldToA96(string path1, string path2)
+        protected void DataMidYieldToA96_1(string path1, string path2)
+        {
+            IFRS9DBEntities db = new IFRS9DBEntities();
+
+            #region
+            using (StreamReader sr = new StreamReader(Path.Combine(path1, path2)))
+            {
+                bool flag = false; //判斷是否為要讀取的資料行數
+                string line = string.Empty;
+                List<YLD_YTM_MID_Class> listYLD = new List<YLD_YTM_MID_Class>();
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if ("END-OF-DATA".Equals(line))
+                    {
+                        flag = false;
+                    }
+
+                    if (flag) //找到的資料
+                    {
+                        var arr = line.Split('|');
+                        //arr[0]  ex: US035242AN64@BGN Govt
+                        //arr[1]  ex: 0 or 10 ??
+                        //arr[2]  ex: 1 ??
+                        //arr[3]  ex: 01/31/2018 
+                        //arr[4]  ex: 4.097 --Mid_Yield
+
+                        if (arr.Length >= 5 && !arr[0].IsNullOrWhiteSpace() &&
+                            !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
+                        {
+                            //double YLD_YTM_MID;
+                            double BVAL_MID_YTM;
+                            if (!arr[4].IsNullOrWhiteSpace() &&
+                                double.TryParse(arr[4].Trim(), out BVAL_MID_YTM))
+                            {
+                                var Bond_Number = arr[0].Trim().Split('@')[0];
+
+                                A96Data.Where(x => x.Bond_Number == Bond_Number)
+                                       .ToList()
+                                       .ForEach(x =>
+                                       {
+                                           x.Mid_Yield = BVAL_MID_YTM.ToString();
+                                       });
+                            }
+                        }
+                    }
+
+                    if ("START-OF-DATA".Equals(line))
+                    {
+                        flag = true;
+                    }
+                }
+            }
+            #endregion
+        }
+
+        protected void DataMidYieldToA96_2(string path1, string path2)
         {
             IFRS9DBEntities db = new IFRS9DBEntities();
 

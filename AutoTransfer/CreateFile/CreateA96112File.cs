@@ -6,7 +6,7 @@ using AutoTransfer.Utility;
 
 namespace AutoTransfer.CreateFile
 {
-    public class CreateA9611File
+    public class CreateA96112File
     {
         public bool create(TableType type, string dateTime, int ver)
         {
@@ -73,14 +73,16 @@ namespace AutoTransfer.CreateFile
                 db.Bond_Account_Info.AsNoTracking()
                     .Where(x => x.Report_Date.HasValue &&
                                 x.Report_Date.Value == date &&
-                                x.Version.HasValue && x.Version == ver)
+                                x.Version.HasValue && 
+                                x.Version == ver &&
+                                x.Bond_Number !=null &&
+                                !x.Bond_Number.StartsWith("E"))
                     .Select(x => x.Bond_Number).Distinct()
                     .OrderBy(x => x)
                     .ToList().ForEach(x =>
                     {
                         if (!x.IsNullOrWhiteSpace())
                         {
-                            //data.Add(string.Format("{0}@BGN Govt|ISIN", x));
                             data.Add(string.Format("{0}@BVAL Corp", x));
                         }
                     });

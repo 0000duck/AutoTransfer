@@ -93,7 +93,8 @@
     <Compile Include="CreateFile\CreateA91File.cs" />
     <Compile Include="CreateFile\CreateA92File.cs" />
     <Compile Include="CreateFile\CreateA93File.cs" />
-    <Compile Include="CreateFile\CreateA9611File.cs" />
+    <Compile Include="CreateFile\CreateA96111File.cs" />
+    <Compile Include="CreateFile\CreateA96112File.cs" />
     <Compile Include="CreateFile\CreateA9612File.cs" />
     <Compile Include="CreateFile\CreateA9613File.cs" />
     <Compile Include="CreateFile\CreateA9621File.cs" />

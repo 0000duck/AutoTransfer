@@ -323,25 +323,28 @@ namespace AutoTransfer.CreateFile
                 Path.Combine(startupPath, "A9611Put") : A9611Put;
         }
 
-        public string getA9611FileName()
+        public string getA9611FileName(string str = null)
         {
-            return string.Format("Get{0}1_{1}.csv",
+            return string.Format("Get{0}1{2}_{1}.csv",
                 _type.ToString(),
-                _dateTime);
+                _dateTime,
+                getExtensionName(str));
         }
 
-        public string putA9611FileName()
+        public string putA9611FileName(string str = null)
         {
-            return string.Format("Get{0}1_{1}.req",
+            return string.Format("Get{0}1{2}_{1}.req",
                 _type.ToString(),
-                _dateTime);
+                _dateTime,
+                getExtensionName(str));
         }
 
-        public string getA9611GZFileName()
+        public string getA9611GZFileName(string str = null)
         {
-            return string.Format("Get{0}1_{1}.csv.gz",
+            return string.Format("Get{0}1{2}_{1}.csv.gz",
                                   _type.ToString(),
-                                  _dateTime);
+                                  _dateTime,
+                                  getExtensionName(str));
         }
 
         public string getA9612FilePath()
