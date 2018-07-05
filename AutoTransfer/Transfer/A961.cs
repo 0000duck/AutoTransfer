@@ -175,7 +175,7 @@ namespace AutoTransfer.Transfer
                 {
                     case "11":
                         getFilePath = setFile.getA9611FilePath();
-                        getFileName = setFile.getA9611GZFileName("1");
+                        getFileName = setFile.getA9611FileName("1");
                         break;
                     case "12":
                         getFilePath = setFile.getA9611FilePath();
@@ -230,9 +230,6 @@ namespace AutoTransfer.Transfer
                 switch (fileNumber)
                 {
                     case "11":
-                        sourceFileName = Path.Combine(getFilePath, getFileName);
-                        destFileName = Path.Combine(getFilePath, setFile.getA9611FileName("1"));
-                        Extension.Decompress(sourceFileName, destFileName);
                         DataMidYieldToA96_1(setFile.getA9611FilePath(), setFile.getA9611FileName("1"));
                         createA96112File();
                         break;
@@ -321,16 +318,15 @@ namespace AutoTransfer.Transfer
                         //arr[0]  ex: US035242AN64@BGN Govt
                         //arr[1]  ex: 0 or 10 ??
                         //arr[2]  ex: 1 ??
-                        //arr[3]  ex: 01/31/2018 
-                        //arr[4]  ex: 4.097 --Mid_Yield
+                        //arr[3]  ex: 4.097 --Mid_Yield
 
-                        if (arr.Length >= 5 && !arr[0].IsNullOrWhiteSpace() &&
+                        if (arr.Length >= 4 && !arr[0].IsNullOrWhiteSpace() &&
                             !arr[0].StartsWith("START") && !arr[0].StartsWith("END"))
                         {
                             //double YLD_YTM_MID;
                             double BVAL_MID_YTM;
-                            if (!arr[4].IsNullOrWhiteSpace() &&
-                                double.TryParse(arr[4].Trim(), out BVAL_MID_YTM))
+                            if (!arr[3].IsNullOrWhiteSpace() &&
+                                double.TryParse(arr[3].Trim(), out BVAL_MID_YTM))
                             {
                                 var Bond_Number = arr[0].Trim().Split('@')[0];
 
