@@ -43,10 +43,14 @@ namespace AutoTransfer.Utility
             {
                 txtData = txt;
             }
-            FileStream fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write);
-            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
-            sw.Write(txtData); //存檔
-            sw.Close();
+            try
+            {
+                FileStream fs = new FileStream(folderPath, FileMode.Create, FileAccess.Write);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
+                sw.Write(txtData); //存檔
+                sw.Close();
+            }
+            catch { }
         }
 
         #endregion save txtlog
@@ -120,10 +124,21 @@ namespace AutoTransfer.Utility
                         _A53Version = _vers.Max(x => x.Version);
                 }
                 //須符合有一筆"Y"(上一部完成)
-                if (checkTable.Any(x => x.ReportDate == reportDate &&
-                                        ((checkName == "A53" && x.Version == _A53Version) ||
-                                        (x.File_Name == checkName && x.Version == version)) &&
-                                        x.TransferType == "Y") &&
+                if (
+                    (checkName == "A53" ?
+                    checkTable.Any(x => x.ReportDate == reportDate &&
+                                      x.File_Name == checkName &&
+                                      x.Version == _A53Version &&
+                                      x.TransferType == "Y") :
+                    checkTable.Any( x=> x.ReportDate == reportDate &&
+                                      x.File_Name == checkName &&
+                                      x.Version == version &&
+                                      x.TransferType == "Y"))
+                    //checkTable.Any(x => x.ReportDate == reportDate &&
+                    //                    ((checkName == "A53" && x.Version == _A53Version) ||
+                    //                    (x.File_Name == checkName && x.Version == version)) &&
+                    //                    x.TransferType == "Y")                                      
+                                        &&
                 //自己沒有"Y"(重複做) 才算符合,轉檔為A53不用判斷
                     (fileName == "A53" ||
                     !checkTable.Any(x => x.File_Name == fileName &&

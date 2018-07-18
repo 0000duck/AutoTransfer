@@ -59,21 +59,34 @@ namespace AutoTransfer.Transfer
                             string sql2 = string.Empty; //A58
 
                             #region A57原始日 sql
-
+                            var _ratype = Rating_Type.A.GetDescription();
+                            var A58d = db.Bond_Rating_Summary.AsNoTracking()
+                                .Where(x => x.Report_Date <= dt &&
+                                         x.Rating_Type == _ratype)
+                                         .OrderByDescending(x => x.Report_Date)
+                                         .ThenByDescending(x => x.Version)
+                                         .FirstOrDefault();
+                            var _lastReport = "null";
+                            var _lastVersion = "0";
+                            if (A58d != null)
+                            {
+                                _lastReport = A58d.Report_Date.ToString("yyyy/MM/dd");
+                                _lastVersion = A58d.Version.ToString();
+                            }
                             sql = $@"
 --原始
 
-WITH temp2 AS
-(
-select top 1 Report_Date,
-             Version
-from Bond_Rating_Summary
-where Report_Date <= '{reportData}'
-and   Rating_Type = '{Rating_Type.A.GetDescription()}'
-group by Report_Date,Version
-order by Report_Date desc,Version desc
-), --最後一版A58
-temp AS
+--WITH temp2 AS
+--(
+--select top 1 Report_Date,
+--             Version
+--from Bond_Rating_Summary
+--where Report_Date <= '{reportData}'
+--and   Rating_Type = '{Rating_Type.A.GetDescription()}'
+--group by Report_Date,Version
+--order by Report_Date desc,Version desc
+--), --最後一版A58
+WITH temp AS
 (
 select RTG_Bloomberg_Field,
        Rating_Object,
@@ -87,9 +100,9 @@ select RTG_Bloomberg_Field,
        Rating_Date,
        Rating_Org,
        A57.Report_Date
-FROM   Bond_Rating_Info A57,temp2
-WHERE  A57.Report_Date = temp2.Report_Date 
-AND    A57.Version = temp2.Version
+FROM   Bond_Rating_Info A57
+WHERE  A57.Report_Date = '{_lastReport}'
+AND    A57.Version = '{_lastVersion}'
 AND    A57.Rating_Type = '{Rating_Type.A.GetDescription()}'
 AND    A57.Rating is not null
 --AND    A57.Grade_Adjust is not null  --排程 要全加 2018/4/11
