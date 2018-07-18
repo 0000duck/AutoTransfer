@@ -18,7 +18,7 @@ namespace AutoTransfer.CreateFile
                 SetFile f = new SetFile(type, dateTime);
 
                 //ex: GetA9611_20180131
-                string getFileName = f.getA9611FileName();
+                string getFileName = f.getA9611FileName("2");
                 int year = Int32.Parse(dateTime.Substring(0, 4));
                 int month = Int32.Parse(dateTime.Substring(4, 2));
                 int day = Int32.Parse(dateTime.Substring(6, 2));
@@ -96,7 +96,7 @@ namespace AutoTransfer.CreateFile
 
                 flag = new CreatePutFile().create(
                     f.putA9611FilePath(),
-                    f.putA9611FileName(),
+                    f.putA9611FileName("2"),
                     data);
             }
             catch
